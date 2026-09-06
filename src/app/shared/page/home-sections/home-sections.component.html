@@ -1,0 +1,46 @@
+<section *ngFor="let s of sections" [id]="s.id" class="hs-section" [class.hs-section--cta]="s.type === 'cta'">
+  <div class="hs-section__inner" [class.hs-section__inner--split]="(s.type === 'mediaText' || s.type === 'image' || s.type === 'video') && (s.imageUrl || s.videoUrl)" [class.hs-section__inner--cards]="s.type === 'cards'">
+    <!-- Copy block -->
+    <div class="hs-section__copy">
+      <p *ngIf="s.eyebrow" class="hs-section__eyebrow">{{ s.eyebrow }}</p>
+      <h2 *ngIf="s.heading" class="hs-section__heading title-case">{{ s.heading }}</h2>
+      <p *ngIf="s.body" class="hs-section__body">{{ s.body }}</p>
+      <div *ngIf="s.actions?.length" class="hs-section__actions">
+        <ng-container *ngFor="let a of s.actions">
+          <button *ngIf="a.actionId" type="button" class="btn-todd" [class.btn-todd-secondary]="a.variant === 'secondary'" (click)="sectionAction.emit(a.actionId)">
+            {{ a.label }}
+          </button>
+          <a *ngIf="!a.actionId && a.route" class="btn-todd" [class.btn-todd-secondary]="a.variant === 'secondary'" [routerLink]="a.route">
+            {{ a.label }}
+          </a>
+          <a *ngIf="!a.actionId && !a.route && a.href" class="btn-todd" [class.btn-todd-secondary]="a.variant === 'secondary'" [href]="a.href" target="_blank" rel="noopener noreferrer">
+            {{ a.label }}
+          </a>
+        </ng-container>
+      </div>
+    </div>
+    <!-- Cards grid -->
+    <div *ngIf="s.cards?.length" class="hs-section__cards">
+      <div *ngFor="let c of s.cards" class="hs-section__card">
+        <span *ngIf="c.eyebrow" class="hs-section__card-eyebrow">{{ c.eyebrow }}</span>
+        <h3 class="hs-section__card-heading title-case">{{ c.heading }}</h3>
+        <p *ngIf="c.body" class="hs-section__card-body">{{ c.body }}</p>
+        <div class="hs-section__card-actions" *ngIf="c.route || c.href || c.actionId">
+          <button *ngIf="c.actionId" type="button" class="btn-todd btn-todd-sm" (click)="sectionAction.emit(c.actionId)"> Open </button>
+          <a *ngIf="!c.actionId && c.route" class="btn-todd btn-todd-sm" [routerLink]="c.route"> Open </a>
+          <a *ngIf="!c.actionId && !c.route && c.href" class="btn-todd btn-todd-sm" [href]="c.href" target="_blank" rel="noopener noreferrer"> Open </a>
+        </div>
+      </div>
+    </div>
+    <!-- Image / video media -->
+    <div *ngIf="s.imageUrl || s.videoUrl" class="hs-section__media">
+      <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.imageAlt || s.heading || ''" loading="lazy" />
+      <video *ngIf="s.videoUrl && !s.imageUrl" controls playsinline preload="metadata">
+        <source [src]="s.videoUrl" type="video/mp4" />
+      </video>
+    </div>
+    <!-- Inline HTML block -->
+    <div *ngIf="s.type === 'html' && s.html" class="hs-section__html" [innerHTML]="s.html">
+    </div>
+  </div>
+</section>

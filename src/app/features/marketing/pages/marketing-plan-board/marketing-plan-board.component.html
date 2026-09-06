@@ -1,0 +1,65 @@
+<div class="marketing-plan-board container-fluid tal-app mb-5" [class.marketing-plan-board--embedded]="isEmbedded">
+  <div class="marketing-plan-board__summary" *ngIf="!planLoading">
+    <ng-container *ngIf="activePlan; else noPlan">
+      <h2 class="marketing-plan-board__title">{{ activePlan.title || 'Marketing Plan' }}</h2>
+      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.goals?.length">
+        <strong>Goals:</strong> {{ activePlan.extracted!.goals!.join(', ') }}
+      </div>
+      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.audiences?.length">
+        <strong>Audiences:</strong> {{ activePlan.extracted!.audiences!.join(', ') }}
+      </div>
+      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.contentThemes?.length">
+        <strong>Content themes:</strong> {{ activePlan.extracted!.contentThemes!.join(', ') }}
+      </div>
+      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.kpis?.length">
+        <strong>KPIs:</strong> {{ activePlan.extracted!.kpis!.join(', ') }}
+      </div>
+      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.timeline">
+        <strong>Timeline:</strong> {{ activePlan.extracted!.timeline }}
+      </div>
+    </ng-container>
+    <ng-template #noPlan>
+      <p class="marketing-plan-board__empty">Maya hasn't created an active marketing plan yet.</p>
+    </ng-template>
+  </div>
+
+  <nav class="maya-plan-tabs" aria-label="Maya marketing plan views">
+    <button type="button" [class.maya-plan-tab--active]="activeView === 'summary'" (click)="selectView('summary')">Summary</button>
+    <button type="button" [class.maya-plan-tab--active]="activeView === 'work'" (click)="selectView('work')">Work</button>
+    <button type="button" [class.maya-plan-tab--active]="activeView === 'board'" (click)="selectView('board')">Board</button>
+  </nav>
+
+  <section *ngIf="activeView === 'summary'" class="maya-plan-panel maya-plan-panel--summary">
+    <div class="maya-plan-panel__eyebrow">Maya's current direction</div>
+    <h2>One plan, one next decision.</h2>
+    <p>Use the tabs to move from the plan's intent to the work it created, then open the board when you need the full operational view.</p>
+    <div class="maya-plan-proof" *ngIf="activePlan">
+      <div class="maya-plan-proof__header">
+        <div>
+          <div class="maya-plan-panel__eyebrow">Written plan</div>
+          <h3>{{ activePlan.title }}</h3>
+        </div>
+        <span class="maya-plan-proof__status" [class.maya-plan-proof__status--active]="planLinkedWorkCount > 0">{{ planEvidenceLabel }}</span>
+      </div>
+      <p class="maya-plan-proof__detail">{{ planEvidenceDetail }}</p>
+      <div class="maya-plan-proof__location">Plan location: TODD marketing plan record<span *ngIf="activePlan.sourceFileName"> · {{ activePlan.sourceFileName }}</span></div>
+      <pre class="maya-plan-proof__document" *ngIf="activePlan.rawText; else extractedPlan">{{ activePlan.rawText }}</pre>
+      <ng-template #extractedPlan>
+        <div class="maya-plan-proof__extracted">
+          <p *ngIf="activePlan.extracted.goals?.length"><strong>Goals:</strong> {{ activePlan.extracted.goals.join(' · ') }}</p>
+          <p *ngIf="activePlan.extracted.audiences?.length"><strong>Audiences:</strong> {{ activePlan.extracted.audiences.join(' · ') }}</p>
+          <p *ngIf="activePlan.extracted.kpis?.length"><strong>KPIs:</strong> {{ activePlan.extracted.kpis.join(' · ') }}</p>
+          <p *ngIf="activePlan.extracted.timeline"><strong>Timeline:</strong> {{ activePlan.extracted.timeline }}</p>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <section *ngIf="activeView === 'work'" class="maya-plan-panel">
+    <app-project-view mode="page" [project]="projectDropdown" [tasks]="tasks"></app-project-view>
+  </section>
+
+  <section *ngIf="activeView === 'board'" class="maya-plan-panel">
+    <app-project-sticky-board [projectId]="projectId" (tasksChange)="onTasksChange($event)"></app-project-sticky-board>
+  </section>
+</div>

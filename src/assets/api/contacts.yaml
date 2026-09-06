@@ -1,0 +1,597 @@
+openapi: 3.0.0
+info:
+  title: TODD Contacts & Network API
+  description: >
+    Lead Vault search/unlock/recommendation endpoints, Network entitlement and
+    Stripe billing endpoints, and Lead Vault Unlimited Stripe billing
+    endpoints for the TODD platform. Routes under /lead-vault and /contact are
+    additionally guarded upstream by bot-blocking and anonymous-request
+    rate-limiting middleware (blockBadUserAgents, rateLimitAnonymousApis).
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >
+        Tenant id read from the request header by attachAuthContext. This
+        middleware only reads the header onto req.user; it does not verify a
+        token or session.
+    UserIdHeader:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >
+        User id read from the request header by attachAuthContext. This
+        middleware only reads the header onto req.user; it does not verify a
+        token or session.
+security: []
+paths:
+  # ---------------------------------------------------------------------
+  # Lead Vault (contactRoutes.js)
+  # ---------------------------------------------------------------------
+  /lead-vault/search:
+    post:
+      summary: Search the Lead Vault index by sector, state, city, capability, company/person name, or free-text query
+      description: >
+        Runs one of several Lead Vault search strategies depending on which
+        filter fields are populated (sector+state, sector+city,
+        capability+city, companyName, capability, personName, sector, or a
+        free-text query). Public endpoint guarded by bot-blocking and
+        anonymous rate limiting.
+      tags: [Lead Vault]
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                sector:
+                  type: string
+                state:
+                  type: string
+                city:
+                  type: string
+                capability:
+                  type: string
+                companyName:
+                  type: string
+                personName:
+                  type: string
+                role:
+                  type: string
+                token:
+                  type: string
+                limit:
+                  type: number
+                isAuthenticated:
+                  type: boolean
+                isLoggedIn:
+                  type: boolean
+                uid:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Search results returned (may be an empty list).
+        '400':
+          description: Search failed, e.g. no search field supplied.
+  /lead-vault/record/{id}/preview:
+    get:
+      summary: Get a masked teaser preview of a Lead Vault record (no unlock required)
+      description: >
+        Returns a locked/teaser view of the record (name, title, company,
+        location, sector, up to 3 capabilities, masked email, quality score).
+        Public endpoint guarded by bot-blocking and anonymous rate limiting.
+      tags: [Lead Vault]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead Vault record id.
+      responses:
+        '200':
+          description: Teaser preview returned.
+        '400':
+          description: Record id is required.
+        '404':
+          description: Record not found.
+        '500':
+          description: Preview failed.
+  /lead-vault/record/{id}/access:
+    get:
+      summary: Check whether the caller already has access (entitlement, tenant override, suite/unlimited subscription, or free trial) to a Lead Vault record
+      description: >
+        Resolves access via a per-record purchase entitlement, internal
+        tenant override, Momentum-suite paid access, Lead Vault Unlimited
+        subscription, or a one-time free-trial reveal per tenant (which is
+        consumed atomically if granted). Tenant/user id are read from
+        x-tenant-id / x-user-id headers via attachAuthContext (headers are
+        read but not cryptographically verified).
+      tags: [Lead Vault]
+      security:
+        - TenantIdHeader: []
+          UserIdHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead Vault record id.
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Purchaser email to check access for.
+      responses:
+        '200':
+          description: Access resolution returned.
+        '400':
+          description: Record id or email is required.
+        '500':
+          description: Access check failed.
+  /lead-vault/record/{id}/full:
+    get:
+      summary: Get the full unmasked Lead Vault record (requires prior access/unlock)
+      description: >
+        Returns the full contact/company record, merging Lead Vault index
+        data with the underlying deleted-contact source document. Denies
+        access (403) unless resolveLeadVaultAccess grants it. Tenant/user id
+        are read from x-tenant-id / x-user-id headers via attachAuthContext.
+      tags: [Lead Vault]
+      security:
+        - TenantIdHeader: []
+          UserIdHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead Vault record id.
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Purchaser email to check access for.
+      responses:
+        '200':
+          description: Full record returned.
+        '400':
+          description: Record id or email is required.
+        '403':
+          description: Access denied.
+        '404':
+          description: Record not found.
+        '500':
+          description: Full record retrieval failed.
+  /lead-vault/checkout:
+    post:
+      summary: Start a Stripe Checkout session to unlock a Lead Vault record
+      description: >
+        Creates a one-time Stripe Checkout session ($29.00) to unlock a Lead
+        Vault record for a purchaser email, unless the purchaser already has
+        access (in which case it short-circuits with alreadyOwned: true).
+        Records a pending order in lead-vault-orders. Tenant/user id are read
+        from x-tenant-id / x-user-id headers via attachAuthContext.
+      tags: [Lead Vault]
+      security:
+        - TenantIdHeader: []
+          UserIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recordId:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session created, or record already owned.
+        '400':
+          description: Record id or purchaser email is required.
+        '404':
+          description: Record not found.
+        '500':
+          description: Checkout failed.
+  /lead-vault/checkout/confirm:
+    post:
+      summary: Confirm a Lead Vault unlock checkout session and grant the entitlement
+      description: >
+        Retrieves the Stripe Checkout session, verifies it is paid, and
+        writes a lead-vault-entitlements record plus updates the matching
+        lead-vault-orders record.
+      tags: [Lead Vault]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Entitlement confirmed and granted.
+        '400':
+          description: Session id is required, checkout metadata incomplete, or session is not paid.
+        '404':
+          description: Checkout session not found.
+        '500':
+          description: Checkout confirmation failed.
+  /lead-vault/recommendation/checkout:
+    post:
+      summary: Start a Stripe Checkout session to purchase an AI recommendation for an already-unlocked Lead Vault record
+      description: >
+        Requires the record to already be unlocked (a lead-vault-entitlements
+        doc must exist) before allowing purchase of a $1.00 goal-specific
+        recommendation. Short-circuits with alreadyOwned: true if a matching
+        recommendation entitlement already exists. Records a pending order in
+        lead-vault-recommendation-orders.
+      tags: [Lead Vault]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recordId:
+                  type: string
+                email:
+                  type: string
+                goal:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session created, or recommendation already owned.
+        '400':
+          description: Record id or purchaser email is required.
+        '403':
+          description: Lead must be unlocked before buying a recommendation.
+        '404':
+          description: Record not found.
+        '500':
+          description: Recommendation checkout failed.
+  /lead-vault/recommendation/checkout/confirm:
+    post:
+      summary: Confirm a recommendation checkout session and grant the recommendation entitlement
+      description: >
+        Retrieves the Stripe Checkout session, verifies it is paid, and
+        writes a lead-vault-recommendation-entitlements record plus updates
+        the matching lead-vault-recommendation-orders record.
+      tags: [Lead Vault]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Recommendation entitlement confirmed and granted.
+        '400':
+          description: Session id is required, checkout metadata incomplete, or session is not paid.
+        '404':
+          description: Checkout session not found.
+        '500':
+          description: Recommendation confirmation failed.
+  /lead-vault/recommendation/{id}:
+    get:
+      summary: Fetch a previously generated goal-specific recommendation for a Lead Vault record
+      description: >
+        Returns the cached recommendation document if one exists for this
+        record/email/goal combination; requires a recommendation entitlement.
+        Does not generate a new recommendation.
+      tags: [Lead Vault]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead Vault record id.
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Purchaser email the recommendation was bought under.
+        - name: goal
+          in: query
+          required: false
+          schema:
+            type: string
+            default: general
+          description: Goal/intent the recommendation was generated for.
+      responses:
+        '200':
+          description: Recommendation returned (may be null if not generated yet).
+        '400':
+          description: Record id or email is required.
+        '403':
+          description: Recommendation access denied.
+        '500':
+          description: Recommendation retrieval failed.
+  # ---------------------------------------------------------------------
+  # Network (networkBillingRoutes.js)
+  # ---------------------------------------------------------------------
+  /network/checkout:
+    post:
+      summary: Start a Stripe subscription Checkout session for the Network suite
+      description: >
+        Finds or creates a Stripe customer for the tenant, resolves an
+        affiliate referrer, and creates a subscription Checkout session for
+        the Network price. Records a pending checkout in STRIPE_CHECKOUTS.
+      tags: [Network Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                priceId:
+                  type: string
+                referrerUid:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session created.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Stripe secret key or price id not configured, or checkout could not be started.
+  /network/contact-pack/checkout:
+    post:
+      summary: Add or increment a Network contact-pack add-on, either via proration on an active subscription or a new Checkout session
+      description: >
+        If the tenant already has an active Network subscription, adds a new
+        contact-pack subscription item (or increments its quantity) with
+        prorations and re-syncs the entitlement from Stripe. Otherwise
+        creates a new subscription Checkout session for the contact-pack
+        price. Records a pending checkout in STRIPE_CHECKOUTS when a new
+        session is created.
+      tags: [Network Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                referrerUid:
+                  type: string
+      responses:
+        '200':
+          description: Contact pack added to the existing subscription, or a new checkout session was created.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Stripe secret key or contact pack price id not configured, or checkout could not be started.
+  /network/entitlement:
+    post:
+      summary: Get the tenant's current Network entitlement plus current/remaining contact counts
+      description: >
+        Loads the Network entitlement (base limit, extra packs, effective
+        limit) and the tenant's current non-root contact count, returning
+        the entitlement merged with currentCount and remaining.
+      tags: [Network]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Entitlement and counts returned.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Unable to load network entitlement.
+  /network/limits:
+    get:
+      summary: Get the tenant's Network contact limits (base limit, extra packs, effective limit, remaining)
+      tags: [Network]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used as a fallback tenant id if tenantId is not supplied.
+      responses:
+        '200':
+          description: Limits returned.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Unable to load network limits.
+  /network/dashboard-counts:
+    get:
+      summary: Get aggregate Network dashboard counts for a tenant (total, valid-email, enriched, reconfigured, follow-up, subscriber, important contacts)
+      description: >
+        Scans the tenant's contacts collection (projected fields only) to
+        compute valid-email, needs-follow-up, subscriber, and important (VIP)
+        counts, mirroring the frontend's dashboard count logic, alongside
+        separate aggregate-query counts for total/enriched/reconfigured
+        contacts.
+      tags: [Network]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used as a fallback tenant id if tenantId is not supplied.
+      responses:
+        '200':
+          description: Dashboard counts returned.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Unable to load network dashboard counts.
+  /network/checkout/confirm:
+    post:
+      summary: Confirm a Network subscription checkout session and activate paid access for the tenant
+      description: >
+        Retrieves the Stripe Checkout session (expanding subscription and
+        customer), verifies payment/subscription status, records the
+        checkout, and if paid, marks the tenant with networkPaidAccess and
+        an active billing status, then re-syncs the Network entitlement from
+        Stripe.
+      tags: [Network Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+      responses:
+        '200':
+          description: Checkout confirmed and Network access activated.
+        '400':
+          description: sessionId is required, or no tenant id found for this checkout session.
+        '402':
+          description: Checkout has not completed with an active subscription.
+        '500':
+          description: Stripe secret key not configured, or checkout could not be confirmed.
+  # ---------------------------------------------------------------------
+  # Lead Vault Unlimited billing (leadVaultBillingRoutes.js)
+  # ---------------------------------------------------------------------
+  /lead-vault-unlimited/checkout:
+    post:
+      summary: Start a Stripe subscription Checkout session for Lead Vault Unlimited
+      description: >
+        Finds or creates a Stripe customer for the tenant and creates a
+        subscription Checkout session for the Lead Vault Unlimited price.
+        Records a pending checkout in STRIPE_CHECKOUTS.
+      tags: [Lead Vault Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session created.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Lead Vault Unlimited price id not configured, or checkout could not be started.
+  /lead-vault-unlimited/checkout/confirm:
+    post:
+      summary: Confirm a Lead Vault Unlimited checkout session and activate the subscription on the tenant
+      description: >
+        Retrieves the Stripe Checkout session (expanding subscription and
+        customer), verifies payment/subscription status, records the
+        checkout, and if paid, syncs leadVaultUnlimitedAccess and Stripe
+        subscription fields onto the tenant document.
+      tags: [Lead Vault Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+      responses:
+        '200':
+          description: Checkout confirmed and Lead Vault Unlimited access activated.
+        '400':
+          description: sessionId is required, or no tenant id found for this checkout session.
+        '402':
+          description: Checkout has not completed with an active subscription.
+        '500':
+          description: Checkout could not be confirmed.

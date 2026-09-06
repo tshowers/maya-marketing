@@ -1,0 +1,228 @@
+<div class="assistant-container">
+  <div #messageContainer *ngIf="!parentOwnsHistory && showResponses && history?.length" class="mt-3 assistant-thread">
+    <ng-container *ngFor="let msg of history;">
+      <!-- User messages -->
+      <div *ngIf="msg.role === 'user'" class="assistant-message assistant-message-user">
+        <div class="assistant-message-bubble assistant-message-bubble-user">
+          {{ msg.content }}
+        </div>
+      </div>
+      <!-- Assistant messages -->
+      <div *ngIf="msg.role === 'assistant'" class="assistant-message assistant-message-assistant">
+        <div class="assistant-message-bubble assistant-message-bubble-assistant assistant-response" [innerHTML]="msg.content" (click)="onAssistantContentClick($event)">
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <div class="assistant-inline" *ngIf="!parentOwnsHistory && inlineReply as inl">
+    <ng-container [ngSwitch]="inl.kind">
+      <!-- Email Draft -->
+      <div *ngSwitchCase="'emailDraft'" class="inline-card">
+        <div class="field">
+          <label>Subject</label>
+          <input [(ngModel)]="inl.payload.subject" placeholder="Subject" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Body</label>
+          <textarea [(ngModel)]="inl.payload.body" rows="8" placeholder="Write your email..." class="ios-input"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn-todd" (click)="applyInline()">Apply in Composer</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'documentDraft'" class="inline-card">
+        <div class="field">
+          <label>Title</label>
+          <input [(ngModel)]="inl.payload.title" placeholder="Title" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Body</label>
+          <textarea [(ngModel)]="inl.payload.body" rows="12" placeholder="Write your document..." class="ios-textarea"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn-todd" (click)="applyInline()">Apply in Editor</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'strategyOutline'" class="inline-card">
+        <div class="field">
+          <label>Title</label>
+          <input [(ngModel)]="inl.payload.title" placeholder="Strategy title" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Outline</label>
+          <ul>
+            <li *ngFor="let item of inl.payload.outline; let i = index">
+              <input [(ngModel)]="inl.payload.outline[i]" class="ios-input" />
+            </li>
+          </ul>
+        </div>
+        <div class="actions">
+          <button class="btn-todd" (click)="applyInline()">Apply in Editor</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'filters'" class="inline-card">
+        <div class="chips">
+          <span class="chip" *ngFor="let kv of (inl.payload | keyvalue)">
+            {{kv.key}}: {{kv.value}}
+          </span>
+        </div>
+        <div class="actions">
+          <button class="btn-todd" (click)="applyInline()">Apply Filters</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'taskDraft'" class="inline-card">
+        <div class="field">
+          <label>Title</label>
+          <input [(ngModel)]="inl.payload.title" placeholder="Task title" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Due Date</label>
+          <input type="date" [(ngModel)]="inl.payload.dueDate" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <input [(ngModel)]="inl.payload.priority" placeholder="e.g., high" class="ios-input" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea rows="5" [(ngModel)]="inl.payload.description" placeholder="Describe the task..." class="ios-textarea"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn-todd" (click)="applyInline()">Apply in Tasks</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'contactSummary'" class="inline-card">
+        <div class="summary-header">
+          <h3 style="margin:0;">{{ inl.payload.name || 'Contact' }}</h3>
+          <div *ngIf="inl.payload.title || inl.payload.company" class="muted">
+            <span *ngIf="inl.payload.title">{{ inl.payload.title }}</span>
+            <span *ngIf="inl.payload.title && inl.payload.company"> · </span>
+            <span *ngIf="inl.payload.company">{{ inl.payload.company }}</span>
+          </div>
+        </div>
+        <div class="grid grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+          <div *ngIf="inl.payload.email"><strong>Email:</strong> {{ inl.payload.email }}</div>
+          <div *ngIf="inl.payload.phone"><strong>Phone:</strong> {{ inl.payload.phone }}</div>
+          <div *ngIf="inl.payload.location"><strong>Location:</strong> {{ inl.payload.location }}</div>
+          <div *ngIf="inl.payload.tags?.length"><strong>Tags:</strong> {{ inl.payload.tags.join(', ') }}</div>
+          <div *ngIf="inl.payload.lastActivity"><strong>Last Activity:</strong> {{ inl.payload.lastActivity }}</div>
+        </div>
+        <div *ngIf="inl.payload.projects?.length" style="margin-top:12px;">
+          <strong>Projects</strong>
+          <ul style="margin:6px 0 0 16px;">
+            <li *ngFor="let p of inl.payload.projects">{{ p }}</li>
+          </ul>
+        </div>
+        <div *ngIf="inl.payload.recentNotes?.length" style="margin-top:12px;">
+          <strong>Recent Notes</strong>
+          <ul style="margin:6px 0 0 16px;">
+            <li *ngFor="let n of inl.payload.recentNotes">{{ n }}</li>
+          </ul>
+        </div>
+        <div *ngIf="inl.payload.suggestedNextMove" style="margin-top:12px;">
+          <strong>Suggested Next Move</strong>
+          <div>{{ inl.payload.suggestedNextMove }}</div>
+        </div>
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn-todd" (click)="applyInline()">Open Contact</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'contactAnswer'" class="inline-card">
+        <div><strong>Question:</strong> {{ inl.payload.question }}</div>
+        <div style="margin-top:8px;"><strong>Answer:</strong> {{ inl.payload.answer }}</div>
+        <div *ngIf="inl.payload.evidence?.length" style="margin-top:12px;">
+          <strong>Based on</strong>
+          <ul style="margin:6px 0 0 16px;">
+            <li *ngFor="let e of inl.payload.evidence">{{ e }}</li>
+          </ul>
+        </div>
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn-todd" (click)="applyInline()">Open Contact</button>
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+      <div *ngSwitchCase="'composerContactChoices'" class="inline-card">
+        <div class="field">
+          <label>Possible contacts</label>
+          <div class="muted">Pick the right person and TODD will draft the email for that contact.</div>
+        </div>
+        <div class="field" *ngFor="let candidate of inl.payload.candidates">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div><strong>{{ candidate.name || 'Contact' }}</strong></div>
+              <div class="muted">
+                <span *ngIf="candidate.companyName">{{ candidate.companyName }}</span>
+                <span *ngIf="candidate.companyName && candidate.email"> · </span>
+                <span *ngIf="candidate.email">{{ candidate.email }}</span>
+              </div>
+            </div>
+            <button class="btn-todd" (click)="chooseComposerContactCandidate(candidate)">Use This Contact</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn-todd ghost" (click)="inlineReply = null">Dismiss</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <div class="assistant-confirm" *ngIf="showConfirmPrompt && pendingAction">
+    <div class="assistant-confirm__copy">
+      <strong>Proceed with this action?</strong>
+      <span>TODD has prepared the next move and is waiting for your approval.</span>
+    </div>
+    <div class="assistant-confirm__actions">
+      <button type="button" class="btn-todd" (click)="confirmAction()">Apply</button>
+      <button type="button" class="btn-todd ghost" (click)="cancelAction()">Not now</button>
+    </div>
+  </div>
+  <div class="assistant-bar d-flex align-items-center gap-2 w-100">
+    <div class="flex-grow-1 w-100">
+      <div class="ios-list">
+        <div *ngIf="intakeAttention" class="assistant-intake-hint">
+          {{ intakeHint }}
+        </div>
+        <div class="ios-row d-flex align-items-center w-100 gap-2">
+          <input #inputRef [(ngModel)]="assistantPrompt" (ngModelChange)="onPromptChange($event)" (keydown)="handleKeyDown($event)" (keydown.enter)="askAssistant()" class="ios-input w100" autocomplete="off" [disabled]="isDemoRunning || isLoading" [placeholder]="isDemoRunning ? 'Demo running…' : placeholder" />
+          <button type="button" class="btn-todd" (click)="askAssistant()" [disabled]="isDemoRunning || isLoading">
+            <span *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i></span>
+            <span *ngIf="!isLoading"><i class="fa-solid fa-arrow-up"></i></span>
+          </button>
+          <ng-container *ngIf="parentOwnsHistory">
+            <button type="button" class="btn-todd ghost assistant-btn-demo" *ngIf="!externalMode && !isDemoRunning" (click)="startDemo()" title="Run a quick demo">
+              <i class="fa-regular fa-circle-play"></i>
+            </button>
+            <button type="button" class="btn-todd ghost assistant-btn-demo" *ngIf="!externalMode && isDemoRunning" (click)="stopDemo()" title="Stop demo">
+              <i class="fa-regular fa-circle-stop"></i>
+            </button>
+          </ng-container>
+          <button *ngIf="!PRODUCTION" type="button" class="btn-todd assistant-btn-delete" (click)="resetConversation()"><i class="fa-regular fa-trash-can"></i></button>
+          <!-- Suggestions dropdown -->
+          <div *ngIf="recoveryOptions.length && !externalMode">
+            <button *ngFor="let option of recoveryOptions" type="button" (click)="option.action()" class="btn-todd">
+              {{ option.label }}
+            </button>
+          </div>
+          <!-- <ul *ngIf="suggestions.length && !externalMode" class="suggestion-dropdown">
+            <li *ngFor="let suggestion of suggestions; let i = index" [class.active]="i === selectedIndex" (click)="useSuggestion(suggestion)">
+              {{ suggestion }}
+            </li>
+          </ul> -->
+        </div>
+        <div class="small text-muted text-center" *ngIf="landingIntakeMode"> Step {{landingIntakeFlowControllerService.landingFlowStep}} of 5 • Press Enter to skip </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div *ngIf="prospectData?.averageSale && prospectFlowStep >= 5" class="mt-3 a">
+    <div class="progress" style="height: 30px;">
+      <div class="progress-bar bg-danger" role="progressbar" [style.width.%]="calculateLossPercent()" aria-valuemin="0" aria-valuemax="100">
+        {{ calculateLossPercent() }}% Revenue Leakage
+      </div>
+    </div>
+  </div> -->
+</div>

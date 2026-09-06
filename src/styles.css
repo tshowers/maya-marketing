@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+html, body { min-height: 100%; }
+:root {
+  color-scheme: light;
+  --todd-text: #0f172a;
+  --todd-subtext: #667085;
+  --todd-card-bg: #ffffff;
+  --todd-surface-1: #f6f8fa;
+  --todd-surface-2: #ffffff;
+  --todd-panel-border: #dfe4ea;
+  --todd-input-border: #dfe4ea;
+  --tl-blue: #0066ff;
+  --tl-blue-mid: #1677ff;
+  --tl-blue-subtle: rgba(0, 102, 255, 0.08);
+  --tl-blue-glow: rgba(0, 102, 255, 0.16);
+}
+
+body { margin: 0; padding-bottom: 70px; font-family: 'DM Sans', Arial, sans-serif; background: #f6f8fa; color: #0f172a; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --todd-text: #e8f1ff;
+    --todd-subtext: #9aadc1;
+    --todd-card-bg: #131c27;
+    --todd-surface-1: #111b28;
+    --todd-surface-2: #162231;
+    --todd-panel-border: rgba(0, 191, 255, 0.18);
+    --todd-input-border: rgba(156, 190, 220, 0.18);
+    --tl-blue: #00bfff;
+    --tl-blue-mid: #38bdf8;
+    --tl-blue-subtle: rgba(56, 189, 248, 0.14);
+    --tl-blue-glow: rgba(0, 191, 255, 0.28);
+  }
+  body { background: #0b111a; color: #e8f1ff; }
+}

@@ -1,0 +1,239 @@
+<div class="maya-status-page todd-page" data-demo="marketing-employee-page">
+  <section class="maya-status-shell" aria-label="Maya status">
+    <app-preloader [isLoading]="loading" message="Maya is checking today’s plan, open work, approvals, and completed items." [autoHideAfterMs]="null"></app-preloader>
+
+    <ng-container *ngIf="!loading">
+      <ng-container *ngTemplateOutlet="loadedState"></ng-container>
+    </ng-container>
+
+    <ng-template #loadedState>
+      <ng-container *ngIf="!errorMessage; else errorState">
+        <section class="maya-status-card maya-status-card--hero" data-demo="marketing-employee-status-hero">
+          <div class="maya-status-hero">
+            <div class="maya-status-card__eyebrow">Maya Status</div>
+            <div class="maya-status-hero__actions">
+            </div>
+          </div>
+          <p class="maya-status-telemetry" *ngIf="!mayaRunStatusAvailable">Run evidence is not available from the backend yet. The lights below are intentionally not marked successful.</p>
+          <p class="maya-status-telemetry" *ngIf="mayaRunStatusAvailable && !mayaRunStatus?.latestRun">No Maya run has been recorded for today yet.</p>
+          <div class="maya-status-banner--warn" *ngIf="mayaQueueBlocked" role="alert">
+            <span class="maya-status-banner--warn__icon" aria-hidden="true">⚠</span>
+            <span>{{ mayaQueueWarningMessage }}</span>
+          </div>
+        </section>
+
+        <nav class="maya-view-tabs" aria-label="Maya status views">
+          <button type="button" [class.maya-view-tab--active]="activeView === 'pipeline'" (click)="selectView('pipeline')">Pipeline</button>
+          <button type="button" [class.maya-view-tab--active]="activeView === 'scorecard'" (click)="selectView('scorecard')">Scorecard</button>
+          <button type="button" [class.maya-view-tab--active]="activeView === 'work'" (click)="selectView('work')">Today's Work</button>
+        </nav>
+
+        <ng-container *ngIf="activeView === 'pipeline'">
+        <section class="maya-step-tabs" data-demo="marketing-employee-pipeline" aria-label="Maya pipeline steps">
+          <button
+            *ngFor="let step of guideSteps; trackBy: trackById"
+            type="button"
+            class="maya-step-tab"
+            [class.maya-step-tab--active]="step.id === activeStep?.id"
+            [class.maya-step-tab--positive]="step.tone === 'positive'"
+            [class.maya-step-tab--attention]="step.tone === 'attention'"
+            [class.maya-step-tab--warn]="step.tone === 'warn'"
+            [attr.title]="'Step ' + step.numberLabel + ': ' + step.title"
+            [attr.aria-label]="'Step ' + step.numberLabel + ': ' + step.title"
+            (click)="selectStep(step.id)">
+            <span class="maya-step-tab__rail" aria-hidden="true"></span>
+            <span class="maya-step-tab__topline">
+              <app-status-led [tone]="getStatusLedTone(step.tone)" [pulse]="getStatusLedPulse(step.tone)"></app-status-led>
+              <span class="maya-step-tab__number">{{ step.numberLabel }}</span>
+            </span>
+            <span class="maya-step-tab__label">{{ step.title }}</span>
+          </button>
+        </section>
+        </ng-container>
+
+        <section class="maya-metrics" *ngIf="activeView === 'scorecard'" data-demo="marketing-employee-metrics" aria-label="Maya gauges">
+          <article
+            *ngFor="let metric of statusMetrics; trackBy: trackById"
+            class="maya-metric"
+            [class.maya-metric--positive]="metric.tone === 'positive'"
+            [class.maya-metric--attention]="metric.tone === 'attention'"
+            [class.maya-metric--warn]="metric.tone === 'warn'">
+            <div class="maya-metric__gauge">
+              <app-arc-gauge [value]="metric.progress" [max]="100" [tone]="getGaugeTone(metric.tone)" textColor="var(--maya-text)"></app-arc-gauge>
+            </div>
+            <div class="maya-metric__body">
+              <div class="maya-metric__topline">
+                <span>{{ metric.label }}</span>
+                <strong>{{ metric.value }}</strong>
+              </div>
+              <p>{{ metric.detail }}</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="maya-status-card maya-stuck-table" *ngIf="activeView === 'work'" data-demo="marketing-employee-today-work" aria-label="Where Maya is today">
+          <div class="maya-status-card__eyebrow">Today's Work</div>
+          <h2>Where she's at</h2>
+          <p>What Maya finished today, what's still open, and what she could not do today.</p>
+
+          <div class="maya-status-banner--warn" *ngIf="mayaQueueBlocked" role="alert">
+            <span class="maya-status-banner--warn__icon" aria-hidden="true">⚠</span>
+            <span>
+              <strong>Blocked today: </strong>{{ mayaQueueWarningMessage }}
+            </span>
+          </div>
+
+          <h3 class="maya-work-section-heading">Done today</h3>
+          <table class="maya-stuck-table__grid" *ngIf="completedWork.length > 0; else noCompletedWork">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Result</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of completedWork; trackBy: trackById">
+                <td><strong>{{ item.title }}</strong></td>
+                <td>{{ item.status }}</td>
+                <td>
+                  <a *ngIf="item.moveId" [routerLink]="['/move', item.moveId]" class="btn-todd btn-todd-secondary">Open Move</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noCompletedWork>
+            <div class="maya-guide-empty">Nothing has been marked done today yet.</div>
+          </ng-template>
+
+          <h3 class="maya-work-section-heading">Still open</h3>
+          <table class="maya-stuck-table__grid" *ngIf="stuckItems.length > 0; else noStuckItems">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Progress</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of stuckItems; trackBy: trackById">
+                <td>
+                  <strong>{{ item.title }}</strong>
+                  <p class="maya-stuck-table__note">
+                    <span *ngIf="item.latestNoteAuthor" class="maya-stuck-table__note-author">{{ item.latestNoteAuthor }}:</span>
+                    {{ item.latestNote }}
+                  </p>
+                </td>
+                <td class="maya-stuck-table__progress-cell">
+                  <app-arc-gauge [value]="item.progress" [max]="100" tone="info" textColor="var(--maya-text)"></app-arc-gauge>
+                </td>
+                <td>
+                  <a *ngIf="item.moveId" [routerLink]="['/move', item.moveId]" class="btn-todd btn-todd-secondary">Open Move</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #noStuckItems>
+            <div class="maya-guide-empty" *ngIf="!mayaQueueBlocked">Nothing from today's plan is open right now.</div>
+            <div class="maya-guide-empty" *ngIf="mayaQueueBlocked">Nothing is open because today's planning never ran — see the blocked notice above.</div>
+          </ng-template>
+        </section>
+
+        <section class="maya-guide" data-demo="marketing-employee-step-detail" *ngIf="activeView === 'pipeline' && activeStep as step" [attr.aria-label]="step.title">
+          <article class="maya-guide-hero">
+            <div class="maya-guide-hero__eyebrow maya-guide-hero__eyebrow--pipeline">
+              <app-status-led [tone]="getStatusLedTone(step.tone)" [pulse]="getStatusLedPulse(step.tone)"></app-status-led>
+              <span>Step {{ step.numberLabel }}</span>
+            </div>
+            <h2>{{ step.title }}</h2>
+            <p>{{ step.summary }}</p>
+            <div class="maya-guide-hero__meta">
+              <div class="maya-guide-meta-card">
+                <span>Owner</span>
+                <strong>{{ step.owner }}</strong>
+              </div>
+              <div class="maya-guide-meta-card">
+                <span>Completed</span>
+                <strong>{{ step.complete ? 'Yes' : 'No' }}</strong>
+              </div>
+              <div class="maya-guide-meta-card">
+                <span>Status</span>
+                <strong>{{ step.countLabel }}</strong>
+              </div>
+            </div>
+            <p class="maya-guide-hero__detail">{{ step.detail }}</p>
+          </article>
+
+          <div class="maya-guide-grid" data-demo="marketing-employee-explanation">
+            <article class="maya-guide-card">
+              <div class="maya-guide-card__eyebrow">What Happens</div>
+              <h3>What happens in this step</h3>
+              <div class="maya-guide-checklist">
+                <article class="maya-guide-check" *ngFor="let item of step.whatHappens; trackBy: trackById">
+                  <app-status-led [tone]="item.done ? 'positive' : 'idle'"></app-status-led>
+                  <div class="maya-guide-check__body">
+                    <strong>{{ item.label }}</strong>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                  <a *ngIf="item.route" class="maya-guide-check__link" [routerLink]="item.route" [queryParams]="item.queryParams || null">
+                    {{ item.actionLabel || 'Open' }}
+                  </a>
+                </article>
+              </div>
+            </article>
+
+            <article class="maya-guide-card">
+              <div class="maya-guide-card__eyebrow">What The User Does</div>
+              <h3>What the user does in this step</h3>
+              <div class="maya-guide-checklist">
+                <article class="maya-guide-check" *ngFor="let item of step.userDoes; trackBy: trackById">
+                  <app-status-led [tone]="item.done ? 'positive' : 'idle'"></app-status-led>
+                  <div class="maya-guide-check__body">
+                    <strong>{{ item.label }}</strong>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                  <a *ngIf="item.route" class="maya-guide-check__link" [routerLink]="item.route" [queryParams]="item.queryParams || null">
+                    {{ item.actionLabel || 'Open' }}
+                  </a>
+                </article>
+              </div>
+            </article>
+          </div>
+
+          <article class="maya-guide-work" data-demo="marketing-employee-action-queue">
+            <div class="maya-guide-card__eyebrow">What To Open Now</div>
+            <h3>{{ step.itemsHeading }}</h3>
+            <p class="maya-guide-work__summary">{{ step.itemsSummary }}</p>
+            <p class="maya-guide-work__instruction">Use these links to open the real records behind this step and take action where Maya or TODD surfaced it.</p>
+
+            <div class="maya-guide-work__list" *ngIf="step.items.length > 0; else emptyStepItems">
+              <article class="maya-lane-item" *ngFor="let item of step.items; trackBy: trackById">
+                <app-status-led [tone]="item.checked ? 'positive' : 'info'" [pulse]="!item.checked"></app-status-led>
+                <div class="maya-lane-item__body">
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.detail }}</p>
+                </div>
+                <a *ngIf="hasLaneRoute(item)" [routerLink]="item.route!" [queryParams]="item.queryParams || null">{{ item.routeLabel }}</a>
+              </article>
+            </div>
+
+            <ng-template #emptyStepItems>
+              <div class="maya-guide-empty">{{ step.emptyLabel }}</div>
+            </ng-template>
+          </article>
+        </section>
+      </ng-container>
+    </ng-template>
+
+    <ng-template #errorState>
+      <section class="maya-status-card">
+        <div class="maya-status-card__eyebrow">Maya Status</div>
+        <h1>Status unavailable</h1>
+        <p>{{ errorMessage }}</p>
+        <div class="maya-status-hero__actions">
+        </div>
+      </section>
+    </ng-template>
+  </section>
+</div>

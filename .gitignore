@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Angular cache
+.angular/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.local
+src/environments/*
+!src/environments/environment.example.ts
+.claude/
+
+# Generated at build time (scripts/generate-version.js)
+src/app/version.ts

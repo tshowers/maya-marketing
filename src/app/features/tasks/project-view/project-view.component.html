@@ -1,0 +1,98 @@
+<app-preloader [isLoading]="isLoading"></app-preloader>
+<div class="pv-toolbar" *ngIf="showToolbar">
+  <div class="left">
+    <h2 class="title">Project {{ projectName$ | async }} Summary</h2>
+  </div>
+</div>
+
+<!-- Hover header (condensed) -->
+<div class="pv-hover-head" *ngIf="mode === 'hover'">
+  <div class="row">
+    <div class="col">
+      <ng-container *ngIf="stats$ | async as s">
+        <div class="kpis-inline">
+          <span>Open <strong>{{ s.open }}</strong></span>
+          <span>Overdue <strong>{{ s.overdue }}</strong></span>
+          <span>Complete <strong>{{ s.pct }}%</strong></span>
+        </div>
+      </ng-container>
+    </div>
+    <!-- <div class="col text-end">
+    <button class="btn-todd" (click)="setView()">Open Stickies</button>
+    </div> -->
+  </div>
+</div>
+
+<!-- SUMMARY VIEW -->
+<section class="pv-section" [ngClass]="mode">
+  <!-- KPI STRIP -->
+  <div class="kpi-strip" *ngIf="stats$ | async as s">
+    <div class="kpi"><div class="n">{{ s.open }}</div><div class="l">Open</div></div>
+    <div class="kpi"><div class="n overdue">{{ s.overdue }}</div><div class="l">Overdue</div></div>
+    <div class="kpi"><div class="n">{{ s.due7 }}</div><div class="l">Due 7d</div></div>
+    <div class="kpi"><div class="n">{{ s.pct }}%</div><div class="l">Complete</div></div>
+    <div class="kpi"><div class="n">{{ s.epics }}</div><div class="l">Epics</div></div>
+  </div>
+
+  <!-- TIMELINE (lite) -->
+  <div class="timeline" *ngIf="upcoming$ | async as up">
+    <div class="tl-title">Upcoming</div>
+    <div class="tl-items">
+      <div class="tl-item" *ngFor="let t of up; trackBy: trackById">
+        <div class="dot"></div>
+        <div class="tl-text">
+          <div class="t" title="{{t.title}}">{{ t.title | truncate:12}}</div>
+          <div class="d">{{ t.dueDate | date:'MMM d' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS LANES (collapsed) -->
+  <div class="lanes" *ngIf="lanes$ | async as L">
+    <div class="lane">
+      <div class="lane-head">Todo ({{ L.todo.length }})</div>
+      <ul class="lane-list">
+        <li *ngFor="let t of L.todo | slice:0:6; trackBy: trackById">{{ t.title }}</li>
+      </ul>
+    </div>
+    <div class="lane">
+      <div class="lane-head">Doing ({{ L.doing.length }})</div>
+      <ul class="lane-list">
+        <li *ngFor="let t of L.doing | slice:0:6; trackBy: trackById">{{ t.title }}</li>
+      </ul>
+    </div>
+    <div class="lane">
+      <div class="lane-head">Blocked ({{ L.blocked.length }})</div>
+      <ul class="lane-list">
+        <li *ngFor="let t of L.blocked | slice:0:6; trackBy: trackById">{{ t.title }}</li>
+      </ul>
+    </div>
+    <div class="lane">
+      <div class="lane-head">Done ({{ L.done.length }})</div>
+      <ul class="lane-list">
+        <li *ngFor="let t of L.done | slice:0:6; trackBy: trackById">{{ t.title }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- RISKS -->
+  <div class="risks" *ngIf="risks$ | async as risks">
+    <div class="section-title">Risks & Blockers</div>
+    <ul>
+      <li *ngFor="let t of risks; trackBy: trackById">
+        <span class="pill danger">Risk</span> {{ t.title }}
+      </li>
+      <li *ngIf="!risks.length">No risks or blockers</li>
+    </ul>
+  </div>
+
+  <!-- TEAM (ids for now; wire to contacts$ later) -->
+  <div class="team" *ngIf="team$ | async as team">
+    <div class="section-title">Team</div>
+    <div class="chips">
+      <span class="chip" *ngFor="let id of team">{{ id }}</span>
+    </div>
+  </div>
+</section>
+

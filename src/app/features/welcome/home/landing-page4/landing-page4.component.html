@@ -1,0 +1,60 @@
+<div class="todd-page">
+  <app-home-sections [sections]="landingSections" (sectionAction)="handleLandingStoryAction($event)"></app-home-sections>
+</div>
+<div class="todd-modal" *ngIf="showExitIntentModal" role="dialog" aria-modal="true" aria-labelledby="exit-intent-title">
+  <div class="todd-modal-backdrop" (click)="dismissExitIntentModal()"></div>
+  <div class="todd-modal-card todd-exit-modal-card">
+    <div class="todd-modal-header">
+      <div>
+        <div class="todd-section-kicker">{{ exitIntentContent.eyebrow }}</div>
+        <div class="todd-modal-title" id="exit-intent-title">{{ exitIntentContent.title }}</div>
+      </div>
+      <button type="button" class="todd-icon-btn" aria-label="Close exit prompt" (click)="dismissExitIntentModal()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="todd-modal-body todd-exit-modal-body">
+      <div class="todd-exit-modal-grid">
+        <div class="todd-exit-visual">
+          <img [src]="exitIntentContent.imageSrc" [alt]="exitIntentContent.imageAlt" class="todd-exit-image" loading="lazy">
+          <p class="todd-exit-copy">{{ exitIntentContent.body }}</p>
+          <div class="todd-exit-actions">
+            <button type="button" class="quick-guidance-pill quick-guidance-pill--primary" (click)="bookExitIntentMeeting()">{{ exitIntentContent.ctaLabel }}</button>
+            <button type="button" class="quick-guidance-pill" (click)="openExitIntentForm()">Stay in touch</button>
+          </div>
+        </div>
+        <div class="todd-exit-form-panel" *ngIf="showForm">
+          <h3>{{ exitIntentContent.formTitle }}</h3>
+          <p>{{ exitIntentContent.formBody }}</p>
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="todd-exit-form">
+            <label>
+              <span>First name</span>
+              <input type="text" formControlName="firstName" />
+            </label>
+            <label>
+              <span>Last name</span>
+              <input type="text" formControlName="lastName" />
+            </label>
+            <label>
+              <span>Company</span>
+              <input type="text" formControlName="companyName" />
+            </label>
+            <label>
+              <span>Email</span>
+              <input type="email" formControlName="email" />
+            </label>
+            <label>
+              <span>Phone</span>
+              <input type="tel" formControlName="phoneNumber" />
+            </label>
+            <div id="recaptcha-container" class="todd-exit-recaptcha"></div>
+            <div class="todd-exit-form-actions">
+              <button type="submit" class="quick-guidance-pill quick-guidance-pill--primary">Send it</button>
+              <button type="button" class="quick-guidance-pill" (click)="dismissExitIntentModal()">Not right now</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

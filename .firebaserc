@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "taliferrotech"
+  },
+  "targets": {
+    "taliferrotech": {
+      "hosting": {
+        "maya-marketing": [
+          "maya-marketing"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

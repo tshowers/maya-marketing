@@ -1,0 +1,618 @@
+openapi: 3.0.0
+info:
+  title: TODD Messaging & Acquisition API
+  description: API for SayIt internal messaging/seeding features and acquisition funnel ledger tracking in the TODD platform.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    UserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserIdAuth must be
+        present for readAccessGuard to allow the request.
+    UserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserEmailAuth must be
+        present for readAccessGuard to allow the request.
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Tenant scoping header read by attachAuthContext. Can alternatively be
+        supplied via the tenantId query/body field.
+security: []
+paths:
+  /sayit/profile/complete:
+    post:
+      summary: >-
+        Save a completed SayIt profile: classifies intent from the submitted
+        payload, builds recommendations, attempts to claim a seeded
+        Lead Vault profile for the user, and merges the profile document
+        into Firestore under the SayIt master tenant.
+      tags: [SayIt Messaging]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid]
+              properties:
+                uid:
+                  type: string
+                email:
+                  type: string
+                displayName:
+                  type: string
+                businessName:
+                  type: string
+                businessCategory:
+                  type: string
+                intentText:
+                  type: string
+                sellText:
+                  type: string
+                profileSource:
+                  type: string
+                seedStatus:
+                  type: string
+                claimedByUid:
+                  type: string
+                directoryVisibility:
+                  type: string
+                publicProfile:
+                  type: boolean
+      responses:
+        '200':
+          description: Profile saved with classified intent profile and recommendations.
+        '400':
+          description: uid is required.
+        '500':
+          description: Unable to save SayIt profile.
+  /sayit/seeding/run:
+    post:
+      summary: >-
+        Run the SayIt Lead Vault profile seeding job (creates/claims seeded
+        directory profiles and optionally sends invites). Restricted to the
+        SayIt master tenant uid.
+      tags: [SayIt Seeding]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid]
+              properties:
+                uid:
+                  type: string
+                  description: Must equal the SayIt master tenant id or the request is forbidden.
+                limit:
+                  type: number
+                sendInvites:
+                  type: boolean
+                appBaseUrl:
+                  type: string
+      responses:
+        '200':
+          description: Seeding run completed; returns seeding result summary.
+        '403':
+          description: Forbidden - uid does not match the SayIt master tenant.
+        '500':
+          description: Unable to seed SayIt profiles.
+  /sayit/seeding/metrics:
+    get:
+      summary: >-
+        Retrieve SayIt seeding metrics and the seeded directory config
+        (enabled flag, invite email delivery flag, last update info).
+      tags: [SayIt Seeding]
+      security: []
+      responses:
+        '200':
+          description: Seeding metrics and config returned.
+        '500':
+          description: Unable to load SayIt seeding metrics.
+  /sayit/seeding/toggle:
+    put:
+      summary: >-
+        Enable or disable the seeded SayIt directory visibility. Restricted
+        to the SayIt master tenant uid.
+      tags: [SayIt Seeding]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid]
+              properties:
+                uid:
+                  type: string
+                  description: Must equal the SayIt master tenant id or the request is forbidden.
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Seeded directory visibility updated.
+        '403':
+          description: Forbidden - uid does not match the SayIt master tenant.
+        '500':
+          description: Unable to update seeded directory visibility.
+  /sayit/seeding/track:
+    post:
+      summary: Track a SayIt seed/invite funnel event (e.g. invite opened, claimed) by stage.
+      tags: [SayIt Seeding]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stage:
+                  type: string
+                email:
+                  type: string
+                inviteId:
+                  type: string
+      responses:
+        '200':
+          description: Seed event tracked.
+        '500':
+          description: Unable to track SayIt invite event.
+  /sayit/seeding/preview-test-invite:
+    post:
+      summary: >-
+        Build (but do not send) a preview of the SayIt invite email for a
+        given email/business name. Restricted to the SayIt master tenant uid.
+      tags: [SayIt Seeding]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid]
+              properties:
+                uid:
+                  type: string
+                  description: Must equal the SayIt master tenant id or the request is forbidden.
+                email:
+                  type: string
+                businessName:
+                  type: string
+                displayName:
+                  type: string
+                appBaseUrl:
+                  type: string
+      responses:
+        '200':
+          description: Preview invite HTML, subject, and login URL returned.
+        '403':
+          description: Forbidden - uid does not match the SayIt master tenant.
+        '500':
+          description: Unable to preview SayIt invite.
+  /sayit/seeding/send-test-invite:
+    post:
+      summary: >-
+        Send a real test SayIt invite email to a recipient. Restricted to
+        the SayIt master tenant uid.
+      tags: [SayIt Seeding]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid, email]
+              properties:
+                uid:
+                  type: string
+                  description: Must equal the SayIt master tenant id or the request is forbidden.
+                email:
+                  type: string
+                  description: Required test recipient email.
+                displayName:
+                  type: string
+                businessName:
+                  type: string
+                appBaseUrl:
+                  type: string
+      responses:
+        '200':
+          description: Test invite sent.
+        '400':
+          description: A test recipient email is required.
+        '403':
+          description: Forbidden - uid does not match the SayIt master tenant.
+        '500':
+          description: Unable to send SayIt test invite (or upstream error status/message passthrough).
+  /sayit/scheduler/toggle:
+    put:
+      summary: >-
+        Toggle the SayIt random post scheduler on or off. Only the SayIt
+        master tenant owner may call this.
+      tags: [SayIt Scheduler]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid]
+              properties:
+                uid:
+                  type: string
+                  description: Must equal the SayIt master tenant id or the request is forbidden.
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Scheduler enabled state updated.
+        '403':
+          description: Forbidden - uid does not match the SayIt master tenant.
+        '500':
+          description: Unable to update scheduler.
+  /sayit/scheduler/status:
+    get:
+      summary: Get the current SayIt random post scheduler enabled status.
+      tags: [SayIt Scheduler]
+      security: []
+      responses:
+        '200':
+          description: Scheduler status returned.
+        '500':
+          description: Unable to read scheduler status.
+  /acquisition/events:
+    post:
+      summary: >-
+        Append an acquisition ledger event for the tenant (e.g. a funnel
+        stage/touchpoint event), attributed to the requesting user context.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >-
+                Passed through as-is to the acquisition ledger service as the
+                event payload; shape is determined by the caller/event type.
+              properties:
+                tenantId:
+                  type: string
+                  description: Falls back to x-tenant-id header or the authenticated user's tenant if omitted.
+      responses:
+        '201':
+          description: Acquisition event recorded successfully.
+        '401':
+          description: Tenant context is required, or authentication (x-user-id/x-user-email) missing.
+        '500':
+          description: Unable to record acquisition event.
+  /acquisition/rebuild-day:
+    post:
+      summary: Rebuild the acquisition ledger rollup for a single tenant/date.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date]
+              properties:
+                tenantId:
+                  type: string
+                  description: Falls back to x-tenant-id header if omitted.
+                date:
+                  type: string
+                  description: Required date (e.g. YYYY-MM-DD) to rebuild.
+      responses:
+        '200':
+          description: Acquisition day rebuilt successfully.
+        '400':
+          description: date is required.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to rebuild acquisition day.
+  /acquisition/days:
+    get:
+      summary: List acquisition ledger days for the tenant within an optional date range/plan.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: planId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Acquisition days retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve acquisition days.
+  /acquisition/days/{date}:
+    get:
+      summary: Get the acquisition ledger rollup for a single tenant/date.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+      responses:
+        '200':
+          description: Acquisition day retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve acquisition day.
+  /acquisition/timeline:
+    get:
+      summary: Get the acquisition timeline (chronological events/rollups) for the tenant.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: planId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Acquisition timeline retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve acquisition timeline.
+  /acquisition/funnel:
+    get:
+      summary: Get acquisition funnel stage counts/conversion for the tenant.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: planId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Acquisition funnel retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve acquisition funnel.
+  /acquisition/inbound:
+    get:
+      summary: Get a summary of inbound acquisition leads for the tenant, optionally filtered by status/plan.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: planId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Inbound acquisition summary retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve inbound acquisition summary.
+  /acquisition/pipeline-evidence:
+    get:
+      summary: List pipeline evidence records (source events backing pipeline movement) for the tenant.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: contactId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: planId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Pipeline evidence retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve pipeline evidence.
+  /acquisition/booking-intent-evidence:
+    get:
+      summary: List booking-intent evidence records (signals of scheduling/booking intent) for the tenant.
+      tags: [Acquisition]
+      security:
+        - UserEmailAuth: []
+        - UserIdAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to x-tenant-id header or authenticated tenant if omitted.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Booking intent evidence retrieved successfully.
+        '401':
+          description: Tenant context is required, or authentication missing.
+        '500':
+          description: Unable to retrieve booking intent evidence.

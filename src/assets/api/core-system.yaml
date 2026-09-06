@@ -1,0 +1,712 @@
+openapi: 3.0.0
+info:
+  title: TODD Core Campaigns, OAuth & System API
+  description: >
+    Routes registered directly on the main Express app in
+    todd-backend/functions/index.js rather than through a dedicated router
+    file: outreach campaign orchestration (evaluate/create/launch/manage
+    email sequence campaigns), OAuth/webhook callbacks for Google Calendar
+    (Momentum integration) and social platforms (LinkedIn-adjacent
+    provider-agnostic social-auth start/callback plus Meta/Threads data
+    deletion webhooks), and basic health checks. Because these handlers are
+    wired up inline in index.js instead of a router file, several of them
+    (the OAuth callbacks and the Threads webhook endpoints) intentionally
+    skip the normal attachAuthContext/readAccessGuard middleware chain since
+    they are hit by an external provider (Google, Meta) rather than an
+    authenticated TODD API consumer.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com
+    description: >-
+      No shared /api prefix here — /hello is mounted unprefixed, so every
+      operation below documents its full literal path.
+components:
+  securitySchemes:
+    UserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserIdAuth is
+        typically present alongside TenantIdHeader.
+    UserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserEmailAuth is
+        typically present alongside TenantIdHeader.
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Tenant scoping header read by attachAuthContext onto
+        req.user.tenantId (campaignController also falls back to reading
+        this header directly). Every campaign handler except
+        evaluate-idea returns 401 "Tenant context required" when this is
+        missing.
+security:
+  - UserEmailAuth: []
+    TenantIdHeader: []
+  - UserIdAuth: []
+    TenantIdHeader: []
+paths:
+  /api/outreach/campaigns/evaluate-idea:
+    post:
+      summary: >-
+        Score a free-text campaign idea (title + idea description) against
+        the tenant's available audience/segment data and return a
+        verdict/approval, overall score, and a prepared-segment preview.
+        Works even without tenant context ("public-mode" evaluation used for
+        pre-signup/demo flows) — tenantId is optional here, unlike every
+        other campaign route.
+      tags: [Campaigns]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                idea:
+                  type: string
+                  description: Free-text description of the campaign idea to evaluate.
+      responses:
+        '200':
+          description: Campaign idea evaluated.
+        '500':
+          description: Unable to evaluate campaign idea.
+  /api/outreach/campaigns/create-from-idea:
+    post:
+      summary: >-
+        Create a new draft campaign directly from a previously evaluated
+        idea payload, along with the tenant's current campaign-creation
+        readiness (billing/entitlement) state.
+      tags: [Campaigns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                idea:
+                  type: string
+                  description: >-
+                    Same free-text idea payload as evaluate-idea; passed
+                    through to the campaign-idea service to build the
+                    draft campaign.
+      responses:
+        '201':
+          description: Campaign created from idea.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to create campaign from idea.
+  /api/outreach/campaigns/{id}:
+    get:
+      summary: Get a single campaign record by id for the caller's tenant.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      responses:
+        '200':
+          description: Campaign retrieved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to retrieve campaign.
+  /api/outreach/campaigns/{id}/contact-progress:
+    get:
+      summary: >-
+        Get per-contact sequence progress (current step, status) for every
+        contact enrolled in a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      responses:
+        '200':
+          description: Campaign contact progress retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve campaign contact progress.
+  /api/outreach/campaigns/{id}/resolve-audience:
+    post:
+      summary: >-
+        Resolve (compute/match) the audience for a campaign against tenant
+        contact + Lead Vault data, persist the matched queue on the
+        campaign, and return the resolved audience, an audience-readiness
+        check, and a Lead Vault audience preview.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: number
+                  default: 200
+                  description: Max number of matched contacts to resolve.
+      responses:
+        '200':
+          description: Campaign audience resolved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to resolve campaign audience.
+  /api/outreach/campaigns/{id}/generate-step-drafts:
+    post:
+      summary: >-
+        AI-draft (or re-draft) every unapproved sequence step for a
+        campaign, using the caller's resolved sender identity
+        (name/signature) for personalization, and persist the drafts.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      responses:
+        '200':
+          description: Campaign step drafts generated.
+        '400':
+          description: Campaign has no sequence steps to draft.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to generate campaign step drafts.
+  /api/outreach/campaigns/{id}/launch:
+    post:
+      summary: >-
+        Launch a campaign's email sequence: marks the campaign launched and
+        starts the send queue for sequence step 1. Only mode="sequence" is
+        supported by this route.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                  enum: [sequence]
+                  default: sequence
+                  description: Must be "sequence"; any other value returns 400.
+      responses:
+        '200':
+          description: Campaign launched with step 1.
+        '400':
+          description: Only sequence launch mode is supported here.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to launch campaign sequence.
+  /api/outreach/campaigns/{id}/test-send:
+    post:
+      summary: >-
+        Send a preview/test copy of a campaign's draft email(s) to a
+        specified recipient, with {{firstName}}/{{signature}} placeholders
+        filled in from the caller's sender identity.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipientEmail:
+                  type: string
+                  description: Address the test email(s) should be sent to.
+      responses:
+        '200':
+          description: Campaign test email(s) sent.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to send campaign test email.
+  /api/outreach/campaigns/{id}/contacts/{contactId}/pause-sequence:
+    post:
+      summary: Pause a single contact's in-progress sequence within a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Contact id whose sequence should be paused.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  default: manual_pause
+      responses:
+        '200':
+          description: Campaign contact sequence paused.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to pause campaign contact sequence.
+  /api/outreach/campaigns/{id}/contacts/{contactId}/resume-sequence:
+    post:
+      summary: Resume a previously paused contact sequence within a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Contact id whose sequence should be resumed.
+      responses:
+        '200':
+          description: Campaign contact sequence resumed.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to resume campaign contact sequence.
+  /api/outreach/campaigns/{id}/contacts/{contactId}/stop-sequence:
+    post:
+      summary: Stop and remove a contact from a campaign's sequence entirely.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Contact id whose sequence should be stopped.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  default: manual_remove
+      responses:
+        '200':
+          description: Campaign contact sequence stopped.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to stop campaign contact sequence.
+  /api/outreach/campaigns/{id}/recover-sequence:
+    post:
+      summary: >-
+        Diagnose and recover a sequence campaign's contacts that are stuck
+        waiting on a scheduled step (e.g. because the campaign was marked
+        completed while a Cloud Task was still pending) by rescheduling
+        their next-step task and correcting the campaign status if needed.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+      responses:
+        '200':
+          description: Recovery complete (or no stuck contacts found).
+        '400':
+          description: Campaign is not a sequence campaign.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to recover stuck sequence campaign.
+  /api/outreach/campaigns/{id}/sequence-steps/{stepId}/approve:
+    post:
+      summary: Approve a campaign sequence step's current draft, freezing it from regeneration.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Sequence step id to approve.
+      responses:
+        '200':
+          description: Campaign step approved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to approve campaign step.
+  /api/outreach/campaigns/{id}/sequence-steps/{stepId}/regenerate:
+    post:
+      summary: >-
+        Re-run AI drafting for a single unapproved sequence step. Returns
+        409 if the step is already approved (approved steps are frozen
+        until edited/unapproved).
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign id.
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Sequence step id to regenerate.
+      responses:
+        '200':
+          description: Campaign step regenerated.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign or campaign step not found.
+        '409':
+          description: Approved steps are frozen until they are edited or unapproved.
+        '500':
+          description: Unable to regenerate campaign step.
+  /api/outreach/social-auth/{provider}/start:
+    post:
+      summary: >-
+        Start a social-platform OAuth session for the given provider (e.g.
+        linkedin, twitter/x, instagram, threads, youtube) and return the
+        provider authorization URL/state for the frontend to redirect to.
+        For provider="bluesky" there is no OAuth redirect — the account is
+        connected directly using an app password and the handle/appPassword
+        body fields.
+      tags: [Social Auth]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Social provider key (e.g. linkedin, bluesky, threads, youtube).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                handle:
+                  type: string
+                  description: Required for provider="bluesky".
+                appPassword:
+                  type: string
+                  description: Required for provider="bluesky".
+                youtubeEnabled:
+                  type: boolean
+                destination:
+                  type: string
+                  description: Also read as destinationType; connect-options passthrough.
+                destinationType:
+                  type: string
+                frontendReturnUrl:
+                  type: string
+                  description: >-
+                    Where the OAuth flow should redirect back to when
+                    finished; also accepted as a query parameter. Defaults
+                    to the app's /outreach/social page.
+      responses:
+        '200':
+          description: >-
+            Social auth session created (or, for Bluesky, the account is
+            connected immediately).
+        '400':
+          description: Missing Bluesky handle or app password.
+        '401':
+          description: Authentication required (no tenantId/userId in context).
+        '500':
+          description: Unable to start social auth.
+  /api/momentum/integrations/calendar/callback:
+    get:
+      summary: >-
+        Google Calendar OAuth callback for the Momentum calendar
+        integration. Not meant for direct API consumer use — Google
+        redirects the user's browser here after the consent screen. Always
+        responds with a 302 redirect (never a JSON body): on success it
+        redirects to the resolved post-connect return URL from
+        handleCalendarConnectCallback; on missing/invalid state or any
+        unhandled error it redirects to a fallback
+        /daily-momentum?calendarConnectReturn=1&calendarConnectStatus=error
+        URL instead.
+      tags: [Calendar OAuth]
+      security: []
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Opaque OAuth state token issued when the connect flow was started.
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+          description: OAuth authorization code issued by Google.
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: >-
+            Redirect back to the TODD app's daily-momentum page with a
+            calendarConnectStatus of success or error. This route never
+            returns a JSON response body.
+  /api/outreach/social-auth/{provider}/callback:
+    get:
+      summary: >-
+        OAuth redirect target for social provider connect flows (state +
+        code exchanged for tokens, account persisted, then a 302 redirect
+        back to the tenant's frontendReturnUrl). Also doubles as the Meta
+        webhook subscription-verification endpoint: when called with
+        hub.mode=subscribe, it echoes back hub.challenge (200) if
+        hub.verify_token matches WEBHOOK_VERIFY_TOKEN, or responds 403
+        otherwise. No auth middleware is applied — this is an OAuth/webhook
+        target hit by the browser or by Meta, not a direct API consumer.
+      tags: [Social Auth]
+      security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Social provider key the callback is for.
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+          description: OAuth state token; required unless this is a hub.mode=subscribe verification request.
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: hub.mode
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Set to "subscribe" by Meta to verify the webhook endpoint.
+        - name: hub.verify_token
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: hub.challenge
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Meta webhook verification challenge echoed back as plain text.
+        '302':
+          description: OAuth flow complete — redirect to the tenant's frontend return URL.
+        '400':
+          description: Missing OAuth callback parameters (state or code).
+        '403':
+          description: Webhook verification failed (verify_token mismatch).
+  /api/outreach/social-auth/threads/deauthorize:
+    get:
+      summary: >-
+        Meta/Threads platform callback fired when a user revokes the app's
+        access ("deauthorize") on the Threads side. Acknowledges receipt
+        only — not a consumer-facing endpoint. Registered with app.all, so
+        it accepts any HTTP method.
+      tags: [Webhooks (Internal)]
+      security: []
+      responses:
+        '200':
+          description: Threads deauthorize callback received.
+    post:
+      summary: Same handler as GET — see GET description. Registered via app.all.
+      tags: [Webhooks (Internal)]
+      security: []
+      responses:
+        '200':
+          description: Threads deauthorize callback received.
+  /api/outreach/social-auth/threads/delete:
+    get:
+      summary: >-
+        Meta/Threads platform data-deletion request callback. Generates a
+        confirmation code and a status-check URL (pointing at
+        GET .../threads/delete/status) and returns both, per Meta's data
+        deletion callback contract. Not a consumer-facing endpoint.
+        Registered with app.all, so it accepts any HTTP method.
+      tags: [Webhooks (Internal)]
+      security: []
+      responses:
+        '200':
+          description: >-
+            Threads data deletion callback received; body includes
+            confirmation_code and url for status polling.
+    post:
+      summary: Same handler as GET — see GET description. Registered via app.all.
+      tags: [Webhooks (Internal)]
+      security: []
+      responses:
+        '200':
+          description: >-
+            Threads data deletion callback received; body includes
+            confirmation_code and url for status polling.
+  /api/outreach/social-auth/threads/delete/status:
+    get:
+      summary: >-
+        Status-check endpoint for a previously submitted Threads
+        data-deletion request; the URL Meta/users are pointed to via the
+        url field returned from POST .../threads/delete. Always reports
+        status "received" — there is no persisted tracking of deletion
+        completion beyond acknowledging the confirmation code.
+      tags: [Webhooks (Internal)]
+      security: []
+      parameters:
+        - name: confirmation_code
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Confirmation code issued by the original delete request.
+      responses:
+        '200':
+          description: Threads data deletion request status acknowledged.
+  /hello:
+    get:
+      summary: Basic liveness check that also emits a structured Firebase log line.
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: >-
+            Plain-text "Hello from Firebase!" response (not JSON).
+  /api:
+    get:
+      summary: API root health/identity check.
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: 'JSON {ok: true, service: "api"}.'
+  /api/health:
+    get:
+      summary: Health check with a response timestamp.
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: 'JSON {ok: true, service: "api", timestamp}.'

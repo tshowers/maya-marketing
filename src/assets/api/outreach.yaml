@@ -1,0 +1,1988 @@
+openapi: 3.0.0
+info:
+  title: TODD Outreach API
+  description: API for the TODD Outreach system - campaigns, momentum/outbox threads, mailboxes, social posts, and top-of-funnel signal capture (ad engagement, click stream, anonymous behavior).
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    UserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Forwarded by the frontend after Firebase Auth sign-in. Read verbatim
+        by attachAuthContext middleware onto req.user.uid - NOT cryptographically
+        verified by this service.
+    UserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Forwarded by the frontend after Firebase Auth sign-in. Read verbatim
+        by attachAuthContext middleware onto req.user.email - NOT cryptographically
+        verified by this service.
+    TenantIdAuth:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Identifies the tenant/workspace the request operates on. Read verbatim
+        by attachAuthContext middleware onto req.user.tenantId (or read directly
+        by the handler when attachAuthContext is not mounted on the route).
+security:
+  - TenantIdAuth: []
+    UserIdAuth: []
+  - TenantIdAuth: []
+    UserEmailAuth: []
+paths:
+  /ad-engagements:
+    get:
+      summary: List paid-ad engagement events for the tenant (paginated).
+      tags: [Ad Engagement]
+      security:
+        - TenantIdAuth: []
+          UserIdAuth: []
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+          description: One of 100, 250, 500, or 1000 (default 100).
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ad engagements retrieved successfully.
+        '400':
+          description: Tenant context missing, or pageSize/cursor invalid.
+        '401':
+          description: Authentication (x-user-id) is required.
+        '500':
+          description: Failed to retrieve ad engagements.
+
+  /anonymous-behavior/summary:
+    get:
+      summary: Build a rollup summary of anonymous visitor behavior for a tenant over a period.
+      tags: [Anonymous Behavior]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: periodDays
+          in: query
+          schema:
+            type: integer
+          description: Clamped between 1 and 90 (default 30).
+        - name: segmentType
+          in: query
+          schema:
+            type: string
+            enum: [source, campaign, device]
+        - name: segmentValue
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Anonymous behavior summary retrieved successfully.
+        '400':
+          description: tenantId missing, or segmentType/segmentValue invalid/mismatched.
+        '500':
+          description: Failed to retrieve anonymous behavior summary.
+
+  /anonymous-behavior/response-history:
+    get:
+      summary: List recent anonymous-behavior response/rollup history for a tenant.
+      tags: [Anonymous Behavior]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: periodDays
+          in: query
+          schema:
+            type: integer
+        - name: segmentType
+          in: query
+          schema:
+            type: string
+            enum: [source, campaign, device]
+        - name: segmentValue
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Behavior response history retrieved successfully.
+        '400':
+          description: tenantId missing, or segmentType/segmentValue invalid/mismatched.
+        '500':
+          description: Failed to retrieve behavior response history.
+
+  /anonymous-behavior/refresh-context:
+    post:
+      summary: Refresh recent anonymous-behavior rollups and AI-generated contexts for a tenant.
+      tags: [Anonymous Behavior]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                lookbackDays:
+                  type: integer
+                  description: Clamped between 1 and 30 (default 14); further clamped to a max of 3 for the rollup refresh call.
+      responses:
+        '200':
+          description: Behavior history context refreshed successfully.
+        '400':
+          description: tenantId missing.
+        '500':
+          description: Failed to refresh behavior history context.
+
+  /click-stream:
+    get:
+      summary: List click-stream events for the tenant (paginated).
+      tags: [Click Stream]
+      security:
+        - TenantIdAuth: []
+          UserIdAuth: []
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+          description: One of 100, 250, 500, or 1000 (default 100).
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Click stream retrieved successfully.
+        '400':
+          description: Tenant context missing, or pageSize/cursor invalid.
+        '401':
+          description: Authentication (x-user-id) is required.
+        '500':
+          description: Failed to retrieve click stream.
+
+  /outreach/emails:
+    get:
+      summary: List Signal Engine emails for the tenant with optional filters (paginated).
+      tags: [Emails]
+      security:
+        - TenantIdAuth: []
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: days
+          in: query
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: emailAddress
+          in: query
+          schema:
+            type: string
+        - name: campaignId
+          in: query
+          schema:
+            type: string
+        - name: planId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Emails retrieved successfully.
+        '401':
+          description: Tenant context is required.
+        '500':
+          description: Unable to retrieve emails.
+
+  /outreach/emails/{emailId}:
+    get:
+      summary: Get a single Signal Engine email by ID.
+      tags: [Emails]
+      security:
+        - TenantIdAuth: []
+      parameters:
+        - name: emailId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email retrieved successfully.
+        '401':
+          description: Tenant context is required.
+        '404':
+          description: Email not found.
+        '500':
+          description: Unable to retrieve email.
+
+  /outreach/catalyst-runs:
+    get:
+      summary: List Catalyst runs for the tenant.
+      tags: [Catalyst Runs]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Catalyst runs retrieved successfully.
+        '401':
+          description: Tenant context is required.
+        '500':
+          description: Unable to retrieve Catalyst runs.
+    post:
+      summary: Create a new Catalyst run.
+      tags: [Catalyst Runs]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform Catalyst-run fields merged onto the stored record.
+              properties:
+                createdByUserId:
+                  type: string
+                createdByUserEmail:
+                  type: string
+              additionalProperties: true
+      responses:
+        '201':
+          description: Catalyst run created successfully.
+        '401':
+          description: Tenant context is required.
+        '500':
+          description: Unable to create Catalyst run.
+
+  /outreach/catalyst-runs/{runId}:
+    patch:
+      summary: Finalize (update) a Catalyst run.
+      tags: [Catalyst Runs]
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform fields merged onto the stored Catalyst run record.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Catalyst run updated successfully.
+        '401':
+          description: Tenant context is required.
+        '500':
+          description: Unable to update Catalyst run.
+
+  /outreach/follow-up-owners:
+    get:
+      summary: List distinct follow-up owners for the tenant's outreach contacts.
+      tags: [Follow-Up Owners]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Follow-up owners retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve follow-up owners.
+
+  /outreach/campaigns:
+    get:
+      summary: List campaigns for the tenant (paginated, searchable).
+      tags: [Campaigns]
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: orderBy
+          in: query
+          schema:
+            type: string
+            default: timeStamp
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaigns retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve campaigns.
+    post:
+      summary: Create a new campaign.
+      tags: [Campaigns]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform campaign fields merged onto the stored record.
+              properties:
+                name:
+                  type: string
+                subject:
+                  type: string
+                status:
+                  type: string
+                sequenceStatus:
+                  type: string
+                queue:
+                  type: array
+                  items:
+                    type: object
+                sent:
+                  type: array
+                  items:
+                    type: object
+                nextContact:
+                  type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Campaign created.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to create campaign.
+
+  /outreach/campaigns/{id}:
+    get:
+      summary: Get a single campaign by ID.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign retrieved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to retrieve campaign.
+    put:
+      summary: Update a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform campaign fields merged onto the stored record.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Campaign updated.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to update campaign.
+    delete:
+      summary: Delete a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign deleted.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to delete campaign.
+
+  /outreach/campaigns/{id}/emails:
+    get:
+      summary: List emails sent for a specific campaign (paginated).
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: orderBy
+          in: query
+          schema:
+            type: string
+            default: date
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Campaign emails retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve emails.
+
+  /outreach/campaigns/{id}/contact-progress:
+    get:
+      summary: Get per-contact sequence progress for a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign contact progress retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve campaign contact progress.
+
+  /outreach/campaigns/{id}/resolve-audience:
+    post:
+      summary: Resolve (match and cache) the target audience for a campaign, including a Lead Vault preview.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  default: 200
+      responses:
+        '200':
+          description: Campaign audience resolved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to resolve campaign audience.
+
+  /outreach/campaigns/{id}/lead-vault-preview:
+    get:
+      summary: Preview Lead Vault audience for an existing campaign's current queue.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 200
+      responses:
+        '200':
+          description: Lead Vault audience preview ready.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to preview Lead Vault audience.
+
+  /outreach/campaigns/lead-vault-preview:
+    post:
+      summary: Preview Lead Vault audience for a not-yet-created (draft) campaign queue.
+      tags: [Campaigns]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  default: 200
+                queue:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Lead Vault audience preview ready.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to preview Lead Vault audience.
+
+  /outreach/campaigns/lead-vault-activate:
+    post:
+      summary: Consume/activate Lead Vault contacts into a draft campaign queue (spends Lead Vault usage).
+      tags: [Campaigns]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  default: 200
+                queue:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Lead Vault contacts added to draft queue.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to activate Lead Vault contacts.
+
+  /outreach/campaigns/{id}/generate-step-drafts:
+    post:
+      summary: Generate AI drafts for all unapproved sequence steps in a campaign.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign step drafts generated.
+        '400':
+          description: Campaign has no sequence steps to draft.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to generate campaign step drafts.
+
+  /outreach/campaigns/{id}/test-send:
+    post:
+      summary: Send a test email for a campaign (or its sequence steps) to a recipient.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipientEmail:
+                  type: string
+      responses:
+        '200':
+          description: Campaign test email(s) sent.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to send campaign test email.
+
+  /outreach/campaigns/{id}/sequence-steps/{stepId}:
+    patch:
+      summary: Update a single sequence step on a campaign (e.g. edit a draft, which invalidates its approval).
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform sequence-step fields merged onto the stored step.
+              properties:
+                draftSubject:
+                  type: string
+                draftBody:
+                  type: string
+                draftText:
+                  type: string
+                draftStatus:
+                  type: string
+                draftSource:
+                  type: string
+                draftQuality:
+                  type: string
+              additionalProperties: true
+      responses:
+        '200':
+          description: Campaign step updated.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to update campaign step.
+
+  /outreach/campaigns/{id}/sequence-steps/{stepId}/approve:
+    post:
+      summary: Approve a campaign sequence step, freezing its draft content.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign step approved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to approve campaign step.
+
+  /outreach/campaigns/{id}/sequence-steps/{stepId}/regenerate:
+    post:
+      summary: Regenerate the AI draft for a single (unapproved) sequence step.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign step regenerated.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign or campaign step not found.
+        '409':
+          description: Approved steps are frozen until edited or unapproved.
+        '500':
+          description: Unable to regenerate campaign step (or regeneration failed).
+
+  /outreach/campaigns/{id}/recover-sequence:
+    post:
+      summary: Diagnose and reschedule a sequence campaign's stuck/waiting contacts.
+      tags: [Campaigns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recovery complete (includes rescheduled/skipped counts).
+        '400':
+          description: Campaign is not a sequence campaign.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Unable to recover stuck sequence campaign.
+
+  /outreach/access:
+    get:
+      summary: Get the current tenant/user's outreach feature access and entitlement status.
+      tags: [Composer]
+      security: []
+      responses:
+        '200':
+          description: Outreach access retrieved.
+        '500':
+          description: Unable to retrieve outreach access.
+
+  /outreach/campaigns/evaluate-idea:
+    post:
+      summary: Evaluate a freeform campaign idea (title/idea/audience/offer) and return a scored draft proposal. Works without tenant context (public preview mode).
+      tags: [Campaigns]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                idea:
+                  type: string
+                problemStatement:
+                  type: string
+                  description: Used as a fallback for idea if idea is omitted.
+                audience:
+                  type: string
+                offer:
+                  type: string
+                urgency:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Campaign idea evaluated.
+        '400':
+          description: Campaign idea is required.
+        '500':
+          description: Unable to evaluate campaign idea.
+
+  /outreach/campaigns/create-from-idea:
+    post:
+      summary: Create a campaign directly from an evaluated idea, drafting its sequence steps.
+      tags: [Campaigns]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                idea:
+                  type: string
+                audience:
+                  type: string
+                offer:
+                  type: string
+                urgency:
+                  type: string
+                notes:
+                  type: string
+                useImprovedIdea:
+                  type: boolean
+                  default: true
+                forceCreate:
+                  type: boolean
+                  description: Bypass the idea-quality gate.
+      responses:
+        '201':
+          description: Campaign created from idea.
+        '401':
+          description: Tenant context required.
+        '422':
+          description: Campaign idea needs improvement before it can be created (unless forceCreate is set).
+        '500':
+          description: Unable to create campaign from idea.
+
+  /outreach/contacts:
+    get:
+      summary: List contacts usable by the outreach composer.
+      tags: [Composer]
+      responses:
+        '200':
+          description: Outreach contacts retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve outreach contacts.
+
+  /outreach/contacts/by-email:
+    get:
+      summary: Get a composer contact by email address.
+      tags: [Composer]
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact retrieved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Contact not found.
+        '500':
+          description: Unable to retrieve contact.
+
+  /outreach/contacts/{contactId}:
+    get:
+      summary: Get a composer contact by ID.
+      tags: [Composer]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact retrieved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Contact not found.
+        '500':
+          description: Unable to retrieve contact.
+    put:
+      summary: Update a contact used by the outreach composer.
+      tags: [Composer]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform contact fields.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Contact updated.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Contact not found.
+        '500':
+          description: Unable to update contact.
+
+  /outreach/composer-handoffs/{handoffId}:
+    get:
+      summary: Get a prepared outreach composer handoff by ID.
+      tags: [Composer]
+      parameters:
+        - name: handoffId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prepared composer handoff retrieved.
+        '401':
+          description: Tenant context required.
+        '404':
+          description: Prepared composer handoff not found.
+        '500':
+          description: Unable to retrieve the prepared handoff.
+
+  /outreach/contacts/{contactId}/log-email:
+    post:
+      summary: Log sent-email activity against a contact from the composer.
+      tags: [Composer]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                html:
+                  type: string
+                lastContacted:
+                  type: string
+                sentConfirmed:
+                  type: boolean
+      responses:
+        '200':
+          description: Sent email activity logged.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Contact not found.
+        '500':
+          description: Unable to log sent email activity.
+
+  /outreach/outbox-cockpit/bootstrap:
+    get:
+      summary: Bootstrap the Outbox cockpit - momentum threads, summary counts, composer reminders, activity feed, approval items, sender configuration, and incident audit.
+      tags: [Momentum / Outbox]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: activityLimit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Outbox cockpit bootstrap retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve outbox cockpit bootstrap.
+
+  /outreach/momentum-threads:
+    get:
+      summary: List saved momentum (outbox) threads for the tenant (paginated).
+      tags: [Momentum / Outbox]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Momentum threads retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve momentum threads.
+    post:
+      summary: Create or update (upsert) a momentum thread.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform momentum-thread fields merged onto the stored record.
+              properties:
+                id:
+                  type: string
+                contactId:
+                  type: string
+                emailAddress:
+                  type: string
+              additionalProperties: true
+      responses:
+        '200':
+          description: Momentum thread saved.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to save momentum thread.
+
+  /outreach/momentum-threads/due:
+    get:
+      summary: List momentum threads that are currently due for automated processing (diagnostics).
+      tags: [Momentum / Outbox]
+      parameters:
+        - name: nowIso
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Due momentum threads retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve due momentum threads.
+
+  /outreach/momentum-threads/process-due:
+    post:
+      summary: Process (advance) all due momentum threads server-side for the tenant.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nowIso:
+                  type: string
+                limit:
+                  type: integer
+                dryRun:
+                  type: boolean
+      responses:
+        '200':
+          description: Momentum queue cycle processed.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to process due momentum threads.
+
+  /outreach/momentum-threads/operator-takeover:
+    post:
+      summary: Process after-hours operator takeover for eligible waiting momentum threads.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nowIso:
+                  type: string
+                limit:
+                  type: integer
+                dryRun:
+                  type: boolean
+                timezone:
+                  type: string
+      responses:
+        '200':
+          description: After-hours operator takeover processed.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to process operator takeover (includes outreach-send entitlement errors).
+
+  /outreach/momentum-threads/manual-reply:
+    post:
+      summary: Ingest a manually pasted reply into a momentum thread.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactId:
+                  type: string
+                id:
+                  type: string
+                  description: Fallback for contactId.
+                replyText:
+                  type: string
+      responses:
+        '200':
+          description: Manual reply ingested.
+        '400':
+          description: Momentum contact id or reply text missing.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Momentum thread not found.
+        '500':
+          description: Unable to ingest manual reply.
+
+  /outreach/momentum-threads/manual-reply/analyze:
+    post:
+      summary: Analyze a manually pasted reply with AI assistance (classification, summary, suggested draft).
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactId:
+                  type: string
+                id:
+                  type: string
+                  description: Fallback for contactId.
+                replyText:
+                  type: string
+                alternateAngle:
+                  type: boolean
+                preferredPlaybook:
+                  type: string
+      responses:
+        '200':
+          description: Manual reply analyzed.
+        '400':
+          description: Momentum contact id or reply text missing.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Momentum thread not found.
+        '500':
+          description: Unable to analyze manual reply.
+
+  /outreach/momentum-threads/manual-reply/send-draft:
+    post:
+      summary: Send an approved AI-drafted reply from a momentum thread.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactId:
+                  type: string
+                id:
+                  type: string
+                  description: Fallback for contactId.
+                draftSubject:
+                  type: string
+                draftBody:
+                  type: string
+      responses:
+        '200':
+          description: Reply draft sent.
+        '400':
+          description: Momentum contact id missing.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Momentum thread not found.
+        '500':
+          description: Unable to send reply draft (includes outreach-send entitlement errors).
+
+  /outreach/momentum-threads/draft-assist:
+    post:
+      summary: Generate an AI-assisted outbound draft for a momentum thread.
+      tags: [Momentum / Outbox]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactId:
+                  type: string
+                id:
+                  type: string
+                  description: Fallback for contactId.
+                purpose:
+                  type: string
+                  default: needs_you
+      responses:
+        '200':
+          description: Momentum draft assistance generated.
+        '400':
+          description: Momentum contact id missing.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Momentum thread not found.
+        '500':
+          description: Unable to generate momentum draft assistance.
+
+  /outreach/momentum-threads/{contactId}/composer-handoff:
+    post:
+      summary: Create a prepared composer handoff from a momentum thread's context.
+      tags: [Momentum / Outbox]
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform handoff context fields.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Momentum composer handoff created.
+        '400':
+          description: tenantId and contactId are required.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Momentum thread not found.
+        '500':
+          description: Unable to create the momentum composer handoff.
+
+  /outreach/mailboxes:
+    get:
+      summary: List connected mailbox configurations for the tenant.
+      tags: [Mailboxes]
+      responses:
+        '200':
+          description: Mailbox configurations retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve mailbox configurations.
+    post:
+      summary: Create or update (upsert) a mailbox configuration.
+      tags: [Mailboxes]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                mailboxId:
+                  type: string
+                emailAddress:
+                  type: string
+                displayName:
+                  type: string
+                provider:
+                  type: string
+                imap:
+                  type: object
+                smtp:
+                  type: object
+                secret:
+                  type: string
+                  description: Mailbox app password (encrypted at rest).
+                status:
+                  type: string
+                isPrimary:
+                  type: boolean
+      responses:
+        '200':
+          description: Mailbox configuration saved.
+        '401':
+          description: Tenant context or authentication required.
+        '500':
+          description: Unable to save mailbox configuration (e.g. missing email address or app password).
+
+  /outreach/mailboxes/test:
+    post:
+      summary: Test an IMAP/SMTP mailbox connection without saving it.
+      tags: [Mailboxes]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailAddress:
+                  type: string
+                provider:
+                  type: string
+                imap:
+                  type: object
+                smtp:
+                  type: object
+                secret:
+                  type: string
+      responses:
+        '200':
+          description: Mailbox connection verified.
+        '401':
+          description: Tenant context or authentication required.
+        '500':
+          description: Unable to verify mailbox connection (e.g. missing app password).
+
+  /outreach/mailboxes/{mailboxId}/sync:
+    post:
+      summary: Trigger a sync of a connected mailbox.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mailbox sync completed.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to sync mailbox.
+
+  /outreach/mailboxes/{mailboxId}/messages:
+    get:
+      summary: List messages in a connected mailbox.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Mailbox messages retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve mailbox messages.
+
+  /outreach/mailboxes/{mailboxId}/messages/{messageId}:
+    get:
+      summary: Get a single mailbox message's detail.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mailbox message retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve mailbox message.
+    delete:
+      summary: Delete a mailbox message.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mailbox message deleted.
+        '401':
+          description: Tenant context or authentication required.
+        '500':
+          description: Unable to delete mailbox message.
+
+  /outreach/mailboxes/{mailboxId}/messages/{messageId}/reply:
+    post:
+      summary: Send a reply to a mailbox message.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                html:
+                  type: string
+                body:
+                  type: string
+                text:
+                  type: string
+                  description: Fallback for body.
+      responses:
+        '200':
+          description: Reply sent.
+        '401':
+          description: Tenant context or authentication required.
+        '404':
+          description: Mailbox not connected.
+        '500':
+          description: Unable to send mailbox reply.
+
+  /outreach/mailboxes/{mailboxId}:
+    delete:
+      summary: Disconnect (delete) a mailbox configuration.
+      tags: [Mailboxes]
+      parameters:
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mailbox disconnected.
+        '401':
+          description: Tenant context or authentication required.
+        '500':
+          description: Unable to disconnect mailbox.
+
+  /outreach/social-strategy:
+    get:
+      summary: Get the tenant's saved marketing/social strategy.
+      tags: [Social]
+      responses:
+        '200':
+          description: Marketing operator strategy retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve strategy.
+    put:
+      summary: Save the tenant's marketing/social strategy.
+      tags: [Social]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                strategy:
+                  type: object
+      responses:
+        '200':
+          description: Marketing operator strategy saved.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to save strategy.
+
+  /outreach/social-strategy/generate:
+    post:
+      summary: Generate a marketing/social strategy with AI assistance.
+      tags: [Social]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                strategy:
+                  type: object
+                  description: Existing/seed strategy to refine.
+                useLandingPage:
+                  type: boolean
+      responses:
+        '200':
+          description: Marketing operator strategy generated.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to generate strategy.
+
+  /outreach/social-strategy/next-action:
+    get:
+      summary: Get the next recommended marketing action for the tenant.
+      tags: [Social]
+      responses:
+        '200':
+          description: Next marketing action retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve next marketing action.
+
+  /outreach/social-strategy/operator-status:
+    get:
+      summary: Get the marketing operator's current run status for the day.
+      tags: [Social]
+      responses:
+        '200':
+          description: Marketing operator status retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve operator status.
+
+  /outreach/social-strategy/run:
+    post:
+      summary: Run a marketing operator phase (morning review, midday check, or end-of-day report).
+      tags: [Social]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum: [morning_review, midday_check, end_of_day]
+                date:
+                  type: string
+                  description: Optional forced date key (YYYY-MM-DD) to run the phase for.
+      responses:
+        '200':
+          description: Marketing operator phase completed.
+        '400':
+          description: phase must be morning_review, midday_check, or end_of_day.
+        '401':
+          description: Authentication required.
+        '500':
+          description: Unable to run marketing operator phase.
+
+  /outreach/social-posts:
+    get:
+      summary: List saved social posts for the tenant with optional filters.
+      tags: [Social]
+      parameters:
+        - name: sourceType
+          in: query
+          schema:
+            type: string
+        - name: sourceId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: statuses
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of statuses.
+        - name: postIds
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of post IDs.
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Social posts retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve social posts.
+    post:
+      summary: Create (save) a new social post.
+      tags: [Social]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform social-post fields.
+              properties:
+                sourceContentReference:
+                  type: object
+                sourceSnapshot:
+                  type: object
+                platform:
+                  type: string
+                content:
+                  type: string
+                status:
+                  type: string
+              additionalProperties: true
+      responses:
+        '200':
+          description: Social post saved.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '500':
+          description: Unable to save social post.
+
+  /outreach/social-posts/generate:
+    post:
+      summary: Generate AI social post drafts from a source content reference for one or more platforms.
+      tags: [Social]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceContentReference:
+                  type: object
+                sourceSnapshot:
+                  type: object
+                platforms:
+                  type: array
+                  items:
+                    type: string
+                strategyContext:
+                  type: object
+                identityContext:
+                  type: object
+                offerContext:
+                  type: object
+                autoApprove:
+                  type: boolean
+      responses:
+        '200':
+          description: Social drafts generated.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '500':
+          description: Unable to generate social drafts.
+
+  /outreach/social-posts/{postId}:
+    put:
+      summary: Update an existing social post.
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Freeform social-post fields.
+              additionalProperties: true
+      responses:
+        '200':
+          description: Social post updated.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '500':
+          description: Unable to update social post.
+    delete:
+      summary: Delete a social post.
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Social post deleted.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '404':
+          description: Social post not found.
+        '500':
+          description: Unable to delete social post.
+
+  /outreach/social-posts/{postId}/refine:
+    post:
+      summary: Refine (rewrite in place) an existing draft social post.
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceContentReference:
+                  type: object
+                sourceSnapshot:
+                  type: object
+                strategyContext:
+                  type: object
+                identityContext:
+                  type: object
+      responses:
+        '200':
+          description: Social draft refined.
+        '400':
+          description: Published posts cannot be rewritten in the draft workspace.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '404':
+          description: Social post not found.
+        '500':
+          description: Unable to refine social draft.
+
+  /outreach/social-posts/{postId}/publish:
+    post:
+      summary: Publish an approved social post to its connected platform account.
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                socialAccountId:
+                  type: string
+      responses:
+        '200':
+          description: Social post published.
+        '400':
+          description: Only approved social posts can be published.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '404':
+          description: Social post not found.
+        '500':
+          description: Unable to publish social post.
+
+  /outreach/social-posts/{postId}/suggest-follow-up:
+    post:
+      summary: Generate a follow-up suggestion for a social post after engagement is captured.
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                engagementSignal:
+                  type: object
+      responses:
+        '200':
+          description: Follow-up suggestion created.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Free-plan social post limit reached.
+        '404':
+          description: Social post not found.
+        '500':
+          description: Unable to suggest follow-up.
+
+  /outreach/social/bluesky/niche-posts:
+    get:
+      summary: Search Bluesky for niche posts relevant to the tenant's connected account, for engagement targeting.
+      tags: [Social]
+      parameters:
+        - name: keywords
+          in: query
+          schema:
+            type: string
+            default: momentum business automation
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Niche posts retrieved (or an empty list with an explanatory message if Bluesky is not connected).
+        '400':
+          description: Missing tenantId.
+
+  /outreach/social-posts/{postId}/bluesky-first-comment:
+    post:
+      summary: Post the first comment/reply on a just-published Bluesky post (used to seed engagement).
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replyToUri:
+                  type: string
+                replyToCid:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: First comment posted to Bluesky.
+        '400':
+          description: Missing tenantId, or missing replyToUri/replyToCid/content, or no Bluesky account connected/needs reconnection.
+        '500':
+          description: Unable to post first comment.
+
+  /outreach/social-posts/{postId}/expand-thread:
+    post:
+      summary: Use AI to expand a single social post into a multi-part thread (Bluesky/Threads).
+      tags: [Social]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thread expanded into multiple parts.
+        '400':
+          description: Missing tenantId/postId, or the post has no content to expand.
+        '404':
+          description: Post not found.
+        '500':
+          description: Thread expansion did not produce usable content.
+        '503':
+          description: AI service not configured (OPENAI_API_KEY missing).
+
+  /outreach/social/bootstrap-test:
+    get:
+      summary: Trivial connectivity check for the social bootstrap route (returns a static ok payload).
+      tags: [Social]
+      security: []
+      responses:
+        '200':
+          description: Route reachable.
+
+  /outreach/social/bootstrap:
+    get:
+      summary: Bootstrap the Social cockpit - posts, connected accounts, RSS config, strategy summary, cadence summary, identity state, and recent activity.
+      tags: [Social]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: activityLimit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: debugSlim
+          in: query
+          schema:
+            type: string
+          description: Set to "true" to trim response payload size for debugging.
+        - name: sourceType
+          in: query
+          schema:
+            type: string
+        - name: sourceId
+          in: query
+          schema:
+            type: string
+        - name: statuses
+          in: query
+          schema:
+            type: string
+        - name: postIds
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Social bootstrap retrieved.
+        '401':
+          description: Tenant context required.
+        '500':
+          description: Unable to retrieve social bootstrap (or timed out).

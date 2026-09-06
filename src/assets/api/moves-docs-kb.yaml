@@ -1,0 +1,966 @@
+openapi: 3.0.0
+info:
+  title: TODD Moves, Docs & Knowledge Base API
+  description: >-
+    API for TODD's Moves (tasks), Docs (documents), and Knowledge Base
+    (response flows) features, plus their Stripe subscription billing
+    endpoints.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    XUserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Authenticated user id. Read (not verified/signed) by
+        attachAuthContext middleware onto req.user.uid.
+    XUserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Authenticated user email (x-email is also accepted as an alias).
+        Read (not verified/signed) by attachAuthContext middleware onto
+        req.user.email.
+paths:
+  /moves:
+    post:
+      summary: >-
+        Create a task ("Move"). Requires a title; enforces the free-plan
+        task quota before creating.
+      tags: [Moves]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                dueDate:
+                  type: string
+                progress:
+                  type: number
+                  description: 0-100
+                status:
+                  type: string
+                  enum: [not-started, in-progress, completed, on-hold, cancelled]
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                isCompleted:
+                  type: boolean
+                needsAttention:
+                  type: boolean
+                isEditing:
+                  type: boolean
+                superseded:
+                  type: boolean
+                supersededAt:
+                  type: string
+                supersededReason:
+                  type: string
+                taskTypeId:
+                  type: string
+                projectId:
+                  type: string
+                parentTaskId:
+                  type: string
+                contactIds:
+                  type: array
+                  items:
+                    type: string
+                contacts:
+                  type: array
+                  items:
+                    type: object
+                documents:
+                  type: array
+                  items:
+                    type: object
+                images:
+                  type: array
+                  items:
+                    type: object
+                subTasks:
+                  type: array
+                  items:
+                    type: object
+                startDate:
+                  type: string
+                timerStartTime:
+                  type: string
+                timerEndTime:
+                  type: string
+                extensionDays:
+                  type: number
+                timeToComplete:
+                  type: object
+                url:
+                  type: string
+                createdAt:
+                  type: string
+                updatedAt:
+                  type: string
+                ownerId:
+                  type: string
+                tenantId:
+                  type: string
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Payload failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or free-plan task quota exceeded
+        '500':
+          description: Unexpected server error
+    get:
+      summary: List tasks for the current tenant, optionally filtered by status/priority
+      tags: [Moves]
+      security: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [not-started, in-progress, completed, on-hold, cancelled]
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [low, medium, high, urgent]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Positive integer, defaults to 100
+      responses:
+        '200':
+          description: Tasks returned
+        '400':
+          description: Query failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context
+        '500':
+          description: Unexpected server error
+  /moves/{id}:
+    get:
+      summary: Retrieve a single task by id
+      tags: [Moves]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task returned
+        '400':
+          description: Task id missing from the request
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or task belongs to another tenant
+        '404':
+          description: Task not found
+        '500':
+          description: Unexpected server error
+    put:
+      summary: Update fields on a task
+      tags: [Moves]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Partial task fields to update; same shape as task creation (minus title requirement)
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                dueDate:
+                  type: string
+                progress:
+                  type: number
+                status:
+                  type: string
+                  enum: [not-started, in-progress, completed, on-hold, cancelled]
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                isCompleted:
+                  type: boolean
+                needsAttention:
+                  type: boolean
+                isEditing:
+                  type: boolean
+                taskTypeId:
+                  type: string
+                projectId:
+                  type: string
+                parentTaskId:
+                  type: string
+                contactIds:
+                  type: array
+                  items:
+                    type: string
+                contacts:
+                  type: array
+                  items:
+                    type: object
+                documents:
+                  type: array
+                  items:
+                    type: object
+                images:
+                  type: array
+                  items:
+                    type: object
+                subTasks:
+                  type: array
+                  items:
+                    type: object
+                startDate:
+                  type: string
+                timerStartTime:
+                  type: string
+                timerEndTime:
+                  type: string
+                extensionDays:
+                  type: number
+                timeToComplete:
+                  type: object
+                url:
+                  type: string
+                createdAt:
+                  type: string
+                updatedAt:
+                  type: string
+                ownerId:
+                  type: string
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Task updated
+        '400':
+          description: Task id missing, update payload empty, or payload failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or task belongs to another tenant
+        '404':
+          description: Task not found
+        '500':
+          description: Unexpected server error
+    delete:
+      summary: Delete a task
+      tags: [Moves]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task deleted
+        '400':
+          description: Task id missing from the request
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or task belongs to another tenant
+        '404':
+          description: Task not found
+        '500':
+          description: Unexpected server error
+  /moves/checkout:
+    post:
+      summary: >-
+        Create a Stripe Checkout subscription session for Moves paid access
+        and record it in STRIPE_CHECKOUTS
+      tags: [Moves, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId]
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                  description: Used as a fallback tenant id if tenantId is not provided
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                priceId:
+                  type: string
+                  description: Must start with "price_"; falls back to STRIPE_MOVES_PRICE_ID env var
+      responses:
+        '200':
+          description: Checkout session created
+        '400':
+          description: tenantId is required
+        '500':
+          description: Stripe not configured, price id not configured, or checkout creation failed
+  /moves/checkout/confirm:
+    post:
+      summary: >-
+        Confirm a completed Stripe Checkout session and activate Moves paid
+        access on the tenant
+      tags: [Moves, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+                  description: Alternate key accepted alongside sessionId
+      responses:
+        '200':
+          description: Checkout confirmed and Moves paid access activated
+        '400':
+          description: sessionId is required, or no tenant id found on the checkout session
+        '402':
+          description: Checkout session has not completed with an active subscription
+        '500':
+          description: Stripe not configured, or confirmation failed
+  /docs:
+    post:
+      summary: Create a document record (upload or draft)
+      tags: [Docs]
+      security:
+        - XUserIdAuth: []
+        - XUserEmailAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [document, image, video, draft, rfp, proposal]
+                recordKind:
+                  type: string
+                  enum: [upload, draft]
+                src:
+                  type: string
+                title:
+                  type: string
+                topic:
+                  type: string
+                author:
+                  type: string
+                htmlContent:
+                  type: string
+                uploadDate:
+                  type: string
+                createdAt:
+                  type: string
+                updatedAt:
+                  type: string
+                status:
+                  type: string
+                contactId:
+                  type: string
+                storagePath:
+                  type: string
+                mimeType:
+                  type: string
+                sizeBytes:
+                  type: number
+                dueDate:
+                  type: string
+                  description: Accepted as a string or number
+                isPendingUpload:
+                  type: boolean
+                summary:
+                  type: string
+                description:
+                  type: string
+                ownerId:
+                  type: string
+                tenantId:
+                  type: string
+      responses:
+        '201':
+          description: Document created
+        '400':
+          description: Payload failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or free/paid plan document quota reached
+        '500':
+          description: Unexpected server error
+    get:
+      summary: List documents for the current tenant, optionally filtered by type/recordKind
+      tags: [Docs]
+      security:
+        - XUserIdAuth: []
+        - XUserEmailAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [document, image, video, draft, rfp, proposal]
+        - name: recordKind
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [upload, draft]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Positive integer, defaults to 100
+        - name: includeDrafts
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Documents returned
+        '400':
+          description: Query failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context
+        '500':
+          description: Unexpected server error
+  /docs/{id}:
+    get:
+      summary: Retrieve a single document by id
+      tags: [Docs]
+      security:
+        - XUserIdAuth: []
+        - XUserEmailAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document returned
+        '400':
+          description: Document id missing from the request
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or document belongs to another tenant
+        '404':
+          description: Document not found
+        '500':
+          description: Unexpected server error
+    put:
+      summary: Update fields on a document
+      tags: [Docs]
+      security:
+        - XUserIdAuth: []
+        - XUserEmailAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Partial document fields to update; same shape as document creation (minus name requirement)
+              properties:
+                src:
+                  type: string
+                name:
+                  type: string
+                title:
+                  type: string
+                topic:
+                  type: string
+                author:
+                  type: string
+                type:
+                  type: string
+                  enum: [document, image, video, draft, rfp, proposal]
+                recordKind:
+                  type: string
+                  enum: [upload, draft]
+                htmlContent:
+                  type: string
+                uploadDate:
+                  type: string
+                createdAt:
+                  type: string
+                updatedAt:
+                  type: string
+                status:
+                  type: string
+                dueDate:
+                  type: string
+                contactId:
+                  type: string
+                storagePath:
+                  type: string
+                mimeType:
+                  type: string
+                sizeBytes:
+                  type: number
+                ownerId:
+                  type: string
+                tenantId:
+                  type: string
+                isPendingUpload:
+                  type: boolean
+                summary:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Document updated
+        '400':
+          description: Document id missing, update payload empty, or payload failed validation
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or document belongs to another tenant
+        '404':
+          description: Document not found
+        '500':
+          description: Unexpected server error
+    delete:
+      summary: Delete a document
+      tags: [Docs]
+      security:
+        - XUserIdAuth: []
+        - XUserEmailAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document deleted
+        '400':
+          description: Document id missing from the request
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Tenant missing from request context, or document belongs to another tenant
+        '404':
+          description: Document not found
+        '500':
+          description: Unexpected server error
+  /docs/checkout:
+    post:
+      summary: >-
+        Create a Stripe Checkout subscription session for Docs paid access,
+        resolving affiliate attribution, and record it in STRIPE_CHECKOUTS
+      tags: [Docs, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId]
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                  description: Used as a fallback tenant id if tenantId is not provided
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                priceId:
+                  type: string
+                  description: Must start with "price_"; falls back to STRIPE_DOCS_PRICE_ID env var
+                referrerUid:
+                  type: string
+                  description: Explicit affiliate referrer id used for attribution resolution
+      responses:
+        '200':
+          description: Checkout session created
+        '400':
+          description: tenantId is required
+        '500':
+          description: Stripe not configured, price id not configured, or checkout creation failed
+  /docs/checkout/confirm:
+    post:
+      summary: >-
+        Confirm a completed Stripe Checkout session, activate Docs paid
+        access on the tenant, and record an affiliate conversion if a
+        referrer is attributed
+      tags: [Docs, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+                  description: Alternate key accepted alongside sessionId
+      responses:
+        '200':
+          description: Checkout confirmed and Docs paid access activated
+        '400':
+          description: sessionId is required, or no tenant id found on the checkout session
+        '402':
+          description: Checkout session has not completed with an active subscription
+        '500':
+          description: Stripe not configured, or confirmation failed
+  /response-flows:
+    post:
+      summary: >-
+        Create a knowledge base entry ("response flow"); requires a
+        name/title and a question plus response/answer
+      tags: [Knowledge Base]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                title:
+                  type: string
+                question:
+                  type: string
+                response:
+                  type: string
+                answer:
+                  type: string
+                category:
+                  type: string
+                type:
+                  type: string
+                status:
+                  type: string
+                keywords:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                recommendations:
+                  type: array
+                  items:
+                    type: object
+                resources:
+                  type: array
+                  items:
+                    type: object
+                relatedDocumentIds:
+                  type: array
+                  items:
+                    type: string
+                summary:
+                  type: string
+                description:
+                  type: string
+                createdAt:
+                  type: string
+                updatedAt:
+                  type: string
+      responses:
+        '201':
+          description: Response flow created
+        '400':
+          description: Payload failed validation, or tenant missing from request context
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Free-plan response flow quota reached
+        '500':
+          description: Unexpected server error
+    get:
+      summary: List knowledge base entries for the current tenant, optionally filtered by category/type/status
+      tags: [Knowledge Base]
+      security: []
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Number between 1 and 500
+      responses:
+        '200':
+          description: Response flows returned
+        '400':
+          description: Query failed validation, or tenant missing from request context
+        '401':
+          description: No authenticated user resolved on the request context
+        '500':
+          description: Unexpected server error
+  /response-flows/{id}:
+    get:
+      summary: Retrieve a single knowledge base entry by id
+      tags: [Knowledge Base]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response flow returned
+        '400':
+          description: Tenant missing from request context
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Response flow belongs to another tenant
+        '404':
+          description: Response flow not found
+        '500':
+          description: Unexpected server error
+    put:
+      summary: Update fields on a knowledge base entry
+      tags: [Knowledge Base]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Partial response flow fields to update
+              properties:
+                name:
+                  type: string
+                title:
+                  type: string
+                question:
+                  type: string
+                response:
+                  type: string
+                answer:
+                  type: string
+                category:
+                  type: string
+                type:
+                  type: string
+                status:
+                  type: string
+                summary:
+                  type: string
+                description:
+                  type: string
+                keywords:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                relatedDocumentIds:
+                  type: array
+                  items:
+                    type: string
+                resources:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Response flow updated
+        '400':
+          description: Tenant missing from request context
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Response flow belongs to another tenant
+        '404':
+          description: Response flow not found
+        '500':
+          description: Unexpected server error
+    delete:
+      summary: Delete a knowledge base entry
+      tags: [Knowledge Base]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response flow deleted
+        '400':
+          description: Tenant missing from request context
+        '401':
+          description: No authenticated user resolved on the request context
+        '403':
+          description: Response flow belongs to another tenant
+        '404':
+          description: Response flow not found
+        '500':
+          description: Unexpected server error
+  /knowledge/checkout:
+    post:
+      summary: >-
+        Create a Stripe Checkout subscription session for Knowledge Base
+        paid access and record it in STRIPE_CHECKOUTS
+      tags: [Knowledge Base, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId]
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                  description: Used as a fallback tenant id if tenantId is not provided
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                priceId:
+                  type: string
+                  description: Must start with "price_"; falls back to STRIPE_KNOWLEDGE_PRICE_ID env var
+      responses:
+        '200':
+          description: Checkout session created
+        '400':
+          description: tenantId is required
+        '500':
+          description: Stripe not configured, price id not configured, or checkout creation failed
+  /knowledge/checkout/confirm:
+    post:
+      summary: >-
+        Confirm a completed Stripe Checkout session and activate Knowledge
+        Base paid access on the tenant
+      tags: [Knowledge Base, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+                  description: Alternate key accepted alongside sessionId
+      responses:
+        '200':
+          description: Checkout confirmed and Knowledge Base paid access activated
+        '400':
+          description: sessionId is required, or no tenant id found on the checkout session
+        '402':
+          description: Checkout session has not completed with an active subscription
+        '500':
+          description: Stripe not configured, or confirmation failed

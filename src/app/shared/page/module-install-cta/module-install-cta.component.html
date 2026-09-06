@@ -1,0 +1,39 @@
+<ng-container *ngIf="installConfig && (installState$ | async) as installState">
+    <section
+        *ngIf="!installState.isInstalled && !installState.isUnsupported && (installState.canPrompt || installState.isIosSafari)"
+        class="module-install-cta"
+        [attr.data-cy]="'module-install-cta-' + installConfig.key">
+        <div class="module-install-cta__copy">
+            <span class="module-install-cta__eyebrow">Install This App</span>
+            <strong>{{ installConfig.installLabel }}</strong>
+            <p>Install {{ installConfig.moduleName }} for faster access from your device.</p>
+        </div>
+        <button
+            class="btn-todd module-install-cta__button"
+            type="button"
+            (click)="onInstallClick()"
+            [attr.data-cy]="'module-install-button-' + installConfig.key">
+            {{ installConfig.installLabel }}
+        </button>
+    </section>
+
+    <div
+        *ngIf="showIosInstructions"
+        class="module-install-cta__modal-backdrop"
+        (click)="closeIosInstructions()">
+        <div class="module-install-cta__modal" role="dialog" aria-modal="true" [attr.aria-label]="installConfig.iosInstructionTitle" (click)="$event.stopPropagation()">
+            <button
+                class="module-install-cta__modal-close"
+                type="button"
+                aria-label="Close install instructions"
+                (click)="closeIosInstructions()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <span class="module-install-cta__eyebrow">iPhone And iPad</span>
+            <h3>{{ installConfig.iosInstructionTitle }}</h3>
+            <ol>
+                <li *ngFor="let step of installConfig.iosInstructionSteps">{{ step }}</li>
+            </ol>
+        </div>
+    </div>
+</ng-container>

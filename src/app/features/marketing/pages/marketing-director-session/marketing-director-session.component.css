@@ -1,0 +1,49 @@
+:host { display:block; }
+.maya-screen { --maya-navy:#0f172a; --maya-muted:#667085; --maya-border:#dfe4ea; --maya-bg:#f6f8fa; --maya-accent:var(--color-primary); min-height:100vh; background:var(--maya-bg); color:var(--maya-navy); padding-bottom:88px; }
+.maya-main { width:min(100%, 920px); margin:0 auto; padding:clamp(22px, 5vw, 64px) 20px 32px; }
+.maya-conversation { min-height:calc(100vh - 150px); display:flex; flex-direction:column; justify-content:center; }
+.maya-welcome { width:min(100%, 720px); margin:auto; }
+.maya-logo { display:block; width:min(280px, 68vw); height:auto; max-height:110px; object-fit:contain; object-position:center; border-radius:0; margin:0 auto 26px; }
+.maya-eyebrow { color:var(--maya-accent); font-weight:800; font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; }
+.maya-eyebrow--centered { text-align:center; margin-bottom:18px; }
+h1 { margin:12px 0 10px; font-size:clamp(2.35rem, 6vw, 4.6rem); line-height:.98; letter-spacing:-.06em; color:var(--maya-navy); }
+.maya-subtitle { max-width:600px; color:var(--maya-muted); font-size:clamp(1rem, 2vw, 1.2rem); line-height:1.6; margin:0 0 30px; }
+.maya-welcome-composer { padding:14px; border:1px solid var(--maya-border); border-radius:25px; background:#fff; box-shadow:0 16px 38px rgba(15,23,42,.06); }
+.maya-welcome textarea, .maya-compact-composer textarea { display:block; width:100%; border:0; outline:0; resize:none; color:var(--maya-navy); background:transparent; font:inherit; line-height:1.5; }
+.maya-welcome textarea { min-height:108px; padding:8px 10px 14px; font-size:1.1rem; }
+textarea::placeholder { color:#8a94a6; }
+.maya-primary-button { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; border:0; border-radius:15px; padding:15px 20px; color:#fff; background:var(--maya-accent); font-weight:800; font-size:1rem; cursor:pointer; text-decoration:none; }
+.maya-primary-button:hover { background:var(--color-primary-hover); }
+.maya-welcome-actions { display:flex; align-items:center; gap:8px; }
+.maya-welcome-actions .maya-primary-button { flex:1; }
+.maya-welcome-reset { flex:0 0 42px; background:var(--maya-bg); color:var(--maya-muted); }
+.maya-prompt-chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+.maya-prompt-chips button, .maya-secondary-button { border:1px solid var(--maya-border); border-radius:999px; padding:11px 15px; background:#fff; color:var(--maya-navy); font:inherit; cursor:pointer; text-decoration:none; }
+.maya-prompt-chips button span { color:var(--maya-accent); margin-left:8px; }
+.maya-version-stamp { text-align:center; margin-top:22px; color:var(--maya-muted); font-size:.7rem; letter-spacing:.04em; opacity:.65; }
+.maya-messages { display:flex; flex-direction:column; gap:16px; width:min(100%, 760px); margin:0 auto; padding-bottom:150px; }
+.maya-message { padding:17px 19px; border:1px solid var(--maya-border); border-radius:20px; background:#fff; line-height:1.65; }
+.maya-message--user { align-self:flex-end; max-width:82%; border-color:var(--tl-blue-border); background:var(--tl-blue-subtle); }
+.maya-message-role { color:var(--maya-muted); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.maya-message-content { margin-top:6px; white-space:pre-wrap; }
+.maya-message-content { min-width:0; overflow-x:hidden; }
+.maya-message-content img { display:block; width:auto !important; max-width:100% !important; height:auto !important; max-height:min(70vh,560px); object-fit:contain; }
+:host ::ng-deep .maya-message-content img { display:block !important; width:auto !important; max-width:100% !important; height:auto !important; max-height:min(70vh,560px) !important; object-fit:contain !important; }
+.maya-thinking { display:flex; align-items:center; gap:5px; margin-top:8px; color:var(--maya-muted); }.maya-thinking span { width:7px; height:7px; border-radius:50%; background:var(--maya-accent); animation:mayaPulse 1.2s infinite; }.maya-thinking span:nth-child(2){animation-delay:.15s}.maya-thinking span:nth-child(3){animation-delay:.3s}
+.maya-upgrade { width:min(100%, 760px); margin:0 auto 16px; padding:20px; border:1px solid var(--maya-border); border-radius:20px; background:#fff; }.maya-upgrade h2 { margin:10px 0 0; font-size:1.2rem; }.maya-upgrade p { color:var(--maya-muted); line-height:1.55; }.maya-actions { display:flex; gap:10px; flex-wrap:wrap; }.maya-actions .maya-primary-button,.maya-actions .maya-secondary-button { width:auto; }
+.maya-compact-composer { position:fixed; left:50%; bottom:70px; transform:translateX(-50%); z-index:5; display:grid; grid-template-columns:1fr 42px 48px; gap:8px; align-items:center; width:min(calc(100% - 32px), 760px); padding:9px 10px 9px 16px; border:1px solid var(--maya-border); border-radius:19px; background:rgba(255,255,255,.96); box-shadow:0 12px 28px rgba(15,23,42,.12); }
+.maya-compact-composer textarea { min-height:28px; }.maya-send,.maya-reset { border:0; border-radius:13px; width:42px; height:42px; cursor:pointer; }.maya-send { width:48px; background:var(--maya-accent); color:#fff; font-size:1.2rem; }.maya-reset { background:var(--maya-bg); color:var(--maya-muted); font-size:1.2rem; }.maya-status { position:fixed; bottom:143px; left:50%; transform:translateX(-50%); z-index:6; color:var(--maya-muted); font-size:.82rem; }
+.maya-apps-card { position:fixed; right:18px; bottom:82px; z-index:9; width:min(390px,calc(100% - 28px)); padding:16px; border:1px solid var(--maya-border); border-radius:22px; background:#fff; box-shadow:0 18px 44px rgba(15,23,42,.18); }.maya-apps-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; color:var(--maya-navy); }.maya-apps-card-header button { border:0; background:transparent; color:var(--maya-muted); font-size:1.5rem; cursor:pointer; }.maya-app-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; }.maya-app-grid a { display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--maya-navy); font-size:.72rem; text-align:center; text-decoration:none; }.maya-app-grid img { width:34px; height:34px; object-fit:contain; border-radius:9px; }.maya-bottom-nav { position:fixed; left:0; right:0; bottom:0; z-index:10; display:flex; justify-content:center; gap:clamp(20px,10vw,100px); min-height:70px; border-top:1px solid var(--maya-border); background:#fff; }.maya-bottom-nav a,.maya-bottom-nav-more { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:64px; gap:4px; color:var(--maya-navy); font-size:.78rem; text-decoration:none; }.maya-bottom-nav a img { width:22px; height:22px; object-fit:contain; }.maya-bottom-nav-more { border:0; background:transparent; cursor:pointer; }.maya-bottom-nav-more span { color:var(--maya-navy); font-size:1.1rem; line-height:1; }.maya-bottom-nav-more.active,.maya-bottom-nav-more.active span { color:var(--maya-accent); }
+@keyframes mayaPulse { 0%,80%,100%{opacity:.35;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+@media (max-width:600px){.maya-main{padding-inline:14px}.maya-logo{width:min(240px,78vw);max-height:90px}.maya-prompt-chips{display:grid;grid-template-columns:1fr}.maya-prompt-chips button{text-align:left}.maya-bottom-nav{gap:0;justify-content:space-around}.maya-message--user{max-width:92%}.maya-status{bottom:142px}.maya-actions>*{width:100%!important}}
+
+@media (prefers-color-scheme: dark) {
+  .maya-screen { --maya-navy:#f0f6ff; --maya-muted:#9aadc1; --maya-border:rgba(0,191,255,.18); --maya-bg:#0d1117; }
+  .maya-welcome-composer, .maya-message, .maya-upgrade, .maya-compact-composer, .maya-prompt-chips button, .maya-secondary-button, .maya-apps-card { background:#131c27; color:var(--maya-navy); border-color:var(--maya-border); }
+  .maya-welcome textarea, .maya-compact-composer textarea, .maya-message-content, .maya-message-role, .maya-upgrade h2, .maya-apps-card-header, .maya-app-grid a { color:var(--maya-navy); }
+  .maya-message--user { background:rgba(0,191,255,.12); border-color:rgba(0,191,255,.28); }
+  .maya-reset { background:#1f2d40; color:#e8f4ff; }
+  .maya-apps-card-header button { color:#9aadc1; }
+  .maya-bottom-nav { background:#10182f; border-color:#202a44; }
+  .maya-bottom-nav a,.maya-bottom-nav-more,.maya-bottom-nav-more span { color:#cbd5e1; }
+}

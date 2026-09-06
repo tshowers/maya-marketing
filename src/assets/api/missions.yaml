@@ -1,0 +1,606 @@
+openapi: 3.0.0
+info:
+  title: TODD Mission Workspace & AI Missions API
+  description: >-
+    Endpoints for the TODD Mission Workspace (Mission Outcome planning,
+    revisions, and status tracking) and the separate AI Missions feature
+    (autonomous, step-by-step AI-run missions with approval gates and an
+    activity log). Both route sets require the caller to be authenticated
+    via headers (there is no bearer-token verification in these files —
+    `attachAuthContext` only reads identity off request headers) and a
+    resolved tenant.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Tenant identifier. Read by attachAuthContext into req.user.tenantId.
+        Several Mission Workspace routes also accept a tenantId query
+        parameter as a fallback/override.
+    UserIdHeader:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Caller's user id. Read by attachAuthContext into req.user.uid.
+        readAccessGuard requires either this header or x-user-email to be
+        present; neither is cryptographically verified.
+    UserEmailHeader:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Caller's email, accepted as an alternative identity signal to
+        x-user-id. Read by attachAuthContext into req.user.email.
+security:
+  - TenantIdHeader: []
+    UserIdHeader: []
+  - TenantIdHeader: []
+    UserEmailHeader: []
+paths:
+  /missions:
+    get:
+      summary: >-
+        List Mission Workspace missions for a tenant (Mission Outcome
+        planning missions, not AI Missions).
+      tags: [Mission Workspace]
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (400 if neither is resolvable).
+      responses:
+        '200':
+          description: Missions returned
+        '400':
+          description: tenantId could not be resolved
+    post:
+      summary: >-
+        Create a new Mission Workspace mission — generates a mission plan
+        from the intake payload and creates starter Moves.
+      tags: [Mission Workspace]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                missionType:
+                  type: string
+                title:
+                  type: string
+                problemStatement:
+                  type: string
+                desiredOutcome:
+                  type: string
+                companyDescription:
+                  type: string
+                mission:
+                  type: string
+                valueProposition:
+                  type: string
+                resources:
+                  type: array
+                  items:
+                    type: string
+                stakeholders:
+                  type: array
+                  items:
+                    type: string
+                constraints:
+                  type: array
+                  items:
+                    type: string
+                timeline:
+                  type: string
+                successCriteria:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Mission created
+        '401':
+          description: Authentication required (tenantId or userId missing)
+  /missions/plan:
+    post:
+      summary: >-
+        Generate a mission plan preview without persisting a mission (dry
+        run of the same planning logic used by mission creation).
+      tags: [Mission Workspace]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                missionType:
+                  type: string
+                title:
+                  type: string
+                problemStatement:
+                  type: string
+                desiredOutcome:
+                  type: string
+                companyDescription:
+                  type: string
+                mission:
+                  type: string
+                valueProposition:
+                  type: string
+                resources:
+                  type: array
+                  items:
+                    type: string
+                stakeholders:
+                  type: array
+                  items:
+                    type: string
+                constraints:
+                  type: array
+                  items:
+                    type: string
+                timeline:
+                  type: string
+                successCriteria:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Mission plan preview returned
+        '401':
+          description: Authentication required (tenantId or userId missing)
+  /missions/{missionId}:
+    get:
+      summary: Get a single Mission Workspace mission, including its Moves.
+      tags: [Mission Workspace]
+      parameters:
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (400 if neither is resolvable).
+      responses:
+        '200':
+          description: Mission returned
+        '400':
+          description: tenantId or missionId missing
+        '404':
+          description: Mission not found
+    put:
+      summary: >-
+        Update a mission's intake fields, status, and/or communication
+        notes, and regenerate its plan.
+      tags: [Mission Workspace]
+      parameters:
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (400 if neither is resolvable).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                missionType:
+                  type: string
+                status:
+                  type: string
+                title:
+                  type: string
+                problemStatement:
+                  type: string
+                desiredOutcome:
+                  type: string
+                companyDescription:
+                  type: string
+                mission:
+                  type: string
+                valueProposition:
+                  type: string
+                resources:
+                  type: array
+                  items:
+                    type: string
+                stakeholders:
+                  type: array
+                  items:
+                    type: string
+                constraints:
+                  type: array
+                  items:
+                    type: string
+                timeline:
+                  type: string
+                successCriteria:
+                  type: array
+                  items:
+                    type: string
+                communicationNotes:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Mission updated
+        '400':
+          description: tenantId or missionId missing
+        '404':
+          description: Mission not found
+  /missions/{missionId}/revision-preview:
+    post:
+      summary: >-
+        Preview how a mission's plan would change (task/milestone diff)
+        given revised intake fields, without applying the revision.
+      tags: [Mission Workspace]
+      parameters:
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (400 if neither is resolvable).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                missionType:
+                  type: string
+                title:
+                  type: string
+                problemStatement:
+                  type: string
+                desiredOutcome:
+                  type: string
+                companyDescription:
+                  type: string
+                mission:
+                  type: string
+                valueProposition:
+                  type: string
+                resources:
+                  type: array
+                  items:
+                    type: string
+                stakeholders:
+                  type: array
+                  items:
+                    type: string
+                constraints:
+                  type: array
+                  items:
+                    type: string
+                timeline:
+                  type: string
+                successCriteria:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Revision preview returned
+        '400':
+          description: tenantId or missionId missing
+        '404':
+          description: Mission not found
+  /missions/{missionId}/revisions/apply:
+    post:
+      summary: >-
+        Apply a previously previewed mission revision, updating the plan
+        and optionally creating Moves for net-new tasks.
+      tags: [Mission Workspace]
+      parameters:
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (401 if neither tenantId nor userId
+            is resolvable).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+                  description: Revised intake fields to apply to the mission.
+                applyNetNewMoves:
+                  type: boolean
+                  description: Whether to create Moves for newly added tasks.
+      responses:
+        '200':
+          description: Revision applied
+        '401':
+          description: Authentication required (tenantId or userId missing)
+        '404':
+          description: Mission not found
+  /missions/{missionId}/status:
+    post:
+      summary: Update a mission's status (e.g. active, waiting, completed).
+      tags: [Mission Workspace]
+      parameters:
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Tenant id; falls back to the caller's tenant from the x-tenant-id
+            header if omitted. Required (400 if neither is resolvable).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Mission status updated
+        '400':
+          description: >-
+            tenantId or missionId missing, or the provided status is not a
+            recognized mission status
+        '404':
+          description: Mission not found
+  /ai-missions:
+    post:
+      summary: >-
+        Create a new AI Mission (an autonomous, step-by-step AI-run mission
+        distinct from Mission Workspace missions).
+      tags: [AI Missions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                objective:
+                  type: string
+                successCriteria:
+                  type: string
+                missionContext:
+                  type: object
+                priority:
+                  type: string
+                  enum: [low, medium, high]
+                deadline:
+                  type: string
+      responses:
+        '201':
+          description: AI Mission created
+        '400':
+          description: Missing required title or objective
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+    get:
+      summary: List AI Missions for the caller's tenant, optionally filtered.
+      tags: [AI Missions]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter missions by status.
+        - name: createdBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter missions by creator user id.
+      responses:
+        '200':
+          description: AI Missions returned
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+  /ai-missions/{id}:
+    get:
+      summary: Get a single AI Mission by id.
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: AI Mission returned
+        '400':
+          description: Mission id missing
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+        '404':
+          description: Mission not found
+  /ai-missions/{id}/run:
+    post:
+      summary: >-
+        Trigger a run of the AI Mission's next step (activates the mission
+        if it is still in draft status).
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mission run triggered
+        '400':
+          description: Mission id missing
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+        '404':
+          description: Mission not found
+  /ai-missions/{id}/approve:
+    post:
+      summary: >-
+        Record a human decision (approve, reject, or pause) on the AI
+        Mission's pending step and act on it.
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                  enum: [approve, reject, pause]
+      responses:
+        '200':
+          description: Decision applied to the mission
+        '400':
+          description: Mission id or decision missing/invalid
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+        '404':
+          description: Mission not found
+  /ai-missions/{id}/pause:
+    post:
+      summary: Pause an AI Mission.
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mission paused
+        '400':
+          description: Mission id missing
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+        '404':
+          description: Mission not found
+  /ai-missions/{id}/complete:
+    post:
+      summary: Mark an AI Mission as complete.
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mission marked complete
+        '400':
+          description: Mission id missing
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required
+        '404':
+          description: Mission not found
+  /ai-missions/{id}/activity:
+    get:
+      summary: Get the activity log entries for an AI Mission.
+      tags: [AI Missions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+          description: Maximum number of activity log entries to return.
+      responses:
+        '200':
+          description: Activity log returned
+        '400':
+          description: Mission id missing
+        '401':
+          description: Authentication required (userId missing)
+        '403':
+          description: Tenant context required

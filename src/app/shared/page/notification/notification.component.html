@@ -1,0 +1,13 @@
+<div *ngIf="show"
+     class="todd-notification"
+     [ngClass]="{
+       'show': show,
+       'success': type === 'success',
+       'error': type === 'error',
+       'warning': type === 'warning'
+     }"
+     role="alert">
+  <button style="color: black" type="button" class="btn-close" aria-label="Close" (click)="dismiss()"></button>
+  <h4>{{ header }}</h4>
+  <p>{{ description | truncate:100}}</p>
+</div>

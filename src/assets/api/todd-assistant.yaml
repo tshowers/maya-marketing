@@ -1,0 +1,215 @@
+
+openapi: 3.0.0
+info:
+  title: TODD AI API
+  description: API for AI-driven contact management and assistant features in the TODD platform.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+security:
+  - ApiKeyAuth: []
+paths:
+  /suggestions:
+    post:
+      summary: Generate general assistant suggestions
+      tags: [Assistant]
+      responses:
+        '200':
+          description: Suggestions returned
+  /filtering-suggestions:
+    post:
+      summary: Get filter-related suggestions
+      tags: [Assistant]
+      responses:
+        '200':
+          description: Filtering suggestions returned
+  /prospect-query:
+    post:
+      summary: Get a response tailored to prospecting needs
+      tags: [AI]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Prospect response returned
+  /document-assistant:
+    post:
+      summary: Get assistance with document-related prompts
+      tags: [Document Assistant]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Document response returned
+  /analyze-email:
+    post:
+      summary: Analyze email content for tone or intent
+      tags: [Email]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Email analysis returned
+  /parse-for-contact:
+    post:
+      summary: Parse profile information into a contact structure
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+      responses:
+        '200':
+          description: Parsed contact returned
+  /reconfigure-contact:
+    post:
+      summary: Reconfigure data fields in a contact profile
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+      responses:
+        '200':
+          description: Reconfigured contact returned
+  /enrich-contact:
+    post:
+      summary: Enrich company or contact information
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+      responses:
+        '200':
+          description: Enriched contact returned
+  /start-contact-processing:
+    post:
+      summary: Start processing contacts asynchronously
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Processing started
+  /content-converter:
+    post:
+      summary: Convert web content into structured data
+      tags: [Content]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Parsed content returned
+  /note-analyzer:
+    post:
+      summary: Analyze note content and extract tasks
+      tags: [Note]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Note actions returned
+  /matchmaker-analyzer:
+    post:
+      summary: Analyze matching logic between interested party and criteria
+      tags: [Matchmaking]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                interestedParty:
+                  type: object
+                criteria:
+                  type: object
+                matches:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Match analysis returned
+  /assistant-query:
+    post:
+      summary: Combined assistant or task route decision handler
+      tags: [Assistant]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Parsed assistant task or query

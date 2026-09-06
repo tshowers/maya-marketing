@@ -1,0 +1,516 @@
+:host {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.assistant-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--todd-link, #2563eb) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--todd-link, #2563eb) 9%, var(--todd-surface-2, #f8fafc));
+}
+
+.assistant-confirm__copy {
+  display: grid;
+  gap: 3px;
+  color: var(--todd-text, #172033);
+  font-size: 12px;
+}
+
+.assistant-confirm__copy span {
+  opacity: .75;
+}
+
+.assistant-confirm__actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+/* Dropdown below input */
+.suggestion-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  transform: translateY(4px);
+  z-index: 10000;
+  display: block;
+  background-color: #fff;
+  color: #222;
+  border: 1px solid #333333;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  pointer-events: auto;
+}
+
+/* Make sure the assistant box can overlay nearby UI */
+.assistant-container {
+  position: relative;
+  z-index: 50;
+}
+
+.assistant-bar {
+  position: relative;
+  z-index: 50;
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  background: color-mix(in srgb, var(--todd-surface-2, #f8fafc) 94%, transparent);
+  box-shadow: 0 -8px 18px color-mix(in srgb, var(--todd-surface-2, #f8fafc) 72%, transparent);
+}
+
+
+/* Keep suggestions directly under the input inside the dock */
+.assistant-bar .ios-row {
+  position: relative;
+}
+
+/* Allow dropdown to escape the card bounds and anchor to the row */
+.assistant-bar {
+  position: relative;
+}
+
+.assistant-bar .ios-card,
+.assistant-bar .ios-list {
+  overflow: visible !important;
+  position: static;
+  /* do not create a new stacking context */
+}
+
+
+
+.suggestion-dropdown li {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+.suggestion-dropdown li:hover {
+  background-color: #f5f5f5;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .suggestion-dropdown {
+    background-color: #2a2a2a;
+    color: #eee;
+    border-color: #444;
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+  }
+
+  .suggestion-dropdown li {
+    background-color: #2a2a2a;
+    color: #eee;
+    border-bottom: 1px solid #444;
+  }
+
+  .suggestion-dropdown li:hover {
+    background-color: #3a3a3a;
+  }
+
+  .suggestion-dropdown li.active {
+    background-color: #444;
+    font-weight: bold;
+  }
+}
+
+/* Assistant response styling */
+.assistant-response {
+  background-color: rgba(248, 249, 250, 0.5);
+  /* 0.5 = 50% transparent */
+  color: #212529;
+  padding: 1.25rem;
+  /* border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); */
+  font-size: 1.5rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  animation: fadeIn 0.5s ease;
+}
+
+.assistant-response-external {
+  font-size: 0.9rem;
+}
+
+/* Dark mode for assistant response */
+@media (prefers-color-scheme: dark) {
+  .assistant-response {
+    background: #2a2a2a;
+    color: #eee;
+    border-color: #444;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bigger assistant input and button */
+.assistant-container input.form-control-lg {
+  font-size: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  height: auto;
+  border-radius: 10px;
+}
+
+.assistant-container .btn-lg {
+  font-size: 1.25rem;
+  padding: 1.25rem 2rem;
+  border-radius: 10px;
+}
+
+.todd-logo-container {
+  position: fixed;
+  bottom: 15px;
+  right: 5px;
+  text-align: center;
+  z-index: 6000;
+  /* Ensure it appears above other elements */
+}
+
+/* Make the assistant input bar stretch full width */
+.assistant-bar {
+  width: 100%;
+}
+
+.assistant-bar .ios-card,
+.assistant-bar .ios-list {
+  width: 100%;
+}
+
+.assistant-bar .ios-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.assistant-bar .ios-input {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+
+.assistant-inline {
+  margin-top: 4px;
+}
+
+.inline-card {
+  border: 1px solid var(--ring);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--panel, #f8fafc);
+}
+
+.inline-card .field {
+  margin-bottom: 10px;
+}
+
+.inline-card label {
+  display: block;
+  font-size: 12px;
+  opacity: .8;
+  margin-bottom: 4px;
+}
+
+.inline-card input,
+.inline-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.inline-card .actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* --- Assistant Box: Dark mode fixes & action rows --- */
+.assistant-container .assistant-response {
+  color: inherit;
+}
+
+.assistant-response p,
+.assistant-response strong,
+.assistant-response button,
+.assistant-response .btn-ios {
+  color: inherit;
+}
+
+.assistant-response a,
+.assistant-response .route-link {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  cursor: pointer;
+}
+
+.assistant-response a:hover,
+.assistant-response .route-link:hover {
+  color: #1d4ed8;
+}
+
+/* Inline work area card styling */
+.assistant-inline {
+  margin-top: 12px;
+}
+
+.assistant-inline .inline-card {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+/* Improve contrast in muted helper text */
+.muted {
+  opacity: 0.8;
+}
+
+/* Chips for inline filters */
+.assistant-inline .chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0 10px;
+}
+
+.assistant-inline .chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: inherit;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* Buttons rendered from route linkifier inside the message bubble */
+.assistant-response .route-link.btn-ios {
+  display: inline-block;
+  margin: 6px 6px 0 0;
+}
+
+.assistant-confirm-bubble {
+  margin-top: 6px;
+  padding-top: 0;
+  background: transparent;
+  border-top-left-radius: 0;
+  color: rgba(15, 23, 42, 0.72);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.assistant-confirm-copy {
+  margin-right: 0.35rem;
+}
+
+.assistant-confirm-separator {
+  margin: 0 0.35rem;
+  color: rgba(15, 23, 42, 0.45);
+}
+
+.assistant-confirm-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  cursor: pointer;
+}
+
+.assistant-confirm-link:hover {
+  color: #1d4ed8;
+}
+
+.assistant-confirm-link-secondary {
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.assistant-confirm-link-secondary:hover {
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* --- Dark mode (body class) --- */
+body.dark .assistant-inline .inline-card {
+  background: rgba(16, 18, 24, 0.9);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+body.dark .assistant-inline .chip {
+  background: rgba(30, 32, 38, 0.9);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* --- Dark mode (system prefers) --- */
+@media (prefers-color-scheme: dark) {
+  .assistant-inline .inline-card {
+    background: rgba(16, 18, 24, 0.9);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .assistant-inline .chip {
+    background: rgba(30, 32, 38, 0.9);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .assistant-response a,
+  .assistant-response .route-link {
+    color: #93c5fd;
+  }
+
+  .assistant-response a:hover,
+  .assistant-response .route-link:hover {
+    color: #bfdbfe;
+  }
+
+  .assistant-confirm-bubble {
+    color: rgba(226, 232, 240, 0.82);
+  }
+
+  .assistant-confirm-separator {
+    color: rgba(226, 232, 240, 0.45);
+  }
+
+  .assistant-confirm-link {
+    color: #93c5fd;
+  }
+
+  .assistant-confirm-link:hover {
+    color: #bfdbfe;
+  }
+
+  .assistant-confirm-link-secondary {
+    color: rgba(226, 232, 240, 0.82);
+  }
+
+  .assistant-confirm-link-secondary:hover {
+    color: rgba(226, 232, 240, 0.96);
+  }
+}
+
+.assistant-nudge {
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .assistant-nudge {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+}
+
+.assistant-thread {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.assistant-message {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.assistant-message-user {
+  justify-content: flex-end;
+}
+
+.assistant-message-assistant {
+  justify-content: flex-start;
+}
+
+.assistant-message-bubble {
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.assistant-message-bubble-user {
+  background: rgba(0, 149, 204, 0.12);
+  border-top-right-radius: 2px;
+}
+
+.assistant-message-bubble-assistant {
+  background: rgba(0, 0, 0, 0.04);
+  border-top-left-radius: 2px;
+  padding-left: 2rem;
+}
+
+.assistant-intake-hint {
+  display: inline-block;
+  margin: 6px 0 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.72);
+  animation: assistantIntakeBlink 1.1s ease-in-out 3;
+}
+
+@keyframes assistantIntakeBlink {
+
+  0%,
+  100% {
+    opacity: 1
+  }
+
+  50% {
+    opacity: .25
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .assistant-intake-hint {
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+/* Small screens: keep only the send/submit button visible */
+@media (max-width: 768px) {
+
+  .assistant-btn-demo,
+  .assistant-btn-delete {
+    display: none !important;
+  }
+}

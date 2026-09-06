@@ -1,0 +1,254 @@
+openapi: 3.0.0
+info:
+  title: TODD Integrations (Social & LinkedIn) API
+  description: >
+    Social account connection/health endpoints (socialAuthRoutes.js, mounted
+    at /api) and the legacy LinkedIn OAuth-connect flow
+    (linkedinAuthRoutes.js, linkedinCallbackRoutes.js,
+    linkedinProfileRoutes.js, all mounted at /api/linkedin) exposed by the
+    main TODD Express backend (todd-backend/functions). The LinkedIn routes
+    predate the generic outreach/social-auth system and use a server-side
+    express-session cookie rather than header-based auth context.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+    description: Social auth base path (app.use("/api", socialAuthRoutes))
+  - url: https://api.todd.taliferro.com/api/linkedin
+    description: >-
+      LinkedIn integration base path (app.use("/api/linkedin", ...)); all
+      three linkedin*.js route files are mounted here, behind
+      linkedinSessionMiddleware (express-session).
+components:
+  securitySchemes:
+    UserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserIdAuth must be
+        present for readAccessGuard to allow the request.
+    UserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Read directly onto req.user by attachAuthContext (no token
+        verification performed). Either this header or UserEmailAuth must be
+        present for readAccessGuard to allow the request.
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Tenant scoping header read by attachAuthContext onto req.user.tenantId.
+        The social-auth controller separately returns 401 "Tenant context
+        required" when this is missing, so it is effectively required
+        alongside UserEmailAuth/UserIdAuth on the guarded routes below.
+    LinkedInSessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: >-
+        Server-side session cookie set by express-session
+        (linkedinSessionMiddleware), mounted before all three
+        /api/linkedin route files. No bearer token or header-based auth
+        context is used on these routes: POST /auth writes
+        linkedinState/tenantId/linkedInUrl/contact onto req.session, and
+        GET /callback validates req.query.state against
+        req.session.linkedinState (CSRF protection) before exchanging the
+        OAuth code.
+security: []
+paths:
+  /outreach/social-auth/config/health:
+    servers:
+      - url: https://api.todd.taliferro.com/api
+    get:
+      summary: >-
+        Report which social auth providers (e.g. LinkedIn, Bluesky, Meta
+        platforms) have their required credentials/config present.
+      tags: [Social Auth]
+      security: []
+      responses:
+        '200':
+          description: Social provider config health retrieved.
+  /outreach/social-auth/accounts/health:
+    servers:
+      - url: https://api.todd.taliferro.com/api
+    post:
+      summary: >-
+        Test connectivity/health of every social account currently connected
+        for the caller's tenant.
+      tags: [Social Auth]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+      responses:
+        '200':
+          description: Connected social account health retrieved.
+        '401':
+          description: Tenant context required, or authentication missing (no uid/email).
+        '500':
+          description: Unable to test connected social accounts.
+  /outreach/social-auth/accounts/{accountId}/test:
+    servers:
+      - url: https://api.todd.taliferro.com/api
+    post:
+      summary: Test the connection/health of a single connected social account.
+      tags: [Social Auth]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the connected social account to test.
+      responses:
+        '200':
+          description: Social account connection tested.
+        '401':
+          description: Tenant context required, or authentication missing (no uid/email).
+        '404':
+          description: Social account not found.
+        '500':
+          description: Unable to test social account connection.
+  /outreach/social-accounts:
+    servers:
+      - url: https://api.todd.taliferro.com/api
+    get:
+      summary: >-
+        List social media accounts connected for the caller's tenant, along
+        with per-provider availability.
+      tags: [Social Auth]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+      responses:
+        '200':
+          description: Social accounts retrieved.
+        '401':
+          description: Tenant context required, or authentication missing (no uid/email).
+        '500':
+          description: Unable to retrieve social accounts.
+  /outreach/social-accounts/{accountId}:
+    servers:
+      - url: https://api.todd.taliferro.com/api
+    delete:
+      summary: Disconnect (remove) a connected social media account.
+      tags: [Social Auth]
+      security:
+        - UserEmailAuth: []
+          TenantIdHeader: []
+        - UserIdAuth: []
+          TenantIdHeader: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the connected social account to disconnect.
+      responses:
+        '200':
+          description: Social account disconnected.
+        '401':
+          description: Tenant context required, or authentication missing (no uid/email).
+        '404':
+          description: Social account not found.
+        '500':
+          description: Unable to disconnect social account.
+  /auth:
+    servers:
+      - url: https://api.todd.taliferro.com/api/linkedin
+    post:
+      summary: >-
+        Build the LinkedIn OAuth authorization URL (with a random CSRF
+        state) and stash that state plus the pending tenantId, LinkedIn
+        profile URL, and in-progress contact object on the session, for
+        GET /callback to pick up later.
+      tags: [LinkedIn]
+      security:
+        - LinkedInSessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                linkedInUrl:
+                  type: string
+                  description: LinkedIn profile URL to fetch once OAuth completes.
+                contact:
+                  type: object
+                  description: Contact record to merge the parsed LinkedIn profile into.
+      responses:
+        '200':
+          description: LinkedIn OAuth authorization URL generated.
+  /callback:
+    servers:
+      - url: https://api.todd.taliferro.com/api/linkedin
+    get:
+      summary: >-
+        LinkedIn OAuth callback: verifies the state param against the
+        session (CSRF check), exchanges the authorization code for an
+        access token, saves the token, fetches the LinkedIn profile,
+        analyzes it via OpenAI (getParsedContact), and merges the result
+        into the pending contact stored on the session.
+      tags: [LinkedIn]
+      security:
+        - LinkedInSessionAuth: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth authorization code issued by LinkedIn.
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: CSRF state token, checked against req.session.linkedinState.
+      responses:
+        '200':
+          description: Access token exchanged and contact updated with parsed LinkedIn data.
+        '400':
+          description: Invalid state parameter (possible CSRF).
+        '500':
+          description: Error exchanging authorization code for access token.
+  /profile:
+    servers:
+      - url: https://api.todd.taliferro.com/api/linkedin
+    post:
+      summary: Fetch a LinkedIn profile for a given profile URL.
+      tags: [LinkedIn]
+      security:
+        - LinkedInSessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  description: LinkedIn profile URL to fetch.
+      responses:
+        '200':
+          description: LinkedIn profile data returned.
+        '500':
+          description: Error fetching LinkedIn profile.

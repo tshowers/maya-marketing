@@ -1,0 +1,32 @@
+<div class="maya-screen">
+  <main class="maya-main">
+    <section class="maya-conversation" [class.maya-conversation--started]="hasUserMessages">
+      <div class="maya-welcome" *ngIf="!hasUserMessages">
+        <img class="maya-logo" src="assets/find/entities/maya/logo.png" alt="Maya" />
+        <div class="maya-eyebrow maya-eyebrow--centered">Marketing advice</div>
+        <div class="maya-welcome-composer">
+          <textarea rows="4" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea>
+          <div class="maya-welcome-actions"><button type="button" class="maya-reset maya-welcome-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation" title="Reset conversation">↻</button><button type="button" class="maya-primary-button" (click)="sendMessage()" [disabled]="sending">{{ sending ? '…' : 'Ask Maya' }} <span aria-hidden="true">↗</span></button></div>
+        </div>
+        <div class="maya-prompt-chips" aria-label="Maya prompts">
+          <button type="button" *ngFor="let item of ['Sharpen my message', 'Find my best audience', 'Clarify my offer']" (click)="sendMessage(item)">{{ item }} <span aria-hidden="true">↗</span></button>
+        </div>
+        <div class="maya-version-stamp" [title]="buildVersion.buildTime">v{{ buildVersion.version }} · {{ buildVersion.gitSha }}</div>
+      </div>
+      <div #directorMessagesContainer class="maya-messages" *ngIf="hasUserMessages">
+        <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'">
+          <div class="maya-message-role">{{ message.role === 'director' ? 'Maya' : 'You' }}</div>
+          <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
+        </article>
+        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite"><div class="maya-message-role">Maya</div><div class="maya-thinking"><span></span><span></span><span></span> Maya is thinking…</div></article>
+      </div>
+      <aside class="maya-upgrade" *ngIf="showUpgradePanel"><div class="maya-upgrade-copy"><div class="maya-eyebrow">Need execution?</div><h2>Maya can move from advice into real work inside TODD Suite.</h2><p>If you want drafts, approvals, and a live execution queue, that is where the paid account takes over.</p><div class="maya-actions"><a routerLink="/suite/pricing" class="maya-primary-button">Unlock Execution</a><a routerLink="/login" class="maya-secondary-button">Start Free Account</a></div></div></aside>
+      <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
+      <div class="maya-status" *ngIf="sending || errorMessage">{{ sending ? 'Maya is working on your answer…' : errorMessage }}</div>
+    </section>
+  </main>
+  <div class="maya-apps-card" *ngIf="showApps" role="dialog" aria-label="All apps">
+    <div class="maya-apps-card-header"><strong>All apps</strong><button type="button" (click)="showApps = false" aria-label="Close apps">×</button></div>
+    <div class="maya-app-grid"><ng-container *ngFor="let app of appLinks"><a *ngIf="app.external; else internalMayaApp" [href]="app.route" (click)="showApps = false"><img [src]="app.image" [alt]="app.label"><span>{{ app.label }}</span></a><ng-template #internalMayaApp><a [routerLink]="app.route" (click)="showApps = false"><img [src]="app.image" [alt]="app.label"><span>{{ app.label }}</span></a></ng-template></ng-container></div>
+  </div>
+</div>

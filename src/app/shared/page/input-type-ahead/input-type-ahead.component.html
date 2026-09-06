@@ -1,0 +1,23 @@
+<div class="typeahead">
+  <!-- Input field for typeahead -->
+  <div class="typeahead-input-wrapper">
+    <i class="fa-solid fa-magnifying-glass typeahead-icon"></i>
+    <input type="text" [(ngModel)]="inputText" (input)="onInputChange(inputText)" [placeholder]="placeholder" class="ios-input" autocomplete="off" />
+  </div>
+  <!-- Typeahead dropdown list -->
+  <ul class="list-group mt-2" *ngIf="inputText">
+    <li class="list-group-item" style="cursor: pointer;" *ngFor="let item of filteredItems$ | async" (click)="selectItem(item)">
+      {{ item.name }}
+    </li>
+  </ul>
+  <div class="preselected-items" *ngIf="showSelected && selectedItems && selectedItems.length > 0">
+    <h5 *ngIf="isMultiSelect">Selected</h5>
+    <ul>
+      <li *ngFor="let item of selectedItems; let i = index">
+        {{ item.name }}
+        <button *ngIf="isMultiSelect" (click)="removeMultiItem(i)" class="btn-sm btn-todd-danger ms-2">Remove</button>
+      </li>
+    </ul>
+  </div>
+  <!-- Selected items (under input field) -->
+</div>

@@ -1,0 +1,887 @@
+openapi: 3.0.0
+info:
+  title: TODD Email API
+  description: >-
+    Endpoints for sending and tracking outreach email, managing campaign send
+    queues, email verification/enrichment, unsubscribe handling, contact
+    timezone resolution, SendGrid event webhooks, and a handful of adjacent
+    public-site/billing utility routes that live in the same email service.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    UserEmailHeader:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Read by attachAuthContext onto req.user.email. Not cryptographically
+        verified — the middleware trusts whatever value is sent.
+    TenantIdHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Read by attachAuthContext onto req.user.tenantId. Not verified.
+    UserIdHeader:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Read by attachAuthContext onto req.user.uid. Not verified.
+security: []
+paths:
+  /send-email:
+    post:
+      summary: >-
+        Send an outreach email through SendGrid: gates the send on campaign/
+        sequence status and daily caps, injects the tracking pixel and click-
+        tracked links, appends the unsubscribe footer, records the email,
+        and fires momentum/follow-up/acquisition signals.
+      tags: [Sending]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: string
+                cc:
+                  type: string
+                bcc:
+                  type: string
+                subject:
+                  type: string
+                text:
+                  type: string
+                html:
+                  type: string
+                contactName:
+                  type: string
+                contactId:
+                  type: string
+                emailAddressUsed:
+                  type: string
+                tenantId:
+                  type: string
+                campaignId:
+                  type: string
+                catalystRunId:
+                  type: string
+                catalystRunName:
+                  type: string
+                launchMode:
+                  type: string
+                sequenceStepId:
+                  type: string
+                sequenceStepNumber:
+                  type: number
+                approvalHashUsed:
+                  type: string
+                sequenceEnabled:
+                  type: boolean
+                from:
+                  type: object
+                  description: Either a plain email string or {email, name}.
+                  properties:
+                    email:
+                      type: string
+                    name:
+                      type: string
+                signalOrigin:
+                  type: string
+                isLeadVaultContact:
+                  type: boolean
+                leadVaultRecordId:
+                  type: string
+                mailingAddress:
+                  type: string
+                scheduledAt:
+                  type: string
+                deliveryTimezone:
+                  type: string
+                deliveryTimezoneSource:
+                  type: string
+                deliveryTimezoneConfidence:
+                  type: string
+                schedulePolicy:
+                  type: string
+                actionId:
+                  type: string
+                planId:
+                  type: string
+                planVersion:
+                  type: number
+                strategyId:
+                  type: string
+                segmentId:
+                  type: string
+                angleId:
+                  type: string
+                threadId:
+                  type: string
+                sourceSystem:
+                  type: string
+      responses:
+        '200':
+          description: Email sent successfully (or sequence send skipped due to contact state).
+        '202':
+          description: Catalyst send queued/staggered via Cloud Tasks instead of sent immediately.
+        '400':
+          description: Missing/invalid 'from' value, or campaign is not in a sendable status.
+        '413':
+          description: Email HTML payload exceeds the maximum allowed size.
+        '429':
+          description: Daily send cap exceeded for a queued Catalyst email.
+        '500':
+          description: SendGrid or internal error while sending.
+  /emails:
+    get:
+      summary: List sent emails, optionally scoped to a tenant.
+      tags: [Email Records]
+      security: []
+      parameters:
+        - in: query
+          name: tenantId
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of email records returned.
+        '500':
+          description: Error retrieving emails.
+  /start-email-queue:
+    post:
+      summary: >-
+        Start (or schedule) a campaign's send queue, or the sequence step-1
+        queue for sequence campaigns.
+      tags: [Campaign Queue]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                campaignId:
+                  type: string
+                scheduledStartAt:
+                  type: string
+                campaignData:
+                  type: object
+      responses:
+        '200':
+          description: Email (or sequence step 1) queue started/scheduled successfully.
+        '500':
+          description: Error starting the email queue.
+  /pause-email-queue:
+    post:
+      summary: Pause a running campaign's email queue.
+      tags: [Campaign Queue]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                campaignId:
+                  type: string
+      responses:
+        '200':
+          description: Email queue paused successfully.
+        '500':
+          description: Error pausing the email queue.
+  /resume-email-queue:
+    post:
+      summary: Resume a paused campaign email queue and re-create its send tasks.
+      tags: [Campaign Queue]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                campaignId:
+                  type: string
+      responses:
+        '200':
+          description: Email queue resumed successfully.
+        '500':
+          description: Error resuming the email queue.
+  /stop-email-queue:
+    post:
+      summary: Stop a campaign's email queue.
+      tags: [Campaign Queue]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                campaignId:
+                  type: string
+      responses:
+        '200':
+          description: Email queue stopped successfully.
+        '500':
+          description: Error stopping the email queue.
+  /track/open:
+    get:
+      summary: >-
+        Tracking-pixel endpoint embedded in outbound emails. Logs an email
+        open event, records a momentum/acquisition signal, and serves a
+        1x1 transparent pixel image.
+      tags: [Tracking]
+      security: []
+      parameters:
+        - in: query
+          name: emailId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: tenantId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: campaignId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: contactId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: emailAddress
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transparent tracking pixel image served.
+        '400':
+          description: Missing emailId or tenantId.
+        '500':
+          description: Failed to log the email open event.
+  /unsubscribe:
+    get:
+      summary: >-
+        Unsubscribe a contact identified by hashed email, then redirect to a
+        success or failure page on the marketing site.
+      tags: [Unsubscribe]
+      security: []
+      parameters:
+        - in: query
+          name: emailHash
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: tenantId
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the unsubscribe success or failure page.
+        '400':
+          description: Missing emailHash or tenantId.
+  /lead-vault-unsubscribe:
+    get:
+      summary: >-
+        Block a Lead Vault-sourced contact from further outreach, then
+        redirect to a success or failure page.
+      tags: [Unsubscribe]
+      security: []
+      parameters:
+        - in: query
+          name: emailHash
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: sourceTenantId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: sourceContactId
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the unsubscribe success or failure page.
+        '400':
+          description: Missing emailHash, sourceTenantId, or sourceContactId.
+  /email-sync:
+    post:
+      summary: >-
+        Publish a Pub/Sub message that triggers inbox-sync processing for a
+        tenant's connected email account.
+      tags: [Sync]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                sync:
+                  type: boolean
+                syncInterval:
+                  type: string
+      responses:
+        '200':
+          description: Sync message published.
+        '400':
+          description: Missing tenantId, sync status, or syncInterval.
+        '500':
+          description: Error publishing the sync message.
+  /update-recent-campaigns:
+    post:
+      summary: Recompute the "recent campaign" indicator for a tenant.
+      tags: [Campaign Queue]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Campaigns updated successfully.
+        '500':
+          description: Internal server error.
+  /delete-email:
+    post:
+      summary: Delete a previously sent email record.
+      tags: [Email Records]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                messageId:
+                  type: string
+      responses:
+        '200':
+          description: Email deleted successfully.
+        '400':
+          description: tenantId and messageId are required.
+        '500':
+          description: Error deleting the email.
+  /verify-email:
+    post:
+      summary: Verify the deliverability/validity of an email address via Bouncer.
+      tags: [Verification]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Bouncer verification result returned.
+        '400':
+          description: Email is required.
+        '500':
+          description: Verification failed.
+  /verify-email-sendgrid:
+    post:
+      summary: Verify an email address via SendGrid Email Address Validation.
+      tags: [Verification]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: SendGrid validation result returned.
+        '400':
+          description: Email is required.
+        '500':
+          description: Verification failed.
+        '503':
+          description: SendGrid validation is not configured or authorized.
+  /enrich-email:
+    post:
+      summary: Enrich contact/company data for an email address via Hunter.
+      tags: [Enrichment]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Enrichment result returned.
+        '400':
+          description: Email is required.
+        '500':
+          description: Enrichment failed.
+  /track/click:
+    get:
+      summary: >-
+        Tracking-redirect endpoint embedded in outbound email links. Redirects
+        to the destination URL immediately, then asynchronously logs the
+        click and records momentum/acquisition signals.
+      tags: [Tracking]
+      security: []
+      parameters:
+        - in: query
+          name: emailId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: tenantId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: campaignId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: url
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: u
+          required: false
+          schema:
+            type: string
+          description: Hashed recipient email used for tracking.
+        - in: query
+          name: contactId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: emailAddress
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the original (or enriched) destination URL.
+        '400':
+          description: Missing emailId, tenantId, or url.
+  /suggested-contacts:
+    post:
+      summary: Retrieve cached suggested-contacts results for a tenant.
+      tags: [Suggestions]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Cached suggested contacts returned.
+        '400':
+          description: Tenant ID is required.
+        '404':
+          description: Suggestions not ready yet.
+  /suggested-contacts/status:
+    post:
+      summary: >-
+        Check status of suggested-contacts background processing. Currently
+        disabled — always returns a static "processing is disabled" message.
+      tags: [Suggestions]
+      security: []
+      responses:
+        '200':
+          description: Static status message returned (processing disabled).
+  /suggested-contacts/start:
+    post:
+      summary: >-
+        Start suggested-contacts background processing. Currently disabled —
+        always returns a static "processing is disabled" message.
+      tags: [Suggestions]
+      security: []
+      responses:
+        '200':
+          description: Static status message returned (processing disabled).
+  /campaign-click-data:
+    post:
+      summary: Get aggregated click data for a campaign.
+      tags: [Tracking]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                campaignId:
+                  type: string
+                tenantId:
+                  type: string
+      responses:
+        '200':
+          description: Click data returned.
+        '500':
+          description: Failed to retrieve click data.
+  /validate-email:
+    post:
+      summary: >-
+        Validate an email/password pair against a static credential list
+        sourced from the VALID_CREDENTIALS environment variable (legacy
+        internal access check, unrelated to normal user auth).
+      tags: [Verification]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Validation successful.
+        '400':
+          description: Email and Password are required.
+        '403':
+          description: Invalid email or password.
+  /open-rate/{campaignId}:
+    get:
+      summary: Calculate the open rate for a campaign.
+      tags: [Analytics]
+      security: []
+      parameters:
+        - in: path
+          name: campaignId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: tenantId
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Open rate returned.
+        '404':
+          description: Campaign not found.
+        '500':
+          description: Error calculating the open rate.
+  /form-submission:
+    post:
+      summary: >-
+        Public marketing-site contact form handler. Runs honeypot/timing
+        anti-bot checks and field validation, then saves a new contact under
+        the shared public-form tenant.
+      tags: [Public Forms]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                tenantId:
+                  type: string
+                middleName:
+                  type: string
+                  description: Honeypot field — must be empty.
+                elapsedMs:
+                  type: number
+                  description: Time spent on page, used for anti-bot timing check.
+                phoneNumbers:
+                  type: array
+                  items:
+                    type: object
+                addresses:
+                  type: array
+                  items:
+                    type: object
+                socialMedia:
+                  type: array
+                  items:
+                    type: object
+                company:
+                  type: object
+                profession:
+                  type: string
+                status:
+                  type: string
+                category:
+                  type: string
+                linkedInUrl:
+                  type: string
+                referral:
+                  type: string
+                birthday:
+                  type: string
+                anniversary:
+                  type: string
+                gender:
+                  type: string
+                notes:
+                  type: array
+                  items:
+                    type: string
+                preferences:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Contact saved successfully.
+        '400':
+          description: Invalid/missing submission fields (honeypot triggered, too fast, missing required fields, invalid name/email).
+        '500':
+          description: Internal server error saving the contact.
+  /create-payment-link:
+    post:
+      summary: Create a Stripe Checkout subscription session and return its URL.
+      tags: [Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firebaseUid:
+                  type: string
+                planName:
+                  type: string
+                priceId:
+                  type: string
+                email:
+                  type: string
+                billingCycle:
+                  type: string
+                audienceType:
+                  type: string
+                referrerUid:
+                  type: string
+                commissionCents:
+                  type: number
+      responses:
+        '200':
+          description: Stripe Checkout session URL returned.
+        '500':
+          description: Stripe error creating the checkout session.
+  /cancel-subscription:
+    post:
+      summary: >-
+        Cancel a Stripe subscription and mark the associated contact's
+        subscription as canceled.
+      tags: [Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stripeSubscriptionId:
+                  type: string
+                firebaseUid:
+                  type: string
+      responses:
+        '200':
+          description: Subscription cancelled successfully.
+        '500':
+          description: Error cancelling the subscription.
+  /todd-exit-intent:
+    post:
+      summary: >-
+        Send an internal notification email summarizing a TODD assistant or
+        Lead Vault exit-intent event, including the chat transcript or search
+        context.
+      tags: [Notifications]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source:
+                  type: string
+                isLoggedIn:
+                  type: boolean
+                userId:
+                  type: string
+                name:
+                  type: string
+                messages:
+                  type: array
+                  items:
+                    type: object
+                playedVideoIds:
+                  type: array
+                  items:
+                    type: string
+                suggestedVideoId:
+                  type: string
+                query:
+                  type: string
+                hasSearched:
+                  type: boolean
+                resultCount:
+                  type: number
+                errorMessage:
+                  type: string
+                topResults:
+                  type: array
+                  items:
+                    type: object
+                trigger:
+                  type: string
+                sentAt:
+                  type: string
+      responses:
+        '200':
+          description: Exit intent notification email sent.
+        '400':
+          description: Missing required query/messages/search context for the given source.
+        '500':
+          description: Error sending the exit intent email.
+  /sendgrid/events:
+    post:
+      summary: >-
+        Provider-invoked webhook called by SendGrid to deliver email event
+        notifications (delivered, opened, bounced, etc.) for processing. Not
+        intended to be called directly by API consumers.
+      tags: [Webhooks (Internal)]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+              description: Array of SendGrid event objects as posted by SendGrid's event webhook.
+      responses:
+        '200':
+          description: Events processed successfully.
+        '500':
+          description: SendGrid webhook processing failed.
+  /admin/resolve-contact-timezones:
+    post:
+      summary: >-
+        Batch-resolve and backfill timezone data for a tenant's contacts (or
+        deleted-contacts), inferring timezone from stored value, address, US
+        state, or phone area code, falling back to a tenant default.
+      tags: [Timezone]
+      security:
+        - TenantIdHeader: []
+        - UserEmailHeader: []
+        - UserIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                collections:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Subset of ["contacts", "deleted-contacts"]; defaults to ["contacts"].'
+                limit:
+                  type: number
+                  description: Batch page size, clamped between 1 and 450 (default 250).
+                force:
+                  type: boolean
+                  description: When true, re-resolves timezone even for contacts that already have a valid one.
+                startAfterId:
+                  type: string
+                  description: Document ID cursor to resume a paginated batch run.
+                tenantDefaultTimezone:
+                  type: string
+                  description: Fallback IANA timezone if no other signal resolves (default America/Los_Angeles).
+      responses:
+        '200':
+          description: Batch resolution results returned per requested collection.
+        '400':
+          description: tenantId is required, or no supported collections were requested.
+        '500':
+          description: Timezone batch processing failed.

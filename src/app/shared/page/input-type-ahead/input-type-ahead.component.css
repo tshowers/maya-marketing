@@ -1,0 +1,128 @@
+/* Base styles (shared across modes) */
+.typeahead {
+  position: relative;
+  width: 100%;
+}
+
+ul.list-group {
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--todd-input-border);
+  background: var(--todd-card-bg);
+  color: var(--todd-text);
+  border-radius: 16px;
+  margin-top: 0.4rem;
+  padding: 0.25rem 0;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+}
+
+.list-group-item {
+  border: 0;
+  border-radius: 999px;
+  margin: 0.15rem 0.5rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+
+}
+
+.list-group-item:active {
+  transform: scale(0.98);
+}
+
+
+.preselected-items {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+    z-index: 10002;
+
+}
+
+.preselected-items h5 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
+.preselected-items ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.preselected-items li {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.preselected-items li button {
+  margin-left: 0.4rem;
+  padding-inline: 0.4rem;
+  padding-block: 0.1rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+}
+
+/* Token-synced colors (works in both light/dark via :root tokens) */
+
+.list-group-item:hover {
+  background: var(--todd-table-row-hover-bg);
+  color: var(--todd-text);
+  cursor: pointer;
+}
+
+.preselected-items {
+  background: var(--todd-surface-2);
+  border: 1px solid var(--todd-border);
+  color: var(--todd-text);
+}
+
+.typeahead input {
+  background: var(--todd-input-bg);
+  border: 1px solid var(--todd-input-border);
+  color: var(--todd-text);
+}
+
+.typeahead input:focus {
+  border-color: var(--todd-link);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--todd-link) 50%, transparent);
+}
+
+
+
+
+
+.typeahead-input-wrapper {
+  position: relative;
+}
+
+.typeahead-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  opacity: 0.65;
+  pointer-events: none;
+  font-size: 0.9rem;
+}
+
+.typeahead-input-wrapper .ios-input {
+  padding-left: 2.8rem !important; /* ensure icon doesn't overlap text */
+}

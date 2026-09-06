@@ -1,0 +1,21 @@
+firstName,lastName,companyName,publicInfo,sicCode,email,Title
+Elon,Musk,Tesla,"CEO of Tesla, SpaceX, Neuralink",3711,elon.musk@sample.com,CEO
+Tim,Cook,Apple,CEO of Apple,3571,tim.cook@sample.com,CEO
+Sundar,Pichai,Google,CEO of Alphabet Inc.,7372,sundar.pichai@sample.com,CEO
+Satya,Nadella,Microsoft,CEO of Microsoft,7372,satya.nadella@sample.com,CEO
+Mark,Zuckerberg,Meta,CEO of Meta (formerly Facebook),7374,mark.zuckerberg@sample.com,CEO
+Jeff,Bezos,Amazon,"Founder of Amazon, Blue Origin",5961,jeff.bezos@sample.com,Founder
+Warren,Buffett,Berkshire Hathaway,Chairman & CEO of Berkshire Hathaway,6331,warren.buffett@sample.com,Chairman & CEO
+Oprah,Winfrey,Harpo Productions,"Media mogul, TV host",4832,oprah.winfrey@sample.com,Chairwoman
+Richard,Branson,Virgin Group,Founder of Virgin Group,6799,richard.branson@sample.com,Founder
+Reed,Hastings,Netflix,Co-founder & former CEO of Netflix,7374,reed.hastings@sample.com,Co-founder
+Susan,Wojcicki,YouTube,Former CEO of YouTube,7374,susan.wojcicki@sample.com,Former CEO
+Sheryl,Sandberg,Meta,Former COO of Meta,7374,sheryl.sandberg@sample.com,Former COO
+Jack,Dorsey,Block,Co-founder of Twitter & CEO of Block,7372,jack.dorsey@sample.com,Co-founder
+Evan,Spiegel,Snap Inc.,Co-founder & CEO of Snap Inc.,7372,evan.spiegel@sample.com,Co-founder & CEO
+Marissa,Mayer,Yahoo,Former CEO of Yahoo,7374,marissa.mayer@sample.com,Former CEO
+Bob,Iger,Disney,CEO of The Walt Disney Company,4841,bob.iger@sample.com,CEO
+Mary,Barra,General Motors,CEO of General Motors,3711,mary.barra@sample.com,CEO
+Ginni,Rometty,IBM,Former CEO of IBM,7372,ginni.rometty@sample.com,Former CEO
+Indra,Nooyi,PepsiCo,Former CEO of PepsiCo,2086,indra.nooyi@sample.com,Former CEO
+Howard,Schultz,Starbucks,Former CEO of Starbucks,5812,howard.schultz@sample.com,Former CEO

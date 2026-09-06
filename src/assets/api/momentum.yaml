@@ -1,0 +1,1204 @@
+openapi: 3.0.0
+info:
+  title: TODD Daily Momentum API
+  description: >-
+    API for TODD's Daily Momentum system: momentum engine bootstrap/state,
+    Maya outreach batches, action plans and approvals, receipts and cockpit
+    activity, RSS fallback recommendations, Stripe/Google Calendar
+    integrations, and operator feedback. Mounted at /api via momentumRoutes.js.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    UserIdAuth:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: >-
+        Read by attachAuthContext onto req.user.uid. readAccessGuard requires
+        either this header or x-user-email to be present; the value is not
+        cryptographically verified.
+    UserEmailAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Read by attachAuthContext onto req.user.email. readAccessGuard
+        requires either this header or x-user-id to be present; the value is
+        not cryptographically verified.
+security:
+  - UserIdAuth: []
+  - UserEmailAuth: []
+paths:
+  /momentum/integrations/stripe/callback:
+    get:
+      summary: Handle the Stripe Connect OAuth callback and redirect back to the app
+      tags: [Stripe Integration]
+      security: []
+      responses:
+        '302':
+          description: Redirects to the resolved Stripe onboarding-complete URL
+        '500':
+          description: Unable to complete the Stripe connection
+  /momentum/integrations/stripe/refresh:
+    get:
+      summary: Refresh an expired Stripe Connect onboarding session and redirect to it
+      tags: [Stripe Integration]
+      security: []
+      parameters:
+        - name: session
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Stripe Connect session identifier to refresh
+      responses:
+        '302':
+          description: Redirects to a refreshed Stripe onboarding URL
+        '500':
+          description: Unable to refresh the Stripe onboarding session
+  /momentum/integrations/calendar/callback:
+    get:
+      summary: Handle the Google Calendar OAuth callback and redirect back to the app
+      tags: [Calendar Integration]
+      security: []
+      responses:
+        '302':
+          description: Redirects to the resolved calendar-connect-complete URL
+        '500':
+          description: Unable to complete the calendar connection
+  /momentum/behavior-insights:
+    get:
+      summary: >-
+        Build an anonymous visitor behavior summary and derived insights for
+        a tenant over a period of days, optionally filtered by segment
+      tags: [Behavior Insights]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: periodDays
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Clamped to 1-90, defaults to 30
+        - name: segmentType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: segmentValue
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Behavior insights returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to load behavior insights
+  /momentum/integrations/stripe/connect:
+    post:
+      summary: Create a Stripe Connect onboarding session for the tenant
+      tags: [Stripe Integration]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                frontendPath:
+                  type: string
+                  description: Frontend path to return to after onboarding
+      responses:
+        '200':
+          description: Stripe connection session created
+        '401':
+          description: Authentication (tenant and user) required for Stripe connection
+        '500':
+          description: Unable to start the Stripe connection
+  /momentum/integrations/stripe/status:
+    get:
+      summary: Get the tenant's current Stripe Connect connection status
+      tags: [Stripe Integration]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stripe connection status returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read the Stripe connection status
+  /momentum/integrations/calendar/connect:
+    get:
+      summary: Create a Google Calendar connect (OAuth) session for the tenant
+      tags: [Calendar Integration]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: frontendPath
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Frontend path to return to after connecting
+      responses:
+        '200':
+          description: Calendar connection session created
+        '401':
+          description: Authentication (tenant and user) required for calendar connection
+        '500':
+          description: >-
+            Unable to start the calendar connection (also used for
+            calendar_connect_configuration_invalid and other error codes)
+  /momentum/integrations/calendar/status:
+    get:
+      summary: Get the tenant's current Google Calendar connection status
+      tags: [Calendar Integration]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Calendar connection status returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read the calendar connection status
+  /momentum/prepared-lead-sets/{setId}:
+    get:
+      summary: Fetch a prepared lead set by id for the tenant
+      tags: [Prepared Lead Sets]
+      parameters:
+        - name: setId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prepared lead set returned
+        '400':
+          description: tenantId or setId is required
+        '404':
+          description: Prepared lead set not found
+        '500':
+          description: Unable to read the prepared lead set
+  /momentum/integrations/stripe/dashboard:
+    post:
+      summary: Create a Stripe Express dashboard login link for the tenant
+      tags: [Stripe Integration]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stripe dashboard login link created
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to open the Stripe dashboard
+  /momentum/check:
+    get:
+      summary: >-
+        Run an interactive, on-demand momentum cycle for the tenant against
+        an effective daily goal amount
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: goalAmount
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: goal
+          in: query
+          required: false
+          schema:
+            type: number
+          description: Fallback for goalAmount
+      responses:
+        '200':
+          description: Momentum check result returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to check daily momentum
+  /momentum/health:
+    get:
+      summary: Get the tenant's momentum health report
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Momentum health report returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to run momentum health
+  /momentum/check-again:
+    post:
+      summary: >-
+        Re-check momentum status on demand, clearing a failed engine state
+        back to idle and resolving related open operator alerts
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Refreshed open alerts returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to recheck momentum status
+  /momentum/bootstrap:
+    get:
+      summary: >-
+        Build the full momentum bootstrap payload for the app shell: engine
+        state, goal status, strategy, blockers, action plans, execution
+        receipts, activity feed, receipt feed, opportunity radar preview, and
+        RSS config
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: goalAmount
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: goal
+          in: query
+          required: false
+          schema:
+            type: number
+          description: Fallback for goalAmount
+        - name: activityLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 8, max 24
+        - name: receiptLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 12, max 40
+        - name: radarLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 5, max 8
+        - name: actionPlanLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 40, max 60
+        - name: companyName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: revenueGoalLabel
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Momentum bootstrap payload returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to build the momentum bootstrap
+  /momentum/opportunity-radar:
+    get:
+      summary: Build the momentum opportunity radar snapshot for the tenant
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: companyName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: revenueGoalLabel
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 5, max 8
+      responses:
+        '200':
+          description: Opportunity radar snapshot returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to build the opportunity radar
+  /momentum/engine-state:
+    get:
+      summary: >-
+        Get the tenant's current momentum engine state, hydrated with revenue
+        pressure profile, latest operator report, and open alerts
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Momentum engine state returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read the momentum engine state
+  /momentum/activity:
+    get:
+      summary: List recent momentum events and signals merged into one activity feed
+      tags: [Daily Momentum]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 8, max 20
+      responses:
+        '200':
+          description: Momentum activity feed returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read the momentum activity feed
+  /momentum/receipts:
+    get:
+      summary: Get the momentum execution receipt feed for a day, optionally filtered by status
+      tags: [Receipts]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: eventLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 20, max 100
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated status filters (alias of `statuses`)
+        - name: statuses
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated status filters
+        - name: dateKey
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Momentum receipts feed returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read the momentum receipts feed
+  /momentum/cockpit-activity:
+    get:
+      summary: List cockpit activity items for the tenant, optionally filtered by domain/surface
+      tags: [Cockpit]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 20, max 100
+        - name: domains
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated domain filters (alias of `domain`)
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: surfaces
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated surface filters (alias of `surface`)
+        - name: surface
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cockpit activity items returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read cockpit activity
+  /momentum/cockpit-lights:
+    get:
+      summary: Get the cockpit daily lane state (light statuses) for a lane
+      tags: [Cockpit]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: laneId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: dateKey
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cockpit daily lane state returned
+        '400':
+          description: tenantId or laneId is required
+        '500':
+          description: Unable to read cockpit lights
+  /momentum/cockpit-lights/{laneId}/{lightId}:
+    get:
+      summary: Get the detail (including recent events) for a single cockpit light within a lane
+      tags: [Cockpit]
+      parameters:
+        - name: laneId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lightId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: dateKey
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: eventLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Defaults to 20, max 50
+      responses:
+        '200':
+          description: Cockpit light detail returned
+        '400':
+          description: tenantId, laneId, and lightId are required
+        '500':
+          description: Unable to read cockpit light detail
+  /momentum/rss-config:
+    get:
+      summary: Get the tenant's momentum RSS fallback configuration
+      tags: [RSS Recommendations]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: RSS configuration returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to read RSS configuration
+    post:
+      summary: Update the tenant's momentum RSS fallback configuration
+      tags: [RSS Recommendations]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              description: RSS configuration object; passed through as-is to the config store
+              additionalProperties: true
+      responses:
+        '200':
+          description: RSS configuration updated
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to update RSS configuration
+  /momentum/approval-policy:
+    post:
+      summary: Set the approval policy mode for a category (e.g. auto-approve vs. manual)
+      tags: [Approval Policy]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                mode:
+                  type: string
+      responses:
+        '200':
+          description: Approval policy updated
+        '400':
+          description: tenantId, category, and mode are required
+        '500':
+          description: Unable to update the approval policy
+    get:
+      summary: Get the tenant's current approval policy (evaluated against a "met" goal status)
+      tags: [Approval Policy]
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approval policy returned
+        '500':
+          description: Unable to retrieve the approval policy
+  /momentum/approval-policy/config:
+    post:
+      summary: Update the approval policy's daily draft/auto-send targets
+      tags: [Approval Policy]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dailyDraftTarget:
+                  type: number
+                dailyAutoSendTarget:
+                  type: number
+      responses:
+        '200':
+          description: Approval policy config updated
+        '400':
+          description: >-
+            tenantId is required, and at least one of dailyDraftTarget or
+            dailyAutoSendTarget must be provided
+        '500':
+          description: Unable to update the approval policy config
+  /momentum/operator-config:
+    get:
+      summary: Get the tenant's momentum operator configuration
+      tags: [Operator Config]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operator config returned
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to retrieve the operator config
+    post:
+      summary: Patch the tenant's momentum operator configuration
+      tags: [Operator Config]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Partial operator config patch; entire body is applied as-is
+              additionalProperties: true
+      responses:
+        '200':
+          description: Operator config updated
+        '400':
+          description: tenantId and an operator config patch are required
+        '500':
+          description: Unable to update the operator config
+  /momentum/maya-batches/latest:
+    get:
+      summary: Get the tenant's most recent Maya outreach batch
+      tags: [Maya Outreach Batches]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest Maya outreach batch returned (or null if none exists)
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to retrieve the latest Maya outreach batch
+  /momentum/maya-batches/{batchId}:
+    get:
+      summary: Get a specific Maya outreach batch by id
+      tags: [Maya Outreach Batches]
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maya outreach batch returned (or null if not found)
+        '400':
+          description: tenantId or batchId is required
+        '500':
+          description: Unable to retrieve the Maya outreach batch
+  /momentum/maya-batches/run:
+    post:
+      summary: Run Maya's outreach batch on demand for the tenant, bypassing the normal run window
+      tags: [Maya Outreach Batches]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maya batch run started/completed (or skipped, per result.skipped)
+        '400':
+          description: tenantId is required
+        '500':
+          description: Unable to run Maya on demand
+  /momentum/operator/test-generated-email:
+    post:
+      summary: Send a test of a Maya/operator-generated email to the signed-in user
+      tags: [Operator Config]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                testType:
+                  type: string
+      responses:
+        '200':
+          description: Generated email test sent
+        '400':
+          description: tenantId or testType is required
+        '401':
+          description: A signed-in user email is required to receive the test message
+        '500':
+          description: Unable to send the generated email test
+  /momentum/execution-posture:
+    post:
+      summary: Set the tenant's momentum execution posture mode
+      tags: [Approval Policy]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+      responses:
+        '200':
+          description: Execution posture updated
+        '400':
+          description: tenantId and mode are required
+        '500':
+          description: Unable to update the execution posture
+  /momentum/action-plans/{actionPlanId}/approve:
+    post:
+      summary: Approve an action plan and record an approval-granted momentum signal
+      tags: [Action Plans]
+      parameters:
+        - name: actionPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action plan approved
+        '400':
+          description: tenantId and actionPlanId are required
+        '500':
+          description: Unable to approve the action plan
+  /momentum/action-plans/{actionPlanId}/feedback:
+    post:
+      summary: >-
+        Record operator feedback (a correction/decision) against a specific
+        action plan, optionally dismissing/completing the action
+      tags: [Action Plans]
+      parameters:
+        - name: actionPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                reasonCode:
+                  type: string
+                operatorNote:
+                  type: string
+                scope:
+                  type: string
+                  description: Defaults to "contact"
+                requestedBehavior:
+                  type: object
+                dismissAction:
+                  type: boolean
+                  description: Defaults to true
+      responses:
+        '200':
+          description: Feedback stored, action plan updated
+        '400':
+          description: tenantId, actionPlanId, and decision are required
+        '404':
+          description: Action plan not found
+        '500':
+          description: Unable to store TODD feedback
+  /momentum/operator-feedback:
+    post:
+      summary: Record operator feedback against an arbitrary target (not scoped to an action plan)
+      tags: [Feedback]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                reasonCode:
+                  type: string
+                operatorNote:
+                  type: string
+                scope:
+                  type: string
+                  description: Defaults to "tenant"
+                requestedBehavior:
+                  type: object
+                target:
+                  type: object
+                  description: Must include type and id
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+      responses:
+        '200':
+          description: Operator feedback stored
+        '400':
+          description: tenantId, decision, target.type, and target.id are required
+        '500':
+          description: Unable to store the operator feedback
+  /momentum/revenue-log:
+    post:
+      summary: Manually log a revenue entry for the tenant and append an acquisition ledger event
+      tags: [Revenue & Appointments]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                source:
+                  type: string
+                  description: Defaults to "manual"
+                note:
+                  type: string
+                contactId:
+                  type: string
+                threadId:
+                  type: string
+                planId:
+                  type: string
+                strategyId:
+                  type: string
+                segmentId:
+                  type: string
+                angleId:
+                  type: string
+      responses:
+        '200':
+          description: Revenue entry logged
+        '400':
+          description: tenantId is required, and amount must be a positive number
+        '500':
+          description: Unable to log revenue
+  /momentum/appointment-log:
+    post:
+      summary: >-
+        Manually log a booked appointment, optionally hydrated from a prior
+        booking-intent acquisition event, and append an acquisition ledger
+        event
+      tags: [Revenue & Appointments]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactId:
+                  type: string
+                emailAddress:
+                  type: string
+                appointmentAt:
+                  type: string
+                  description: ISO timestamp; defaults to now
+                source:
+                  type: string
+                  description: Defaults to "manual"
+                note:
+                  type: string
+                bookingIntentEventId:
+                  type: string
+                bookingUrl:
+                  type: string
+                clickedAt:
+                  type: string
+                subject:
+                  type: string
+                sourceSystem:
+                  type: string
+                threadId:
+                  type: string
+                campaignId:
+                  type: string
+                actionId:
+                  type: string
+                planId:
+                  type: string
+                strategyId:
+                  type: string
+                segmentId:
+                  type: string
+                angleId:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Appointment logged
+        '400':
+          description: tenantId is required, and contactId or emailAddress is required
+        '500':
+          description: Unable to log appointment
+  /momentum/signals:
+    post:
+      summary: Record a momentum signal (event) for the tenant
+      tags: [Signals]
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                type:
+                  type: string
+                  description: Signal type (required)
+                source:
+                  type: string
+                  description: Defaults to "api"
+                payload:
+                  type: object
+                goalAmount:
+                  type: number
+                goal:
+                  type: number
+                  description: Fallback for goalAmount
+      responses:
+        '200':
+          description: Momentum signal recorded
+        '400':
+          description: tenantId and signal type are required
+        '500':
+          description: Unable to record the momentum signal
+  /momentum/action-plans/{actionPlanId}/open:
+    post:
+      summary: >-
+        Open (mark opened) an action plan recommendation; for RSS
+        fallback social-draft plans this also triggers execution
+      tags: [Action Plans]
+      parameters:
+        - name: actionPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action plan opened
+        '400':
+          description: tenantId and actionPlanId are required
+        '404':
+          description: Action plan not found
+        '500':
+          description: Unable to open the action plan
+  /momentum/action-plans/{actionPlanId}/complete:
+    post:
+      summary: >-
+        Complete an action plan; if scoped drafts (draftCount/postIds) are
+        supplied, marks it waiting-for-approval instead of completed
+      tags: [Action Plans]
+      parameters:
+        - name: actionPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                draftCount:
+                  type: number
+                postIds:
+                  type: array
+                  items:
+                    type: string
+                reviewRoute:
+                  type: string
+                  description: Defaults to "/outreach/social" or the plan's existing reviewRoute
+      responses:
+        '200':
+          description: Action plan completed (or set to waiting_for_approval)
+        '400':
+          description: tenantId and actionPlanId are required
+        '404':
+          description: Action plan not found
+        '500':
+          description: Unable to complete the action plan
+  /momentum/action-plans/{actionPlanId}/dismiss:
+    post:
+      summary: Dismiss an action plan recommendation
+      tags: [Action Plans]
+      parameters:
+        - name: actionPlanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action plan dismissed
+        '400':
+          description: tenantId and actionPlanId are required
+        '404':
+          description: Action plan not found
+        '500':
+          description: Unable to dismiss the action plan

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": "./out-tsc/spec", "types": ["jasmine", "node"] },
+  "include": ["src/app/features/marketing/**/*.spec.ts", "src/**/*.d.ts"]
+}

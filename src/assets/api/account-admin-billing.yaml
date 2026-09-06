@@ -1,0 +1,964 @@
+openapi: 3.0.0
+info:
+  title: TODD Account, Admin & Billing API
+  description: >-
+    Account center, tenant admin membership management, add-on entitlement
+    checks, TODD Suite / Outreach Stripe billing, KPI and goal-strategy
+    endpoints, affiliate tracking, marketing funnel/onboarding events, public
+    auth recovery/invite flows, anonymous behavior capture, public signature
+    asset hosting, and the raw Stripe webhook receiver. Auth is modeled as it
+    is actually enforced in code: some routes read identity headers
+    (`x-user-email`, `x-tenant-id`, `x-user-id`) via a lightweight
+    `attachAuthContext` middleware that does NOT verify a token, some routes
+    verify a Firebase ID token passed in the request body, and several routes
+    have no auth middleware at all and are effectively public.
+  version: 1.0.0
+servers:
+  - url: https://api.todd.taliferro.com/api
+components:
+  securitySchemes:
+    HeaderIdentityAuth:
+      type: apiKey
+      in: header
+      name: x-user-email
+      description: >-
+        Identity headers read by attachAuthContext (x-user-email, and
+        typically x-tenant-id / x-user-id alongside it) and populated onto
+        req.user. This middleware only reads headers, it does NOT verify a
+        signed token. Routes protected by readAccessGuard additionally
+        require req.user to contain a uid or email, or they respond 401.
+    TenantIdHeaderAuth:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+      description: >-
+        Tenant identity header read by attachAuthContext and populated onto
+        req.user.tenantId. Not independently verified.
+security: []
+paths:
+  /account/summary:
+    get:
+      summary: >-
+        Load the account center summary for a tenant/user: tenant billing
+        fields, contact profile, computed product entitlements (TODD,
+        Network, Moves, Outreach, Docs, Knowledge, Pulse, Lead Vault, TODD
+        Suite), recent Stripe checkouts, survey orders, and audit logs.
+      tags: [Account]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Falls back to req.user.tenantId/uid if omitted. Note: this route
+            imports attachAuthContext/readAccessGuard but never wires them up
+            via router.use, so req.user is never actually populated from
+            headers in practice - tenantId/userId/email must be supplied as
+            query params.
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account summary returned.
+        '400':
+          description: tenantId is required.
+        '500':
+          description: Unable to load account summary.
+  /account/subscriptions/cancel:
+    post:
+      summary: >-
+        Cancel a Stripe subscription for a given feature (todd, moves,
+        network, outreach, docs, or knowledge) and flip the corresponding
+        paid-access flags on the tenant/contact record. Pulse (survey)
+        cancellation is not yet self-serve and always returns 400.
+      tags: [Account, Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feature:
+                  type: string
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                subscriptionId:
+                  type: string
+      responses:
+        '200':
+          description: Subscription canceled successfully.
+        '400':
+          description: >-
+            tenantId is required, Pulse cancellation is not self-serve, or no
+            active Stripe subscription was found for the feature.
+        '500':
+          description: Stripe not configured, or cancellation failed.
+  /public/auth/send-tenant-invite-email:
+    post:
+      summary: >-
+        Verify the caller's Firebase ID token, validate the invite record and
+        the caller's permission to manage the tenant, then send a
+        SendGrid-hosted tenant invite email with a secure sign-in link.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken, inviteId, tenantId, email]
+              properties:
+                idToken:
+                  type: string
+                  description: Firebase ID token, verified server-side.
+                inviteId:
+                  type: string
+                tenantId:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Invite email sent.
+        '400':
+          description: >-
+            idToken/inviteId/tenantId/email missing, or invite tenant/email
+            mismatch.
+        '403':
+          description: Only the original inviter or a tenant admin can resend invites.
+        '404':
+          description: Invite not found.
+        '409':
+          description: This invite has already been accepted.
+        '500':
+          description: Unable to send tenant invite email.
+  /public/auth/phone-recover:
+    post:
+      summary: >-
+        Verify the caller's Firebase ID token, look up the verified phone
+        number on that Firebase Auth user, and match it against contact
+        records to mint a Firebase custom sign-in token for account recovery.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken]
+              properties:
+                idToken:
+                  type: string
+                  description: Firebase ID token, verified server-side.
+      responses:
+        '200':
+          description: Custom token and matched account returned.
+        '400':
+          description: No verified phone number found on this sign-in attempt.
+        '404':
+          description: No TODD account matched that phone number.
+        '409':
+          description: Multiple TODD accounts matched that phone number.
+        '500':
+          description: Unable to recover phone sign-in.
+  /public/auth/accept-invite:
+    post:
+      summary: >-
+        Verify the caller's Firebase ID token, validate the invite, then
+        create/update the user profile and tenant contact record, mark the
+        invite accepted, and claim any seeded SayIt profile for the new user.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken, inviteId, tenantId, email]
+              properties:
+                idToken:
+                  type: string
+                  description: Firebase ID token, verified server-side.
+                inviteId:
+                  type: string
+                tenantId:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Invite accepted and contact record returned.
+        '400':
+          description: inviteId/tenantId/email missing, or invite tenant mismatch.
+        '403':
+          description: Invite email does not match the signed-in account.
+        '404':
+          description: Invite not found.
+        '409':
+          description: This invite has already been accepted.
+        '500':
+          description: Unable to accept tenant invite.
+  /public/auth/email-phone-recover:
+    post:
+      summary: >-
+        Verify the caller's Firebase ID token, then match the request email
+        together with the verified phone number on the Firebase Auth user
+        against contact records to mint a Firebase custom sign-in token.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken, email]
+              properties:
+                idToken:
+                  type: string
+                  description: Firebase ID token, verified server-side.
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Custom token and matched account returned.
+        '400':
+          description: Email or verified phone number missing.
+        '404':
+          description: No TODD account found for that email address.
+        '409':
+          description: Phone mismatch, or multiple accounts matched.
+        '500':
+          description: Unable to recover sign-in with email and phone.
+  /admin/tenants/{tenantId}/members:
+    get:
+      summary: List the members of a tenant for the admin console.
+      tags: [Admin]
+      security:
+        - HeaderIdentityAuth: []
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant members returned.
+        '401':
+          description: Authentication required for this data.
+    post:
+      summary: Add a user to a tenant's member list.
+      tags: [Admin]
+      security:
+        - HeaderIdentityAuth: []
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Tenant member added.
+        '401':
+          description: Authentication required for this data.
+  /admin/tenants/{tenantId}/members/{userId}:
+    delete:
+      summary: Remove a user from a tenant's member list.
+      tags: [Admin]
+      security:
+        - HeaderIdentityAuth: []
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant member removed.
+        '401':
+          description: Authentication required for this data.
+  /addon-access:
+    get:
+      summary: >-
+        Check whether a tenant has access to suite-exclusive add-ons (Signal
+        Engine, Momentum, Social Media). Requires the TODD Suite subscription
+        (toddSuitePaidAccess); individual module subscriptions do not grant
+        access. Internal Taliferro tenants always have access.
+      tags: [Billing]
+      security:
+        - HeaderIdentityAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: hasAccess flag and reason returned.
+        '400':
+          description: tenantId query parameter is missing.
+  /checkout:
+    post:
+      summary: Create a Stripe Checkout session (subscription mode) for TODD Suite.
+      tags: [Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId, email]
+              properties:
+                tenantId:
+                  type: string
+                email:
+                  type: string
+                priceId:
+                  type: string
+                referrerUid:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session URL and id returned.
+        '400':
+          description: tenantId or email is required.
+        '500':
+          description: Stripe not configured, price id not configured, or checkout creation failed.
+  /checkout/confirm:
+    post:
+      summary: >-
+        Retrieve a completed TODD Suite Stripe checkout session and, if paid,
+        write toddSuitePaidAccess and subscription fields onto the tenant
+        (and mirrored contact) record.
+      tags: [Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+      responses:
+        '200':
+          description: TODD Suite access confirmed and recorded.
+        '400':
+          description: sessionId is required, or tenantId missing from checkout metadata.
+        '402':
+          description: TODD Suite checkout has not been paid.
+        '404':
+          description: Checkout session was not found.
+        '500':
+          description: Stripe not configured, or confirmation failed.
+  /outreach/checkout:
+    post:
+      summary: >-
+        Find or create a Stripe customer for the tenant and create a Stripe
+        Checkout session (subscription mode) for the Outreach add-on,
+        recording it in STRIPE_CHECKOUTS.
+      tags: [Billing]
+      security:
+        - HeaderIdentityAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                email:
+                  type: string
+                customerEmail:
+                  type: string
+                userEmail:
+                  type: string
+                priceId:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session URL and id returned.
+        '400':
+          description: tenantId is required.
+        '401':
+          description: Authentication required for this data.
+        '500':
+          description: Stripe secret key or price id not configured, or checkout creation failed.
+  /outreach/checkout/confirm:
+    post:
+      summary: >-
+        Retrieve an Outreach Stripe checkout session, record its status, and
+        if paid, mark outreachPaidAccess true and set provisioning status to
+        requested on the tenant.
+      tags: [Billing]
+      security:
+        - HeaderIdentityAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: string
+                session_id:
+                  type: string
+      responses:
+        '200':
+          description: Outreach billing confirmed.
+        '400':
+          description: sessionId is required, or no tenant id found for this checkout session.
+        '401':
+          description: Authentication required for this data.
+        '402':
+          description: Checkout has not completed with an active subscription.
+        '500':
+          description: Stripe secret key not configured, or confirmation failed.
+  /outreach/provisioning:
+    get:
+      summary: >-
+        Get the current Outreach sender/domain-authentication provisioning
+        state for a tenant.
+      tags: [Billing]
+      security:
+        - HeaderIdentityAuth: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Falls back to the authenticated user's tenantId/uid if omitted.
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Provisioning state returned.
+        '400':
+          description: tenantId is required.
+        '401':
+          description: Authentication required for this data.
+        '500':
+          description: Unable to load provisioning state.
+  /outreach/provisioning/request:
+    post:
+      summary: >-
+        Save an Outreach provisioning request (sender email/domain, domain
+        authentication status, SendGrid identifiers, notes) onto the tenant.
+      tags: [Billing]
+      security:
+        - HeaderIdentityAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userId:
+                  type: string
+                status:
+                  type: string
+                provisioningStatus:
+                  type: string
+                provisioningMode:
+                  type: string
+                outreachProvisioningMode:
+                  type: string
+                domainAuthenticationStatus:
+                  type: string
+                outreachDomainAuthenticationStatus:
+                  type: string
+                notes:
+                  type: string
+                provisioningNotes:
+                  type: string
+                senderEmail:
+                  type: string
+                domain:
+                  type: string
+                method:
+                  type: string
+                authenticatedDomain:
+                  type: string
+                outreachAuthenticatedDomain:
+                  type: string
+                sendgridDomainAuthId:
+                  type: string
+                outreachSendgridDomainAuthId:
+                  type: string
+                sendgridSenderId:
+                  type: string
+                outreachSendgridSenderId:
+                  type: string
+                sendgridSubuserUsername:
+                  type: string
+                outreachSendgridSubuserUsername:
+                  type: string
+      responses:
+        '200':
+          description: Provisioning request saved.
+        '400':
+          description: tenantId is required.
+        '401':
+          description: Authentication required for this data.
+        '500':
+          description: Unable to save provisioning request.
+  /kpi/today:
+    get:
+      summary: >-
+        Return today's stored KPI for a tenant if present, otherwise compute
+        today's revenue on the fly and persist it.
+      tags: [KPI]
+      security: []
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: KPI for today returned.
+        '400':
+          description: tenantId required.
+        '500':
+          description: Internal error.
+  /strategy/next:
+    post:
+      summary: >-
+        Decide the next recommended goal-strategy action for a tenant based
+        on today's KPI versus goal targets, optionally enqueueing the
+        strategy as a job.
+      tags: [KPI]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId]
+              properties:
+                tenantId:
+                  type: string
+                goalAmount:
+                  type: number
+                goalAppointments:
+                  type: number
+                enqueue:
+                  type: boolean
+      responses:
+        '200':
+          description: Strategy decision returned (and job info if enqueued).
+        '400':
+          description: tenantId required.
+        '500':
+          description: Internal error.
+  /affiliate/track-click:
+    post:
+      summary: >-
+        Record an affiliate link click event and append an inbound
+        acquisition-ledger event. Rate-limited/bot-filtered as a public
+        anonymous endpoint.
+      tags: [Marketing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [referrerUid]
+              properties:
+                referrerUid:
+                  type: string
+                landingUrl:
+                  type: string
+                sessionId:
+                  type: string
+                userAgent:
+                  type: string
+      responses:
+        '200':
+          description: Click recorded.
+        '400':
+          description: Invalid referrerUid.
+        '500':
+          description: track-click failed.
+  /affiliate/track-signup:
+    post:
+      summary: >-
+        Record a signup attributed to an affiliate referrer (deduplicated)
+        and append an inbound acquisition-ledger event. Rate-limited/bot-
+        filtered as a public anonymous endpoint.
+      tags: [Marketing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [referrerUid, newUserUid]
+              properties:
+                referrerUid:
+                  type: string
+                newUserUid:
+                  type: string
+                newUserEmail:
+                  type: string
+      responses:
+        '200':
+          description: Signup recorded (or already deduped).
+        '400':
+          description: Invalid referrerUid or newUserUid.
+        '500':
+          description: track-signup failed.
+  /affiliate/track-paid-conversion:
+    post:
+      summary: >-
+        Record a paid conversion attributed to an affiliate referrer,
+        including commission/revenue data, and append a revenue
+        acquisition-ledger event. Rate-limited/bot-filtered as a public
+        anonymous endpoint.
+      tags: [Marketing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [referrerUid]
+              properties:
+                referrerUid:
+                  type: string
+                customerUid:
+                  type: string
+                customerEmail:
+                  type: string
+                tenantId:
+                  type: string
+                sessionId:
+                  type: string
+                subscriptionId:
+                  type: string
+                source:
+                  type: string
+                product:
+                  type: string
+                planName:
+                  type: string
+                priceId:
+                  type: string
+                revenueCents:
+                  type: number
+                commissionCents:
+                  type: number
+                compensationStatus:
+                  type: string
+      responses:
+        '200':
+          description: Paid conversion recorded.
+        '400':
+          description: Invalid referrerUid.
+        '500':
+          description: track-paid-conversion failed.
+  /marketing/funnel-events:
+    post:
+      summary: >-
+        Capture a raw marketing funnel event. Public endpoint (also passes
+        through anonymous bot-filtering/rate-limiting since it is under the
+        /api/marketing prefix).
+      tags: [Marketing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Free-form funnel event payload, forwarded as-is to the funnel service.
+              additionalProperties: true
+      responses:
+        '202':
+          description: Marketing funnel event captured.
+        '500':
+          description: Unable to capture marketing funnel event.
+  /marketing/onboarding-series/enroll:
+    post:
+      summary: >-
+        Enroll the authenticated tenant/user in the onboarding email series,
+        recording signup trigger and attribution data.
+      tags: [Marketing]
+      security:
+        - HeaderIdentityAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trigger:
+                  type: string
+                anonymousVisitorId:
+                  type: string
+                anonymousSessionId:
+                  type: string
+                sessionId:
+                  type: string
+                attribution:
+                  type: object
+      responses:
+        '200':
+          description: Onboarding series enrollment processed.
+        '401':
+          description: Authentication required for this data.
+        '500':
+          description: Unable to enroll onboarding series.
+  /marketing/activation/mark:
+    post:
+      summary: Record that the authenticated tenant/user reached an activation milestone.
+      tags: [Marketing]
+      security:
+        - HeaderIdentityAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                activationType:
+                  type: string
+                activationSource:
+                  type: string
+                activationRoute:
+                  type: string
+                activationTitle:
+                  type: string
+      responses:
+        '200':
+          description: Activation milestone recorded.
+        '401':
+          description: Authentication required for this data.
+        '500':
+          description: Unable to record activation milestone.
+  /anonymous-behavior/events:
+    post:
+      summary: >-
+        Capture a single anonymous website behavior event (page_view,
+        cta_click, or page_exit) for funnel analytics. Public endpoint,
+        deliberately kept on its own router so broader outreach auth/read
+        guards cannot intercept it; also passes through anonymous
+        bot-filtering/rate-limiting.
+      tags: [Marketing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenantId, sessionId, anonymousVisitorId, eventType, pageUrl, timestamp]
+              properties:
+                tenantId:
+                  type: string
+                sessionId:
+                  type: string
+                anonymousVisitorId:
+                  type: string
+                eventType:
+                  type: string
+                  enum: [page_view, cta_click, page_exit]
+                pageUrl:
+                  type: string
+                pageTitle:
+                  type: string
+                referrer:
+                  type: string
+                ctaId:
+                  type: string
+                ctaLabel:
+                  type: string
+                timestamp:
+                  type: number
+                dwellTimeMs:
+                  type: number
+                campaignSource:
+                  type: string
+                campaignMedium:
+                  type: string
+                campaignName:
+                  type: string
+                campaignTerm:
+                  type: string
+                campaignContent:
+                  type: string
+                deviceType:
+                  type: string
+                metadata:
+                  type: object
+      responses:
+        '202':
+          description: Anonymous behavior event captured.
+        '400':
+          description: Anonymous behavior event payload is invalid.
+        '500':
+          description: Failed to capture anonymous behavior event.
+  /public/signature-assets:
+    post:
+      summary: >-
+        Upload a base64 data-URL image (signature/logo asset) to Cloud
+        Storage and register it in publicSignatureAssets, returning a
+        long-lived signed read URL. Also reachable unprefixed at the site
+        root (/public/signature-assets), since signatureAssetRoutes is
+        mounted both at /api and at / in index.js.
+      tags: [Account]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dataUrl]
+              properties:
+                fileName:
+                  type: string
+                dataUrl:
+                  type: string
+                  description: >-
+                    data: URL, e.g. data:image/png;base64,... Must be one of
+                    image/png, image/jpeg, image/webp, image/svg+xml,
+                    image/gif and under 2 MB.
+      responses:
+        '201':
+          description: Asset uploaded; assetId and signed asset URL returned.
+        '400':
+          description: Invalid or unsupported image payload.
+  /signature-assets/{assetId}:
+    get:
+      summary: >-
+        Redirect to the signed read URL for a previously uploaded signature
+        asset. Also reachable unprefixed at the site root
+        (/signature-assets/{assetId}), since signatureAssetRoutes is mounted
+        both at /api and at / in index.js.
+      tags: [Account]
+      security: []
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the signed asset URL.
+        '404':
+          description: Asset not found.
+        '500':
+          description: Unable to load asset.
+  /stripe/webhook:
+    servers:
+      - url: https://api.todd.taliferro.com
+        description: >-
+          Mounted at the server root, not under /api - overrides the spec-wide
+          server for this path only.
+    post:
+      summary: >-
+        Called by Stripe, not by app clients. Receives Stripe billing webhook
+        events and reconciles subscription/checkout state. Mounted at the
+        server root (no /api prefix) before the JSON body parser, and relies
+        on the raw (unparsed) request body plus the Stripe-Signature header
+        for signature verification via express.raw({type: "application/json"}).
+      tags: [Webhooks (Internal)]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Raw Stripe event payload; verified via Stripe-Signature header, not parsed by the standard JSON body parser.
+      responses:
+        '200':
+          description: Webhook processed.
+  /stripeWebhook:
+    servers:
+      - url: https://api.todd.taliferro.com
+        description: >-
+          Mounted at the server root, not under /api - overrides the spec-wide
+          server for this path only.
+    post:
+      summary: >-
+        Called by Stripe, not by app clients. Legacy-named alias of
+        /stripe/webhook using the same handler. Mounted at the server root
+        (no /api prefix) before the JSON body parser, and relies on the raw
+        (unparsed) request body plus the Stripe-Signature header for
+        signature verification via express.raw({type: "application/json"}).
+      tags: [Webhooks (Internal)]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Raw Stripe event payload; verified via Stripe-Signature header, not parsed by the standard JSON body parser.
+      responses:
+        '200':
+          description: Webhook processed.

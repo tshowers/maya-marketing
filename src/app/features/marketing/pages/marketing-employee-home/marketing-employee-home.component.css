@@ -1,0 +1,571 @@
+:host {
+  display: block;
+  --maya-text: #e8f1ff;
+  --maya-muted: #9aadc1;
+  --maya-border: rgba(0, 191, 255, 0.18);
+  --maya-border-strong: rgba(0, 191, 255, 0.28);
+  --maya-shadow: 0 22px 60px rgba(2, 6, 23, 0.42);
+  --maya-bg: linear-gradient(180deg, #111b28, #0d141f);
+  --maya-surface: #162231;
+  --maya-surface-border: rgba(156, 190, 220, 0.18);
+  --maya-accent: #38bdf8;
+  background: var(--todd-surface-1);
+}
+
+@media (prefers-color-scheme: light) {
+  :host {
+    --maya-text: #0f172a;
+    --maya-muted: #667085;
+    --maya-border: #dfe4ea;
+    --maya-border-strong: #b8c7d9;
+    --maya-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+    --maya-bg: linear-gradient(180deg, #ffffff, #f6f8fa);
+    --maya-surface: #ffffff;
+    --maya-surface-border: #dfe4ea;
+    --maya-accent: #0066ff;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .maya-view-tabs { background: rgba(255, 255, 255, 0.9) !important; }
+  .maya-view-tabs button:hover,
+  .maya-view-tab--active { background: rgba(0, 102, 255, 0.08) !important; }
+}
+
+.maya-status-page {
+  min-height: 100%;
+}
+
+.maya-status-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  color: var(--maya-text);
+}
+
+.maya-view-tabs,
+.maya-plan-tabs {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.35rem;
+  border: 1px solid var(--maya-border);
+  border-radius: 18px;
+  background: rgba(12, 22, 35, 0.86);
+}
+
+.maya-view-tabs button,
+.maya-plan-tabs button {
+  flex: 1;
+  border: 0;
+  border-radius: 13px;
+  padding: 0.75rem 1rem;
+  color: var(--maya-muted);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.maya-view-tabs button:hover,
+.maya-view-tab--active,
+.maya-plan-tab--active {
+  color: var(--maya-text) !important;
+  background: rgba(56, 189, 248, 0.14) !important;
+  box-shadow: inset 0 0 0 1px var(--maya-border-strong);
+}
+
+.maya-status-card,
+.maya-step-tab,
+.maya-metric,
+.maya-guide-hero,
+.maya-guide-card,
+.maya-guide-work {
+  border: 1px solid var(--maya-border);
+  border-radius: 24px;
+  background: var(--maya-bg);
+  box-shadow: var(--maya-shadow);
+}
+
+.maya-status-card,
+.maya-guide-hero,
+.maya-guide-card,
+.maya-guide-work {
+  padding: 1rem;
+}
+
+.maya-status-card__eyebrow,
+.maya-metric__topline span,
+.maya-guide-card__eyebrow,
+.maya-guide-hero__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--maya-accent);
+}
+
+.maya-status-card h1,
+.maya-metric__topline strong,
+.maya-guide-hero h2 {
+  letter-spacing: -0.04em;
+}
+
+.maya-status-card h1 {
+  margin: 0.7rem 0 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 0.95;
+}
+
+.maya-status-card p,
+.maya-metric p,
+.maya-guide-hero p,
+.maya-guide-check__body p,
+.maya-guide-work__summary,
+.maya-guide-work__instruction,
+.maya-lane-item p {
+  color: var(--maya-muted);
+}
+
+.maya-status-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.maya-status-hero__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.maya-status-telemetry { margin: 0.85rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--maya-border); color: var(--maya-muted); font-size: 0.88rem; }
+
+.maya-status-banner--warn {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin: 0.85rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 0.65rem;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--maya-text);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.maya-status-banner--warn__icon {
+  flex-shrink: 0;
+  font-weight: 800;
+  color: rgb(220, 38, 38);
+}
+
+.maya-step-tabs {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: stretch;
+}
+
+.maya-step-tab {
+  position: relative;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  appearance: none;
+  min-height: 108px;
+  padding: 0.9rem 0.8rem 0.85rem;
+  color: inherit;
+  text-align: left;
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+}
+
+.maya-step-tab:hover {
+  transform: translateY(-1px);
+}
+
+.maya-step-tab__rail {
+  position: absolute;
+  top: 1.55rem;
+  left: calc(50% + 2rem);
+  width: calc(100% - 2.6rem);
+  height: 2px;
+  background: linear-gradient(90deg, var(--maya-border-strong), transparent);
+  opacity: 0.65;
+}
+
+.maya-step-tab:last-child .maya-step-tab__rail {
+  display: none;
+}
+
+.maya-step-tab__topline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.maya-step-tab__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  background: var(--maya-surface);
+  border: 1px solid var(--maya-surface-border);
+}
+
+.maya-step-tab__label {
+  display: block;
+  max-width: 10ch;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--maya-muted);
+}
+
+.maya-step-tab--active {
+  border-color: var(--maya-accent);
+  box-shadow: 0 0 0 0.12rem var(--maya-border-strong), var(--maya-shadow);
+}
+
+.maya-step-tab--positive {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.maya-step-tab--attention {
+  border-color: rgba(249, 115, 22, 0.24);
+}
+
+.maya-step-tab--warn {
+  border-color: rgba(239, 68, 68, 0.26);
+}
+
+.maya-step-tab--active .maya-step-tab__number {
+  background: var(--maya-border-strong);
+  border-color: var(--maya-accent);
+  color: var(--maya-accent);
+}
+
+.maya-step-tab--active .maya-step-tab__label {
+  color: var(--maya-text);
+}
+
+.maya-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.maya-metric {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.maya-metric--positive {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.maya-metric--attention {
+  border-color: rgba(249, 115, 22, 0.22);
+}
+
+.maya-metric--warn {
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.maya-metric__gauge {
+  display: grid;
+  place-items: center;
+}
+
+.maya-metric__body {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.maya-metric__topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.maya-metric__topline strong {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.maya-metric p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.maya-guide {
+  display: grid;
+  gap: 1rem;
+}
+
+.maya-guide-hero h2 {
+  margin: 0.45rem 0 0;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.06;
+}
+
+.maya-guide-hero p {
+  margin: 0.6rem 0 0;
+  line-height: 1.65;
+}
+
+.maya-guide-hero__eyebrow--pipeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.maya-guide-hero__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.maya-guide-meta-card {
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid var(--maya-surface-border);
+  background: var(--maya-surface);
+}
+
+.maya-guide-meta-card span {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--maya-accent);
+}
+
+.maya-guide-meta-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 1rem;
+}
+
+.maya-guide-hero__detail {
+  margin-top: 1rem;
+}
+
+.maya-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.maya-guide-card h3,
+.maya-guide-work h3 {
+  margin: 0.4rem 0 0;
+  font-size: 1.2rem;
+}
+
+.maya-guide-checklist,
+.maya-guide-work__list {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.9rem;
+}
+
+.maya-guide-check,
+.maya-lane-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.85rem;
+  align-items: start;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid var(--maya-surface-border);
+  background: var(--maya-surface);
+}
+
+.maya-guide-check app-status-led,
+.maya-lane-item app-status-led {
+  margin-top: 0.12rem;
+}
+
+.maya-guide-check__body strong,
+.maya-lane-item__body strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.maya-guide-check__body p,
+.maya-lane-item__body p,
+.maya-guide-work__summary,
+.maya-guide-work__instruction {
+  margin: 0.35rem 0 0;
+  line-height: 1.55;
+}
+
+.maya-guide-work__instruction {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--maya-surface-border);
+}
+
+.maya-guide-check__link,
+.maya-lane-item a {
+  color: var(--maya-accent);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.maya-guide-check__link:hover,
+.maya-lane-item a:hover {
+  text-decoration: underline;
+}
+
+.maya-guide-empty {
+  margin-top: 0.9rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px dashed var(--maya-surface-border);
+  color: var(--maya-muted);
+  background: var(--maya-surface);
+}
+
+.maya-work-section-heading {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--maya-text);
+}
+
+.maya-work-section-heading:first-of-type {
+  margin-top: 0.9rem;
+}
+
+.maya-stuck-table h2 {
+  margin: 0.7rem 0 0;
+  font-size: 1.4rem;
+}
+
+.maya-stuck-table > p {
+  color: var(--maya-muted);
+  margin: 0.4rem 0 1rem;
+}
+
+.maya-stuck-table__grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.maya-stuck-table__grid th,
+.maya-stuck-table__grid td {
+  padding: 0.75rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--maya-surface-border);
+}
+
+.maya-stuck-table__grid th {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--maya-accent);
+}
+
+.maya-stuck-table__grid tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.maya-stuck-table__grid .btn-todd-secondary {
+  white-space: nowrap;
+}
+
+.maya-stuck-table__note {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--maya-muted);
+  max-width: 52ch;
+}
+
+.maya-stuck-table__note-author {
+  font-weight: 700;
+  color: var(--maya-accent);
+}
+
+.maya-stuck-table__progress-cell {
+  width: 88px;
+}
+
+.maya-stuck-table__progress-cell app-arc-gauge {
+  display: block;
+  transform: scale(0.55);
+  transform-origin: left center;
+}
+
+@media (max-width: 1400px) {
+  .maya-step-tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .maya-step-tab:nth-child(5n) .maya-step-tab__rail {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .maya-metrics,
+  .maya-guide-hero__meta,
+  .maya-guide-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .maya-status-shell {
+    padding: 0.75rem;
+  }
+
+  .maya-status-hero {
+    flex-direction: column;
+  }
+
+  .maya-step-tabs,
+  .maya-metrics,
+  .maya-guide-hero__meta,
+  .maya-guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .maya-step-tab {
+    min-height: auto;
+  }
+
+  .maya-step-tab__rail {
+    display: none;
+  }
+
+  .maya-metric {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .maya-guide-check,
+  .maya-lane-item {
+    grid-template-columns: auto 1fr;
+  }
+
+  .maya-guide-check__link,
+  .maya-lane-item a {
+    grid-column: 2;
+  }
+}

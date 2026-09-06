@@ -1,0 +1,140 @@
+<section class="apple-story" [attr.aria-label]="ariaLabel" data-apple-story>
+    <article *ngFor="let section of sections; let index = index; trackBy: trackBySectionId" class="apple-story__panel" [ngClass]="section.panelClass" [attr.data-apple-panel]="section.id || index">
+        <div class="apple-story__inner" [ngClass]="{
+                'apple-story__inner--center': section.type === 'cta' || section.type === 'text' || !section.type,
+                'apple-story__inner--grid': section.type === 'cards',
+                'apple-story__inner--split': section.type === 'mediaText' || section.type === 'image' || section.type === 'video' || section.type === 'html',
+                'apple-story__inner--media-left': section.mediaPosition === 'left',
+                'apple-story__inner--media-right': !section.mediaPosition || section.mediaPosition === 'right',
+                'apple-story__inner--media-top': section.mediaPosition === 'top',
+                'apple-story__inner--media-background': section.mediaPosition === 'background'
+            }">
+            <ng-container [ngSwitch]="section.type || 'text'">
+                <ng-container *ngSwitchCase="'cards'">
+                    <div class="apple-story__copy">
+                        <p class="apple-story__eyebrow" *ngIf="section.eyebrow">{{ section.eyebrow }}</p>
+                        <h2 *ngIf="section.heading" class="title-case">{{ section.heading }}</h2>
+                        <p class="apple-story__lead" *ngIf="section.body">{{ section.body }}</p>
+                        <app-module-install-cta *ngIf="installConfig && section.showInstallCta" [installConfig]="installConfig" variant="inline"></app-module-install-cta>
+                    </div>
+                    <div class="apple-story__cards apple-story__cards--steps" *ngIf="section.cards?.length">
+                        <ng-container *ngFor="let card of section.cards; trackBy: trackByCardHeading">
+                            <a *ngIf="card.route && !card.actionId; else cardWithoutRoute" class="apple-story__card apple-story__link-card" [routerLink]="card.route">
+                                <span *ngIf="card.eyebrow">{{ card.eyebrow }}</span>
+                                <h3 class="title-case">{{ card.heading }}</h3>
+                                <p *ngIf="card.body">{{ card.body }}</p>
+                            </a>
+                            <ng-template #cardWithoutRoute>
+                                <button *ngIf="card.actionId; else cardWithoutAction" type="button" class="apple-story__card apple-story__link-card apple-story__card-button" (click)="handleAction(card.actionId, $event)">
+                                    <span *ngIf="card.eyebrow">{{ card.eyebrow }}</span>
+                                    <h3>{{ card.heading }}</h3>
+                                    <p *ngIf="card.body">{{ card.body }}</p>
+                                </button>
+                                <ng-template #cardWithoutAction>
+                                    <a *ngIf="card.href; else staticCard" class="apple-story__card apple-story__link-card" [href]="card.href" target="_blank" rel="noopener">
+                                        <span *ngIf="card.eyebrow">{{ card.eyebrow }}</span>
+                                        <h3>{{ card.heading }}</h3>
+                                        <p *ngIf="card.body">{{ card.body }}</p>
+                                    </a>
+                                </ng-template>
+                            </ng-template>
+                            <ng-template #staticCard>
+                                <div class="apple-story__card">
+                                    <span *ngIf="card.eyebrow">{{ card.eyebrow }}</span>
+                                    <h3>{{ card.heading }}</h3>
+                                    <p *ngIf="card.body">{{ card.body }}</p>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                    </div>
+                </ng-container>
+                <ng-container *ngSwitchCase="'image'">
+                    <div class="apple-story__media" [style.--apple-story-media-aspect-ratio]="section.mediaAspectRatio || null">
+                        <ng-container *ngTemplateOutlet="mediaTemplate; context: { section: section }"></ng-container>
+                    </div>
+                    <ng-container *ngTemplateOutlet="copyTemplate; context: { section: section, index: index }">
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngSwitchCase="'video'">
+                    <div class="apple-story__media" [style.--apple-story-media-aspect-ratio]="section.mediaAspectRatio || null">
+                        <ng-container *ngTemplateOutlet="mediaTemplate; context: { section: section }"></ng-container>
+                    </div>
+                    <ng-container *ngTemplateOutlet="copyTemplate; context: { section: section, index: index }"></ng-container>
+                </ng-container>
+                <ng-container *ngSwitchCase="'mediaText'">
+                    <div class="apple-story__media" [style.--apple-story-media-aspect-ratio]="section.mediaAspectRatio || null">
+                        <ng-container *ngTemplateOutlet="mediaTemplate; context: { section: section }"></ng-container>
+                    </div>
+                    <ng-container *ngTemplateOutlet="copyTemplate; context: { section: section, index: index }"></ng-container>
+                </ng-container>
+                <ng-container *ngSwitchCase="'html'">
+                    <div class="apple-story__copy">
+                        <p class="apple-story__eyebrow" *ngIf="section.eyebrow">{{ section.eyebrow }}</p>
+                        <h1 class="title-case" *ngIf="index === 0 && section.heading; else htmlHeading">{{ section.heading }}</h1>
+                        <ng-template #htmlHeading>
+                            <h2 class="title-case" *ngIf="section.heading">{{ section.heading }}</h2>
+                        </ng-template>
+                        <p class="apple-story__lead" *ngIf="section.body">{{ section.body }}</p>
+                        <ng-container *ngTemplateOutlet="actionsTemplate; context: { actions: section.actions }"></ng-container>
+                    </div>
+                    <div class="apple-story__html" [innerHTML]="section.html"></div>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                    <ng-container *ngTemplateOutlet="copyTemplate; context: { section: section, index: index }"></ng-container>
+                </ng-container>
+            </ng-container>
+        </div>
+    </article>
+</section>
+<button *ngIf="showScrollIndicator" type="button" class="apple-story__scroll-indicator" aria-label="Scroll to the next section" (click)="onScrollIndicatorClick()">
+    <span class="apple-story__scroll-mouse" aria-hidden="true">
+        <span class="apple-story__scroll-wheel"></span>
+    </span>
+    <span class="apple-story__scroll-arrow" aria-hidden="true">
+        <svg viewBox="0 0 20 20" focusable="false">
+            <path d="M5.5 7.5 10 12l4.5-4.5" />
+        </svg>
+    </span>
+</button>
+<ng-template #copyTemplate let-section="section" let-index="index">
+    <div class="apple-story__copy">
+        <p class="apple-story__eyebrow" *ngIf="section.eyebrow">{{ section.eyebrow }}</p>
+        <h1 class="title-case" *ngIf="index === 0 && section.heading; else normalHeading">{{ section.heading }}</h1>
+        <ng-template #normalHeading>
+            <h2 class="title-case" *ngIf="section.heading">{{ section.heading }}</h2>
+        </ng-template>
+        <p class="apple-story__lead" *ngIf="section.body">{{ section.body }}</p>
+        <ng-container *ngTemplateOutlet="actionsTemplate; context: { actions: section.actions }"></ng-container>
+    </div>
+</ng-template>
+<ng-template #mediaTemplate let-section="section">
+    <iframe *ngIf="section.embedUrl; else nativeOrImageMedia" class="apple-story__embed" [src]="section.trustedEmbedUrl || null" [title]="section.embedTitle || section.heading || 'Embedded video'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen>
+    </iframe>
+    <ng-template #nativeOrImageMedia>
+        <video *ngIf="section.videoUrl; else imageMedia" controls playsinline preload="metadata" [poster]="section.videoPosterUrl || null">
+            <source [src]="section.videoUrl" type="video/mp4" />
+        </video>
+        <ng-template #imageMedia>
+            <img *ngIf="section.imageUrl" [src]="section.imageUrl" [alt]="section.imageAlt || section.heading || ''" loading="lazy" />
+        </ng-template>
+    </ng-template>
+</ng-template>
+<ng-template #actionsTemplate let-actions="actions">
+    <div class="apple-story__actions" *ngIf="actions?.length">
+        <ng-container *ngFor="let action of actions; trackBy: trackByActionLabel">
+            <a *ngIf="action.route && !action.actionId; else externalAction" class="apple-story__button" [class.apple-story__button--secondary]="action.variant === 'secondary'" [routerLink]="action.route" [attr.aria-label]="action.ariaLabel || action.label">
+                {{ action.label }}
+            </a>
+            <ng-template #externalAction>
+                <button *ngIf="action.actionId; else hrefAction" type="button" class="apple-story__button" [class.apple-story__button--secondary]="action.variant === 'secondary'" (click)="handleAction(action.actionId, $event)" [attr.aria-label]="action.ariaLabel || action.label">
+                    {{ action.label }}
+                </button>
+                <ng-template #hrefAction>
+                    <a class="apple-story__button" [class.apple-story__button--secondary]="action.variant === 'secondary'" [href]="action.href || '#'" [attr.target]="action.href ? '_blank' : null" [attr.rel]="action.href ? 'noopener' : null" [attr.aria-label]="action.ariaLabel || action.label">
+                        {{ action.label }}
+                    </a>
+                </ng-template>
+            </ng-template>
+        </ng-container>
+    </div>
+</ng-template>

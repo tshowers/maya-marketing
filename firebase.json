@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "target": "maya-marketing",
+    "public": "dist/maya/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

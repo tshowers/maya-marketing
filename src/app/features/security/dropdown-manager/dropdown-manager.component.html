@@ -1,0 +1,32 @@
+<app-preloader [isLoading]="isLoading"></app-preloader>
+<div class="container-fluid tal-app todd-page">
+  <div class="row">
+    <div class="col-md-12 mt-5">
+      <div class="dropdown-manager">
+        <div class="dropdown-header" [style.display]="isModal ? 'none' : 'block'">
+          <label class="header-label">Select Dropdown to Manage:</label>
+          <p class="selection-feedback" *ngIf="selectionFeedbackMessage">{{ selectionFeedbackMessage }}</p>
+          <div class="radio-group">
+            <div *ngFor="let collection of collections" class="radio-item">
+              <input type="radio" [value]="collection" name="collection" [(ngModel)]="selectedCollection" (change)="onCollectionSelected(collection)" id="{{collection}}" class="radio-input">
+              <label [for]="collection" class="radio-label">{{ collection | formatKey }}</label>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="selectedCollection" #dropdownContent class="dropdown-content" [class.dropdown-content-focused]="recentlyFocusedCollection === selectedCollection">
+          <h2 class="content-header">Managing {{ selectedCollection | formatKey }}</h2>
+          <ul class="item-list">
+            <li *ngFor="let item of dropdownItems" class="item">
+              <input [(ngModel)]="item.name" (blur)="updateItem(item)" class="item-input" autocomplete="off">
+              <button (click)="deleteItem(item.id)" class="btn-todd btn-todd-danger"><i class="fa-regular fa-trash-can"></i></button>
+            </li>
+          </ul>
+          <div class="add-item">
+            <input #addInput type="text" [(ngModel)]="newItem.name" placeholder="New Item" class="add-input" autocomplete="off">
+            <button (click)="addItem()" class="btn-todd">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

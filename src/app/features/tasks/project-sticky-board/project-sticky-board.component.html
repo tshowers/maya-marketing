@@ -1,0 +1,60 @@
+<app-preloader [isLoading]="isLoading"></app-preloader>
+<div class="container-fluid">
+  <label for="projects">Select Project</label>
+  <app-input-type-ahead [collectionName]="'PROJECTS'" [showSelected]="false" [isMultiSelect]="false" [placeholder]="'Type to select project ...'" (selectionChange)="handleProjectChange($event)"></app-input-type-ahead>
+</div>
+<div class="toolbar">
+  <div class="chips text-center" *ngIf="projectId">
+    <button class="chip" [class.active]="!status()" (click)="setStatus(null)">All</button>
+    <button class="chip" [class.active]="status() === 'todo'" (click)="setStatus('todo')">To-Do</button>
+    <button class="chip" [class.active]="status() === 'doing'" (click)="setStatus('doing')">Doing</button>
+    <button class="chip" [class.active]="status() === 'done'" (click)="setStatus('done')">Done</button>
+  </div>
+  <div class="form-group" *ngIf="projectId">
+    <label for="taskType">Task Type</label>
+    <div class="d-flex align-items-center">
+      <select [(ngModel)]="selectedTaskType" #sector="ngModel" id="taskType" name="taskType" class="form-select" (ngModelChange)="onTaskTypeChange($event)">
+        <option *ngIf="dropdownData && dropdownData['TASK_TYPES'] && dropdownData['TASK_TYPES'].length > 0" value="">All Task Types</option>
+        <option *ngIf="dropdownData['TASK_TYPES']?.length === 0" disabled>No options available</option>
+        <option *ngFor="let t of dropdownData['TASK_TYPES']" [value]="t.id">{{ t.name }}</option>
+      </select>
+      <app-drop-down-edit-button dropdownKey="TASK_TYPES"></app-drop-down-edit-button>
+    </div>
+  </div>
+</div>
+<div class="masonry">
+  <article class="note" *ngFor="let t of filteredTasks; trackBy: trackById" [ngClass]="[
+      t.priority ? 'p-' + t.priority.toLowerCase() : 'p-normal',
+      t.needsAttention ? 'attention' : ''
+    ]" (click)="onDetail(t)" title="{{ t.title }}" style="cursor: pointer;">
+    <header class="note-head">
+      <h3 class="note-title">{{ t.title }}</h3>
+      <div class="note-head-indicators">
+        <span class="note-status-dot"
+          [attr.data-status]="t.isCompleted ? 'completed' : (t.status || 'not-started')"
+          [class.note-status-dot--attention]="t.needsAttention && !t.isCompleted"
+          [title]="t.isCompleted ? 'Completed' : (t.status || 'Not started')"></span>
+        <span class="badge" *ngIf="t.priority">{{ t.priority }}</span>
+      </div>
+    </header>
+    <p class="note-desc" *ngIf="t.description">{{ t.description }}</p>
+    <ul class="meta">
+      <li *ngIf="t.dueDate">Due: {{ t.dueDate | date:'MMM d' }}</li>
+      <li *ngIf="t.contacts && t.contacts?.length">Contacts: {{ t.contacts.length }}</li>
+      <li *ngIf="t.subTasks && t.subTasks?.length">Subtasks: {{ t.subTasks.length }}</li>
+      <li *ngIf="t.documents && t.documents?.length">Docs: {{ t.documents.length }}</li>
+      <li *ngIf="t.images && t.images?.length">Images: {{ t.images.length }}</li>
+    </ul>
+    <div class="note-progress-wrap" *ngIf="t.progress">
+      <div class="note-progress-bar">
+        <div class="note-progress-fill"
+          [style.width.%]="t.progress"
+          [attr.data-tier]="t.progress >= 80 ? 'high' : t.progress >= 40 ? 'mid' : 'low'"></div>
+      </div>
+      <span class="note-progress-label">{{ t.progress }}%</span>
+    </div>
+    <span style="font-weight: 400;">{{ t | taskCountdown | async }}</span>
+    <a *ngIf="t.url" class="note-link" [href]="t.url" target="_blank" rel="noopener">Open link</a>
+  </article>
+</div>
+<div class="empty" *ngIf="projectId && allTasks.length === 0"> No tasks yet for this project. </div>
