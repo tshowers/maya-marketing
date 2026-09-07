@@ -340,6 +340,13 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     this.showSuggestionTray = !String( value || '' ).trim();
   }
 
+  handlePromptKeydown ( event: KeyboardEvent ): void {
+    if ( event.key !== 'Enter' || event.shiftKey || event.isComposing ) return;
+
+    event.preventDefault();
+    void this.sendMessage();
+  }
+
   private normalizeDirectorReply ( content: string ): string {
     const normalized = String( content || '' )
       .replace( /\r/g, '' )

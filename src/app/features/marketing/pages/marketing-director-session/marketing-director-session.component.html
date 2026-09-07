@@ -5,7 +5,7 @@
         <img class="maya-logo" src="assets/find/entities/maya/logo.png" alt="Maya" />
         <div class="maya-eyebrow maya-eyebrow--centered">Marketing advice</div>
         <div class="maya-welcome-composer">
-          <textarea rows="4" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea>
+          <textarea rows="4" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea>
           <div class="maya-welcome-actions"><button type="button" class="maya-reset maya-welcome-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation" title="Reset conversation">↻</button><button type="button" class="maya-primary-button" (click)="sendMessage()" [disabled]="sending">{{ sending ? '…' : 'Ask Maya' }} <span aria-hidden="true">↗</span></button></div>
         </div>
         <div class="maya-prompt-chips" aria-label="Maya prompts">
@@ -18,10 +18,10 @@
           <div class="maya-message-role">{{ message.role === 'director' ? 'Maya' : 'You' }}</div>
           <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
         </article>
-        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite"><div class="maya-message-role">Maya</div><div class="maya-thinking"><span></span><span></span><span></span> Maya is thinking…</div></article>
+        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="Maya is thinking"><div class="maya-message-role">Maya</div><div class="maya-thinking"><span class="maya-thinking__label">Maya is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div></article>
       </div>
       <aside class="maya-upgrade" *ngIf="showUpgradePanel"><div class="maya-upgrade-copy"><div class="maya-eyebrow">Need execution?</div><h2>Maya can move from advice into real work inside TODD Suite.</h2><p>If you want drafts, approvals, and a live execution queue, that is where the paid account takes over.</p><div class="maya-actions"><a routerLink="/suite/pricing" class="maya-primary-button">Unlock Execution</a><a routerLink="/login" class="maya-secondary-button">Start Free Account</a></div></div></aside>
-      <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
+      <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
       <div class="maya-status" *ngIf="sending || errorMessage">{{ sending ? 'Maya is working on your answer…' : errorMessage }}</div>
     </section>
   </main>
