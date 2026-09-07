@@ -1,4 +1,11 @@
 <div class="marketing-plan-board container-fluid tal-app mb-5" [class.marketing-plan-board--embedded]="isEmbedded">
+  <div class="marketing-plan-board__login-required" *ngIf="!isLoggedIn">
+    <h2>Sign in to view Maya's marketing plan</h2>
+    <p>You need to be logged in to see the plan, its linked work, and the board.</p>
+    <button type="button" class="marketing-plan-board__sign-in" (click)="signIn()">Sign in with Google</button>
+  </div>
+
+  <ng-container *ngIf="isLoggedIn">
   <div class="marketing-plan-board__summary" *ngIf="!planLoading">
     <ng-container *ngIf="activePlan; else noPlan">
       <h2 class="marketing-plan-board__title">{{ activePlan.title || 'Marketing Plan' }}</h2>
@@ -62,4 +69,5 @@
   <section *ngIf="activeView === 'board'" class="maya-plan-panel">
     <app-project-sticky-board [projectId]="projectId" (tasksChange)="onTasksChange($event)"></app-project-sticky-board>
   </section>
+  </ng-container>
 </div>

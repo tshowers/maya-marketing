@@ -79,6 +79,14 @@ export class MarketingPlanBoardComponent extends TopDogComponent implements OnIn
     this.activeView = view;
   }
 
+  async signIn (): Promise<void> {
+    try {
+      await this.authService.signInWithGoogle();
+    } catch ( error ) {
+      this.logger.error( '[MarketingPlanBoard] sign-in failed', error );
+    }
+  }
+
   private loadActivePlan ( tenantId: string ): void {
     this.planSubscription?.unsubscribe();
     const today = new Intl.DateTimeFormat( 'en-CA', { timeZone: 'America/Los_Angeles' } ).format( new Date() );

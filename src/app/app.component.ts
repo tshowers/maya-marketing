@@ -12,9 +12,10 @@ import { AuthService } from './services/auth.service';
     <div class="maya-session-indicator" [class.maya-session-indicator--logged-out]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'" [attr.aria-label]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'"><span></span></div>
     <router-outlet />
     <nav class="maya-shared-bottom-nav" aria-label="Maya navigation">
-      <a href="https://todd.taliferro.tech"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a>
-      <a [routerLink]="(isLoggedIn$ | async) ? '/marketing-employee' : null" routerLinkActive="maya-shared-bottom-nav__active" [class.maya-shared-bottom-nav__requires-auth]="!(isLoggedIn$ | async)" [attr.aria-disabled]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'View Status' : 'Sign in to view Status'"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Status</span></a>
-      <a [routerLink]="(isLoggedIn$ | async) ? '/marketing-employee/plan' : null" routerLinkActive="maya-shared-bottom-nav__active" [class.maya-shared-bottom-nav__requires-auth]="!(isLoggedIn$ | async)" [attr.aria-disabled]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'View Plan' : 'Sign in to view Plan'"><i class="fa-regular fa-clipboard" aria-hidden="true"></i><span>Plan</span></a>
+      <a *ngIf="isChatHome; else internalHome" href="https://todd.taliferro.tech"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a>
+      <ng-template #internalHome><a routerLink="/"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a></ng-template>
+      <a routerLink="/marketing-employee" routerLinkActive="maya-shared-bottom-nav__active" [routerLinkActiveOptions]="{ exact: true }" title="View Status"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Status</span></a>
+      <a routerLink="/marketing-employee/plan" routerLinkActive="maya-shared-bottom-nav__active" [routerLinkActiveOptions]="{ exact: true }" title="View Plan"><i class="fa-regular fa-clipboard" aria-hidden="true"></i><span>Plan</span></a>
       <ng-container *ngIf="isLoggedIn$ | async; else signInLink">
         <button type="button" class="maya-shared-session-action" (click)="signOut()"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span class="maya-shared-session-label"><span class="maya-shared-session-dot maya-shared-session-dot--in"></span>Sign Out</span></button>
       </ng-container>
@@ -33,6 +34,10 @@ export class AppComponent {
   private readonly router = inject( Router );
   readonly isLoggedIn$ = this.authService.getUser().pipe( map( user => !!user ) );
   showMore = false;
+
+  get isChatHome (): boolean {
+    return this.router.url.split( '?' )[0].split( '#' )[0] === '/';
+  }
 
   signOut (): void {
     this.authService.logout().subscribe( {

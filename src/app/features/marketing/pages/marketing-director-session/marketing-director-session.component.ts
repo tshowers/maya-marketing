@@ -331,6 +331,25 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  exportTranscript (): void {
+    if ( !this.messages.length ) return;
+
+    const stamp = new Date();
+    const lines = this.messages.map( message => {
+      const speaker = message.role === 'user' ? 'You' : 'Maya';
+      return `${speaker}:\n${String( message.content || '' ).trim()}`;
+    } );
+    const transcript = `Maya conversation transcript — ${stamp.toLocaleString()}\n\n${lines.join( '\n\n' )}\n`;
+
+    const blob = new Blob( [transcript], { type: 'text/plain;charset=utf-8' } );
+    const url = URL.createObjectURL( blob );
+    const anchor = document.createElement( 'a' );
+    anchor.href = url;
+    anchor.download = `maya-transcript-${stamp.toISOString().slice( 0, 10 )}.txt`;
+    anchor.click();
+    URL.revokeObjectURL( url );
+  }
+
   handlePromptFocus (): void {
     this.showSuggestionTray = !String( this.prompt || '' ).trim();
   }
@@ -1043,6 +1062,16 @@ Pick one and I will keep moving:
       operatorName,
       accessModeLabel: this.hasPaidWorkspaceAccess ? 'logged_in_workspace' : 'logged_in_advice',
       hasActivePlan: this.hasActivePlan,
+      planTitle: this.masterPlanSnapshot?.title || undefined,
+      planGoals: this.masterPlanSnapshot?.extracted?.goals?.length ? this.masterPlanSnapshot.extracted.goals : undefined,
+      planAudiences: this.masterPlanSnapshot?.extracted?.audiences?.length ? this.masterPlanSnapshot.extracted.audiences : undefined,
+      planChannels: this.masterPlanSnapshot?.extracted?.channels?.length ? this.masterPlanSnapshot.extracted.channels : undefined,
+      planCampaigns: this.masterPlanSnapshot?.extracted?.campaigns?.length ? this.masterPlanSnapshot.extracted.campaigns : undefined,
+      planContentThemes: this.masterPlanSnapshot?.extracted?.contentThemes?.length ? this.masterPlanSnapshot.extracted.contentThemes : undefined,
+      planKpis: this.masterPlanSnapshot?.extracted?.kpis?.length ? this.masterPlanSnapshot.extracted.kpis : undefined,
+      planTimeline: this.masterPlanSnapshot?.extracted?.timeline || undefined,
+      planRawText: this.truncatePlanText( this.masterPlanSnapshot?.rawText ),
+      planUpdatedAt: this.masterPlanSnapshot?.updatedAt || undefined,
       availableSystems: this.hasPaidWorkspaceAccess
         ? ['Moves', 'Outreach', 'Network', 'Documents', 'Surveys', 'Marketing Employee Workspace']
         : [],
@@ -1056,6 +1085,15 @@ Pick one and I will keep moving:
       toddHandoff: this.latestOutcome?.handoff || null,
       emailContext: this.emailContext || undefined
     };
+  }
+
+  // Caps the raw plan text sent per turn so a long pasted plan doesn't
+  // balloon every request - the structured extracted fields above already
+  // carry the concise version Maya reconciles against.
+  private truncatePlanText ( rawText: string | undefined ): string | undefined {
+    const text = String( rawText || '' ).trim();
+    if ( !text ) return undefined;
+    return text.length > 4000 ? `${text.slice( 0, 4000 )}…` : text;
   }
 
   private extractActionSummariesForToday ( actions: MarketingEmployeeActionRecord[] ): MarketingDirectorMoveContextItem[] {

@@ -3,7 +3,15 @@
     <app-preloader [isLoading]="loading" message="Maya is checking today’s plan, open work, approvals, and completed items." [autoHideAfterMs]="null"></app-preloader>
 
     <ng-container *ngIf="!loading">
-      <ng-container *ngTemplateOutlet="loadedState"></ng-container>
+      <section class="maya-status-card maya-status-card--login-required" *ngIf="!isLoggedIn; else loadedStateGate">
+        <div class="maya-status-card__eyebrow">Maya Status</div>
+        <h2>Sign in to view Maya's status</h2>
+        <p>You need to be logged in to see Maya's pipeline, scorecard, and today's work.</p>
+        <button type="button" class="maya-status-card__sign-in" (click)="signIn()">Sign in with Google</button>
+      </section>
+      <ng-template #loadedStateGate>
+        <ng-container *ngTemplateOutlet="loadedState"></ng-container>
+      </ng-template>
     </ng-container>
 
     <ng-template #loadedState>

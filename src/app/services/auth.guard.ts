@@ -2,7 +2,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
-import { catchError, map, switchMap, take } from 'rxjs/operators';
+import { catchError, map, retry, switchMap, take } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { LoggerService } from './logger.service';
 import { EntitlementService } from './entitlement.service';
@@ -46,9 +46,14 @@ export const authGuard: CanActivateFn = ( route, state ) => {
       }
 
 
+      // A cold Cloud Function invocation or a single transient network blip
+      // on this live /account/summary call would otherwise silently read as
+      // "not entitled" and bounce a paying Suite subscriber straight back
+      // to the chat with no explanation - retry once before giving up.
       const suiteAccess$ = suiteEntitledRoutes.has( normalizedPath ) ?
         entitlementService.getResolvedEntitlements().pipe(
           take( 1 ),
+          retry( { count: 1, delay: 500 } ),
           map( entitlements => !!entitlements.suite ),
           catchError( () => of( false ) ),
         ) :

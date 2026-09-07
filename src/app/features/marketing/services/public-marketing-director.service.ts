@@ -73,6 +73,19 @@ export interface PublicMarketingDirectorWorkspaceContext {
   operatorName?: string;
   accessModeLabel?: string;
   hasActivePlan?: boolean;
+  // The saved master plan's own content, so Maya can reconcile moves/outcomes
+  // against what the plan actually commits to instead of just knowing a plan
+  // exists. Left undefined when there is no active plan.
+  planTitle?: string;
+  planGoals?: string[];
+  planAudiences?: string[];
+  planChannels?: string[];
+  planCampaigns?: string[];
+  planContentThemes?: string[];
+  planKpis?: string[];
+  planTimeline?: string;
+  planRawText?: string;
+  planUpdatedAt?: string | null;
   availableSystems?: string[];
   currentWorkItems?: MarketingDirectorMoveContextItem[];
   pendingApprovalItems?: MarketingDirectorMoveContextItem[];

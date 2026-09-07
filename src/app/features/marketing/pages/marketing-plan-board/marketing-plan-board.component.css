@@ -5,6 +5,30 @@
   background: #0b111a;
 }
 
+.marketing-plan-board__login-required {
+  max-width: 32rem;
+  margin: 3rem auto;
+  padding: 1.5rem;
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  border-radius: 1rem;
+  text-align: center;
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.marketing-plan-board__login-required p { color: #9aadc1; }
+
+.marketing-plan-board__sign-in {
+  margin-top: 0.85rem;
+  border: 0;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1.4rem;
+  color: #fff;
+  background: #38bdf8;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
 @media (prefers-color-scheme: light) {
   .marketing-plan-board {
     color: #0f172a;
@@ -21,6 +45,10 @@
   .marketing-plan-board__title { color: #0f172a; }
   .marketing-plan-board__section,
   .marketing-plan-board__empty { color: #667085; }
+  .marketing-plan-board__login-required { border-color: #dfe4ea; background: rgba(0, 102, 255, 0.04); }
+  .marketing-plan-board__login-required h2 { color: #0f172a; }
+  .marketing-plan-board__login-required p { color: #667085; }
+  .marketing-plan-board__sign-in { background: #0066ff; }
   .maya-plan-tabs { border-color: #dfe4ea; background: rgba(255, 255, 255, 0.9) !important; }
   .maya-plan-tabs button { color: #667085; }
   .maya-plan-tabs button.maya-plan-tab--active { color: #0f172a; background: rgba(0, 102, 255, 0.08); }

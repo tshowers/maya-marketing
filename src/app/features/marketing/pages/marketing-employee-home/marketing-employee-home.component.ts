@@ -88,6 +88,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
   errorMessage = '';
   tenantId = '';
   userId = '';
+  isLoggedIn = false;
 
   employee: MarketingEmployeeRecord | null = null;
   activePlan: MarketingPlanRecord | null = null;
@@ -180,6 +181,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
     ).subscribe( {
       next: state => {
         this.userId = state.userId;
+        this.isLoggedIn = !!state.userId;
         this.tenantId = state.tenantId;
         this.employee = state.employee;
         this.activePlan = this.pickBestPlan( state.plans );
@@ -202,6 +204,14 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy (): void {
     this.subscription?.unsubscribe();
+  }
+
+  async signIn (): Promise<void> {
+    try {
+      await this.authService.signInWithGoogle();
+    } catch {
+      this.errorMessage = 'Sign-in did not complete. Please try again.';
+    }
   }
 
   trackById ( _index: number, item: { id?: string | null; } ): string {

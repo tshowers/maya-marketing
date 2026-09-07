@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
-import { authGuard } from '../../services/auth.guard';
 
 export const marketingRoutes: Routes = [
   {
@@ -29,7 +28,6 @@ export const marketingRoutes: Routes = [
       import( './pages/marketing-employee-home/marketing-employee-home.component' ).then(
         ( m ) => m.MarketingEmployeeHomeComponent
       ),
-    canActivate: [authGuard],
     data: {
       pageVideo: 'global'
     },
@@ -41,7 +39,6 @@ export const marketingRoutes: Routes = [
       import( './pages/marketing-plan-board/marketing-plan-board.component' ).then(
         ( m ) => m.MarketingPlanBoardComponent
       ),
-    canActivate: [authGuard],
     title: environment.COMPANY_NAME + ' - Marketing Plan'
   }
 ];
