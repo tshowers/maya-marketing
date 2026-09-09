@@ -8,6 +8,9 @@ export interface PublicMarketingDirectorMessage {
   role: 'user' | 'director';
   content: string;
   renderedContent?: string;
+  /** Concise rationale for Maya's recommendation, separate from the answer. */
+  why?: string;
+  whyExpanded?: boolean;
 }
 
 export interface PublicMarketingDirectorSystemActionQuestion {
@@ -45,6 +48,7 @@ export interface PublicMarketingDirectorSystemAction {
 
 interface PublicMarketingDirectorResponse {
   reply: string;
+  why?: string;
   executionIntent: boolean;
   systemActions?: PublicMarketingDirectorSystemAction[];
 }
@@ -146,6 +150,7 @@ export class PublicMarketingDirectorService {
       `${environment.backendURL}/marketing-director/advice`,
       {
         message: String( message || '' ).trim(),
+        includeWhy: true,
         accessMode,
         workspaceContext: workspaceContext || null,
         history: ( history || [] ).slice( -10 ).map( item => ( {

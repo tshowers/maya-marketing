@@ -27,6 +27,11 @@ textarea::placeholder { color:#8a94a6; }
 .maya-message-role { color:var(--maya-muted); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
 .maya-message-content { margin-top:6px; white-space:pre-wrap; }
 .maya-message-content { min-width:0; overflow-x:hidden; }
+.maya-why-callout { margin-top:16px; border:1px solid rgba(0,102,255,.24); border-radius:16px; background:linear-gradient(135deg,rgba(0,102,255,.07),rgba(56,189,248,.04)); overflow:hidden; }
+.maya-why-toggle { display:flex; align-items:center; gap:9px; width:100%; padding:12px 14px; border:0; background:transparent; color:var(--maya-navy); font:inherit; font-size:.88rem; font-weight:800; text-align:left; cursor:pointer; }
+.maya-why-icon { display:inline-flex; align-items:center; justify-content:center; width:23px; height:23px; border-radius:50%; background:var(--maya-accent); color:#fff; font-size:.78rem; }
+.maya-why-chevron { margin-left:auto; color:var(--maya-accent); font-size:1.15rem; line-height:1; }
+.maya-why-body { padding:0 14px 14px 46px; color:var(--maya-muted); font-size:.88rem; line-height:1.55; }
 .maya-message-content img { display:block; width:auto !important; max-width:100% !important; height:auto !important; max-height:min(70vh,560px); object-fit:contain; }
 :host ::ng-deep .maya-message-content img { display:block !important; width:auto !important; max-width:100% !important; height:auto !important; max-height:min(70vh,560px) !important; object-fit:contain !important; }
 .maya-thinking { display:inline-flex; align-items:center; gap:9px; margin-top:8px; padding:9px 12px; border:1px solid var(--maya-border); border-radius:999px; color:var(--maya-muted); background:rgba(0,191,255,.06); font-size:.86rem; }
@@ -49,6 +54,7 @@ textarea::placeholder { color:#8a94a6; }
   .maya-welcome-composer, .maya-message, .maya-upgrade, .maya-compact-composer, .maya-prompt-chips button, .maya-secondary-button, .maya-apps-card { background:#131c27; color:var(--maya-navy); border-color:var(--maya-border); }
   .maya-welcome textarea, .maya-compact-composer textarea, .maya-message-content, .maya-message-role, .maya-upgrade h2, .maya-apps-card-header, .maya-app-grid a { color:var(--maya-navy); }
   .maya-message--user { background:rgba(0,191,255,.12); border-color:rgba(0,191,255,.28); }
+  .maya-why-callout { border-color:rgba(56,189,248,.35); background:rgba(56,189,248,.12); }
   .maya-reset, .maya-export { background:#1f2d40; color:#e8f4ff; }
   .maya-apps-card-header button { color:#9aadc1; }
   .maya-bottom-nav { background:#10182f; border-color:#202a44; }

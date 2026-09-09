@@ -3,16 +3,18 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { CommandPaletteComponent } from './shared/page/command-palette/command-palette.component';
 
 @Component({
   selector: 'maya-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, CommandPaletteComponent],
   template: `
     <div class="maya-session-indicator" [class.maya-session-indicator--logged-out]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'" [attr.aria-label]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'"><span></span></div>
+    <app-command-palette />
     <router-outlet />
     <nav class="maya-shared-bottom-nav" aria-label="Maya navigation">
-      <a *ngIf="isChatHome; else internalHome" href="https://todd.taliferro.tech"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a>
+      <a *ngIf="isChatHome; else internalHome" href="https://ask.taliferro.tech"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a>
       <ng-template #internalHome><a routerLink="/"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span></a></ng-template>
       <a routerLink="/marketing-employee" routerLinkActive="maya-shared-bottom-nav__active" [routerLinkActiveOptions]="{ exact: true }" title="View Status"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Status</span></a>
       <a routerLink="/marketing-employee/plan" routerLinkActive="maya-shared-bottom-nav__active" [routerLinkActiveOptions]="{ exact: true }" title="View Plan"><i class="fa-regular fa-clipboard" aria-hidden="true"></i><span>Plan</span></a>
@@ -46,18 +48,18 @@ export class AppComponent {
     } );
   }
   readonly moreLinks = [
-    { label: 'Home', url: 'https://todd.taliferro.tech', icon: 'home' },
-    { label: 'Find', url: 'https://find.taliferro.tech', icon: 'assets/find/entities/find/logo-ios-icon.png' },
-    { label: 'Email Signature', url: 'https://signature.taliferro.tech', icon: 'assets/find/entities/email-signature-builder/logo-ios-icon.png' },
-    { label: 'SayIt', url: 'https://sayit.taliferro.tech', icon: 'assets/find/entities/sayit/logo-ios-icon.png' },
-    { label: 'TODD', url: 'https://todd.taliferro.tech/ask-todd', icon: 'assets/find/entities/todd/logo-ios-icon.png' },
-    { label: 'Lead Vault', url: 'https://lead-vault-taliferro.tech', icon: 'assets/find/entities/lead-vault/logo.png' },
-    { label: 'Music', url: 'https://music.taliferro.com', icon: 'assets/find/entities/music/logo-ios-icon.png' },
-    { label: 'Pulse', url: 'https://pulse.taliferro.tech', icon: 'assets/find/entities/pulse/logo.png' },
-    { label: 'Network', url: 'https://network.taliferro.tech', icon: 'assets/find/entities/network/logo.png' },
-    { label: 'Outreach', url: 'https://outreach.taliferro.tech', icon: 'assets/find/entities/outreach/logo.png' },
-    { label: 'Moves', url: 'https://moves.taliferro.tech', icon: 'assets/find/entities/moves/logo.png' },
-    { label: 'Social', url: 'https://social.taliferro.tech', icon: 'assets/find/entities/social/logo.png' },
-    { label: 'Docs', url: 'https://docs.taliferro.tech', icon: 'assets/find/entities/docs/logo.png' }
+    { label: 'Home', url: 'https://ask.taliferro.tech', icon: 'home' },
+    { label: 'Find', url: 'https://find.taliferro.tech', icon: 'assets/find/entities/find/logo-bw-icon.png' },
+    { label: 'Email Signature', url: 'https://signature.taliferro.tech', icon: 'assets/find/entities/email-signature-builder/logo-bw-icon.png' },
+    { label: 'SayIt', url: 'https://sayit.taliferro.tech', icon: 'assets/find/entities/sayit/logo-bw-icon.png' },
+    { label: 'TODD', url: 'https://ask.taliferro.tech', icon: 'assets/find/entities/todd/logo-bw-icon.png' },
+    { label: 'Lead Vault', url: 'https://lead-vault.taliferro.tech', icon: 'assets/find/entities/lead-vault/logo-bw-icon.png' },
+    { label: 'Music', url: 'https://music.taliferro.com', icon: 'assets/find/entities/music/logo-bw-icon.png' },
+    { label: 'Pulse', url: 'https://pulse.taliferro.tech', icon: 'assets/find/entities/pulse/logo-bw-icon.png' },
+    { label: 'Network', url: 'https://network.taliferro.tech', icon: 'assets/find/entities/network/logo-bw-icon.png' },
+    { label: 'Outreach', url: 'https://outreach.taliferro.tech', icon: 'assets/find/entities/outreach/logo-bw-icon.png' },
+    { label: 'Moves', url: 'https://moves.taliferro.tech', icon: 'assets/find/entities/moves/logo-bw-icon.png' },
+    { label: 'Social', url: 'https://social.taliferro.tech', icon: 'assets/find/entities/social/logo-bw-icon.png' },
+    { label: 'Docs', url: 'https://docs.taliferro.tech', icon: 'assets/find/entities/docs/logo-bw-icon.png' }
   ];
 }

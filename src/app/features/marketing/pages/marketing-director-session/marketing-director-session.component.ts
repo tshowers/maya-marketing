@@ -34,6 +34,8 @@ import { Survey } from '../../../survey/models/survey.model';
 import { AssistantBoxUtilityService } from '../../../../services/assistant-box-utility.service';
 import { MarketingDirectorCapabilitiesService } from '../../services/marketing-director-capabilities.service';
 import { BUILD_VERSION } from '../../../../version';
+import { MayaStatusReport } from '../../models/maya-status-report.models';
+import { MayaStatusReportService } from '../../services/maya-status-report.service';
 
 @Component( {
   selector: 'app-marketing-director-session',
@@ -63,20 +65,21 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   hasUserMessages = false;
   showSuggestionTray = true;
   showApps = false;
+  statusReportGenerating = false;
   readonly appLinks = [
-    { label: 'Home', route: 'https://todd.taliferro.tech', image: 'assets/find/entities/todd/logo-icon.png', external: true },
-    { label: 'Find', route: 'https://find.taliferro.tech', image: 'assets/find/entities/find/logo-icon.png', external: true },
-    { label: 'Email Signature', route: 'https://signature.taliferro.tech', image: 'assets/find/entities/email-signature-builder/logo-icon.png', external: true },
-    { label: 'SayIt', route: 'https://sayit.taliferro.tech', image: 'assets/find/entities/sayit/logo.png', external: true },
-    { label: 'Ask TODD', route: 'https://todd.taliferro.tech/ask-todd', image: 'assets/find/entities/todd/logo-icon.png', external: true },
-    { label: 'Lead Vault', route: 'https://lead-vault-taliferro.tech', image: 'assets/find/entities/lead-vault/logo-icon.png', external: true },
-    { label: 'Music', route: 'https://music.taliferro.com', image: 'assets/find/entities/music/logo-icon.png', external: true },
-    { label: 'Pulse', route: 'https://pulse.taliferro.tech', image: 'assets/icons/pulse.png', external: true },
-    { label: 'Network', route: 'https://network.taliferro.tech', image: 'assets/icons/network.png', external: true },
-    { label: 'Outreach', route: 'https://outreach.taliferro.tech', image: 'assets/icons/outreach.png', external: true },
-    { label: 'Moves', route: 'https://moves.taliferro.tech', image: 'assets/icons/moves.png', external: true },
-    { label: 'Social', route: 'https://social.taliferro.tech', image: 'assets/todd-social-icon.png', external: true },
-    { label: 'Docs', route: 'https://docs.taliferro.tech', image: 'assets/icons/docs.png', external: true }
+    { label: 'Home', route: 'https://ask.taliferro.tech', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
+    { label: 'Find', route: 'https://find.taliferro.tech', image: 'assets/find/entities/find/logo-bw-icon.png', external: true },
+    { label: 'Email Signature', route: 'https://signature.taliferro.tech', image: 'assets/find/entities/email-signature-builder/logo-bw-icon.png', external: true },
+    { label: 'SayIt', route: 'https://sayit.taliferro.tech', image: 'assets/find/entities/sayit/logo-bw-icon.png', external: true },
+    { label: 'Ask TODD', route: 'https://ask.taliferro.tech', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
+    { label: 'Lead Vault', route: 'https://lead-vault.taliferro.tech', image: 'assets/find/entities/lead-vault/logo-bw-icon.png', external: true },
+    { label: 'Music', route: 'https://music.taliferro.com', image: 'assets/find/entities/music/logo-bw-icon.png', external: true },
+    { label: 'Pulse', route: 'https://pulse.taliferro.tech', image: 'assets/find/entities/pulse/logo-bw-icon.png', external: true },
+    { label: 'Network', route: 'https://network.taliferro.tech', image: 'assets/find/entities/network/logo-bw-icon.png', external: true },
+    { label: 'Outreach', route: 'https://outreach.taliferro.tech', image: 'assets/find/entities/outreach/logo-bw-icon.png', external: true },
+    { label: 'Moves', route: 'https://moves.taliferro.tech', image: 'assets/find/entities/moves/logo-bw-icon.png', external: true },
+    { label: 'Social', route: 'https://social.taliferro.tech', image: 'assets/find/entities/social/logo-bw-icon.png', external: true },
+    { label: 'Docs', route: 'https://docs.taliferro.tech', image: 'assets/find/entities/docs/logo-bw-icon.png', external: true }
   ];
   private authContextSubscription?: Subscription;
   private readonly revisitStoragePrefix = 'maya-session-plan-reminder';
@@ -116,6 +119,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     private readonly emailService: EmailService,
     private readonly assistantBoxUtilityService: AssistantBoxUtilityService,
     private readonly marketingDirectorCapabilitiesService: MarketingDirectorCapabilitiesService,
+    private readonly mayaStatusReportService: MayaStatusReportService,
     private readonly route: ActivatedRoute
   ) { }
 
@@ -312,7 +316,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       this.showUpgradePanel = response.executionIntent && !this.hasPaidWorkspaceAccess;
       this.messages = [
         ...this.messages,
-        this.buildMessage( 'director', normalizedDirectorReply )
+        this.buildMessage( 'director', normalizedDirectorReply, this.buildMessageId( 'director' ), response.why )
       ];
       this.persistSessionMemory();
       await this.appendWorkspaceMessage( 'employee', normalizedDirectorReply );
@@ -350,8 +354,67 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL( url );
   }
 
+  async generateStatusReport (): Promise<void> {
+    if ( !this.hasPaidWorkspaceAccess || this.statusReportGenerating ) return;
+    this.statusReportGenerating = true;
+    try {
+      await this.mayaStatusReportService.download( this.buildMayaStatusReport(), true );
+      this.notificationService.show( 'Status Report Ready', 'Maya downloaded your Marketing Activity Status Report.', 'success' );
+    } catch ( error ) {
+      console.error( '[Maya Session] status report generation failed', error );
+      this.notificationService.show( 'Report Failed', 'Maya could not generate the status report right now.', 'error' );
+    } finally {
+      this.statusReportGenerating = false;
+    }
+  }
+
+  private buildMayaStatusReport (): MayaStatusReport {
+    const company = this.currentContact?.company;
+    const companyName = String( company?.name || 'Your Company' ).trim();
+    const metrics = ( Array.isArray( this.latestOutcome?.metrics ) ? this.latestOutcome?.metrics : [] )
+      .map( metric => ( { label: String( metric.label || '' ).trim(), value: String( metric.value || '' ).trim(), detail: String( metric.detail || '' ).trim() || undefined } ) )
+      .filter( metric => !!metric.label && !!metric.value );
+    const current = this.currentWorkItems.length;
+    const approvals = this.pendingApprovalItems.length;
+    const completed = this.completedWorkItems.length;
+    const reportMetrics = metrics.length ? metrics : [
+      ...( current ? [{ label: 'Current work items', value: String( current ) }] : [] ),
+      ...( approvals ? [{ label: 'Pending approvals', value: String( approvals ) }] : [] ),
+      ...( completed ? [{ label: 'Completed work items', value: String( completed ) }] : [] )
+    ];
+    const allWork = [...this.currentWorkItems, ...this.pendingApprovalItems, ...this.completedWorkItems];
+    const commentary = [String( this.latestOutcome?.summary || '' ).trim(), String( this.latestOutcome?.details || '' ).trim()].filter( Boolean );
+    const date = new Date().toLocaleDateString( 'en-US', { year: 'numeric', month: 'long', day: 'numeric' } );
+    const channelTerms = /email|linkedin|website|social|referral|outreach|content|search/i;
+    const channels = metrics.filter( metric => channelTerms.test( metric.label ) );
+    return {
+      company: { name: companyName, logoUrl: String( ( company as any )?.logo || ( company as any )?.logoUrl || '' ).trim() || undefined, tagline: String( company?.valueProp || '' ).trim() || undefined },
+      reportingPeriod: { label: `Current snapshot — ${date}`, end: new Date().toISOString() },
+      executiveSummary: commentary[0] || ( allWork.length ? `Maya is tracking ${allWork.length} recorded marketing work item${allWork.length === 1 ? '' : 's'} across the current workspace.` : 'There is not enough recorded activity yet for a fuller marketing status assessment.' ),
+      metrics: reportMetrics,
+      outreach: allWork.length ? { title: 'Outreach Activity', summary: 'Recorded Maya marketing work in the current workspace.', metrics: [
+        ...( current ? [{ label: 'Current work', value: String( current ) }] : [] ),
+        ...( approvals ? [{ label: 'Pending approvals', value: String( approvals ) }] : [] ),
+        ...( completed ? [{ label: 'Completed work', value: String( completed ) }] : [] )
+      ], items: allWork.slice( 0, 6 ).map( item => item.title ), commentary: commentary[1] || undefined } : undefined,
+      engagement: metrics.some( metric => /engag|response|reply|click|meeting/i.test( metric.label ) ) ? { title: 'Audience Engagement', summary: 'Engagement metrics reported by Maya’s connected workspace data.', metrics: metrics.filter( metric => /engag|response|reply|click|meeting/i.test( metric.label ) ).slice( 0, 4 ), commentary: commentary[1] || undefined } : undefined,
+      pipeline: allWork.length ? { title: 'Pipeline Overview', summary: 'Current work and approval state available to Maya.', items: allWork.slice( 0, 8 ).map( item => `${item.title}${item.status ? ` — ${item.status}` : ''}` ), commentary: commentary[0] || undefined } : undefined,
+      channels,
+      insights: commentary.length > 1 ? commentary.slice( 0, 3 ) : [],
+      recommendations: Array.isArray( this.latestOutcome?.handoff?.nextActions ) ? this.latestOutcome!.handoff!.nextActions.filter( Boolean ).slice( 0, 5 ) : [],
+      dataSources: ['Maya marketing workspace', ...( this.hasActivePlan ? ['Active marketing plan'] : [] ), ...( this.latestOutcome ? ['Latest Maya outcome'] : [] )],
+      dataCoverage: allWork.length || metrics.length ? 'This report includes the records currently available to Maya at generation time.' : 'No substantive activity records were available at generation time.',
+      limitations: ['Unrecorded offline activity is not included.', ...( !channels.length ? ['No channel-level performance data was available.'] : [] )],
+      mayaCommentary: commentary
+    };
+  }
+
   handlePromptFocus (): void {
     this.showSuggestionTray = !String( this.prompt || '' ).trim();
+  }
+
+  toggleWhy ( message: PublicMarketingDirectorMessage ): void {
+    message.whyExpanded = !message.whyExpanded;
   }
 
   handlePromptChange ( value: string ): void {
@@ -1201,7 +1264,8 @@ Pick one and I will keep moving:
           .map( message => this.buildMessage(
             message.role,
             String( message.content || '' ).trim(),
-            String( message.id || this.buildMessageId( message.role || 'director' ) )
+            String( message.id || this.buildMessageId( message.role || 'director' ) ),
+            String( message.why || '' ).trim() || undefined
           ) )
           .filter( message => !!message.content )
         : [];
@@ -1370,14 +1434,17 @@ Pick one and I will keep moving:
   private buildMessage (
     role: PublicMarketingDirectorMessage['role'],
     content: string,
-    id: string = this.buildMessageId( role )
+    id: string = this.buildMessageId( role ),
+    why?: string
   ): PublicMarketingDirectorMessage {
     const normalizedContent = String( content || '' ).trim();
     return {
       id,
       role,
       content: normalizedContent,
-      renderedContent: this.renderMessageContent( normalizedContent )
+      renderedContent: this.renderMessageContent( normalizedContent ),
+      why: String( why || '' ).trim() || undefined,
+      whyExpanded: false
     };
   }
 
@@ -1395,7 +1462,7 @@ Pick one and I will keep moving:
     };
   }
 
-  private renderMessageContent ( content: string ): string {
+  renderMessageContent ( content: string ): string {
     const escaped = String( content || '' )
       .replace( /&/g, '&amp;' )
       .replace( /</g, '&lt;' )

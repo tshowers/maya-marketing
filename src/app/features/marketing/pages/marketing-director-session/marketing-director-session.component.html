@@ -10,6 +10,7 @@
         </div>
         <div class="maya-prompt-chips" aria-label="Maya prompts">
           <button type="button" *ngFor="let item of ['Sharpen my message', 'Find my best audience', 'Clarify my offer']" (click)="sendMessage(item)">{{ item }} <span aria-hidden="true">↗</span></button>
+          <button type="button" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> {{ statusReportGenerating ? 'Creating report…' : 'Generate status report' }} <span aria-hidden="true">↓</span></button>
         </div>
         <div class="maya-version-stamp" [title]="buildVersion.buildTime">v{{ buildVersion.version }} · {{ buildVersion.gitSha }}</div>
       </div>
@@ -17,11 +18,19 @@
         <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'">
           <div class="maya-message-role">{{ message.role === 'director' ? 'Maya' : 'You' }}</div>
           <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
+          <div class="maya-why-callout" *ngIf="message.role === 'director' && message.why">
+            <button type="button" class="maya-why-toggle" (click)="toggleWhy(message)" [attr.aria-expanded]="message.whyExpanded" [attr.aria-controls]="'why-' + message.id">
+              <span class="maya-why-icon" aria-hidden="true">✦</span>
+              <span>Why I’m saying this</span>
+              <span class="maya-why-chevron" aria-hidden="true">{{ message.whyExpanded ? '⌃' : '⌄' }}</span>
+            </button>
+            <div class="maya-why-body" *ngIf="message.whyExpanded" [id]="'why-' + message.id" [innerHTML]="renderMessageContent(message.why)"></div>
+          </div>
         </article>
         <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="Maya is thinking"><div class="maya-message-role">Maya</div><div class="maya-thinking"><span class="maya-thinking__label">Maya is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div></article>
       </div>
       <aside class="maya-upgrade" *ngIf="showUpgradePanel"><div class="maya-upgrade-copy"><div class="maya-eyebrow">Need execution?</div><h2>Maya can move from advice into real work inside TODD Suite.</h2><p>If you want drafts, approvals, and a live execution queue, that is where the paid account takes over.</p><div class="maya-actions"><a routerLink="/suite/pricing" class="maya-primary-button">Unlock Execution</a><a routerLink="/login" class="maya-secondary-button">Start Free Account</a></div></div></aside>
-      <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-export" (click)="exportTranscript()" aria-label="Export transcript" title="Export transcript"><i class="fa-solid fa-download" aria-hidden="true"></i></button><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
+      <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-export" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" aria-label="Generate status report" title="Generate status report"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></button><button type="button" class="maya-export" (click)="exportTranscript()" aria-label="Export transcript" title="Export transcript"><i class="fa-solid fa-download" aria-hidden="true"></i></button><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
       <div class="maya-status" *ngIf="sending || errorMessage">{{ sending ? 'Maya is working on your answer…' : errorMessage }}</div>
     </section>
   </main>
