@@ -1,6 +1,6 @@
 import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -12,17 +12,18 @@ import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { tenantInterceptor } from './core/interceptors/tenant.interceptor';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ anchorScrolling: 'enabled' })),
-    provideHttpClient(withInterceptors([tenantInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([tenantInterceptor])),
     provideAnimationsAsync(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),
     provideStorage(() => getStorage()),
     provideFunctions(() => getFunctions()),
-    provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode(), registrationStrategy: 'registerWhenStable:30000' })
+    provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode(), registrationStrategy: 'registerWhenStable:30000' }), provideClientHydration(withEventReplay())
   ]
 };

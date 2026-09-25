@@ -1,0 +1,37 @@
+:host { display: block; }
+
+.help-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.75rem) clamp(1.1rem, 4vw, 2.75rem) 5rem;
+  color: var(--todd-text);
+}
+
+.help-hero, .help-section {
+  border: 1px solid var(--todd-panel-border);
+  background: var(--todd-card-bg);
+  border-radius: 20px;
+}
+
+.help-hero { padding: clamp(1.5rem, 4vw, 3rem); }
+.help-hero__eyebrow, .help-section-kicker { color: var(--tl-blue-mid); font-size: .74rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.help-hero__content { margin-top: 1rem; }
+.help-hero__context { margin: 0 0 .65rem; color: var(--todd-subtext); font-size: .82rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.help-hero h1 { max-width: 620px; margin: 0; font-size: clamp(1.9rem, 4.5vw, 3rem); line-height: 1.1; letter-spacing: -.03em; }
+.help-hero__lead { max-width: 620px; margin: 1.1rem 0 0; color: var(--todd-subtext); font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.6; }
+.help-quick-links { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.75rem; }
+.help-quick-links a { color: var(--todd-text); text-decoration: none; font-weight: 700; padding: .6rem .9rem; border: 1px solid var(--todd-panel-border); border-radius: 999px; background: var(--todd-surface-1); font-size: .86rem; }
+.help-quick-links a:hover { color: var(--tl-blue-mid); }
+
+.help-section { margin-top: 1.25rem; padding: clamp(1.25rem, 3vw, 2.25rem); }
+.help-steps { display: grid; gap: 1rem; margin-top: 1.75rem; }
+.help-step { display: grid; grid-template-columns: 52px 1fr; gap: 1rem; padding: 1.2rem 0; border-top: 1px solid var(--todd-panel-border); }
+.help-step:first-child { border-top: 0; padding-top: 0; }
+.help-step__number { color: var(--tl-blue-mid); font-weight: 700; font-size: .95rem; padding-top: .2rem; }
+.help-step h3 { margin: 0; font-size: 1.15rem; letter-spacing: -.02em; }
+.help-step__copy { margin: .4rem 0 .7rem; color: var(--todd-subtext); line-height: 1.55; }
+.help-step ul { margin: 0; padding-left: 1.1rem; color: var(--todd-subtext); line-height: 1.6; }
+
+.help-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin-top: 2.25rem; color: var(--todd-subtext); font-size: .85rem; }
+.help-footer a { color: inherit; font-weight: 600; text-decoration: none; }
+.help-footer a:hover { color: var(--tl-blue-mid); }

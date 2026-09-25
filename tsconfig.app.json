@@ -1,6 +1,12 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "outDir": "./out-tsc/app", "types": ["node"], "noUnusedLocals": true, "noUnusedParameters": false },
-  "files": ["src/main.ts"],
-  "include": ["src/**/*.d.ts"]
+  "compilerOptions": { "outDir": "./out-tsc/app", "types": [
+      "node"
+    ], "noUnusedLocals": true, "noUnusedParameters": false },
+  "files": [
+    "src/main.ts",
+    "src/main.server.ts",
+    "src/server.ts"
+  ],
+  "include": ["src/**/*.d.ts", "../../taliferro-ui/**/*.ts"]
 }

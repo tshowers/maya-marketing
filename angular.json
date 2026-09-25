@@ -15,18 +15,40 @@
             "outputPath": "dist/maya",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              { "glob": "**/*", "input": "public" },
-              { "glob": "**/*", "input": "src/assets", "output": "assets" }
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
             ],
             "styles": [
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fontsource-variable/inter/index.css",
+              "node_modules/@fontsource-variable/manrope/index.css",
+              "node_modules/@fontsource-variable/fraunces/index.css",
               "src/styles.css"
             ],
-            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"]
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ],
+            "server": "src/main.server.ts",
+            "security": {
+              "allowedHosts": []
+            },
+            "prerender": true,
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {

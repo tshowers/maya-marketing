@@ -1,0 +1,36 @@
+<main class="help-page" data-cy="help-shell">
+  <header class="help-hero">
+    <div class="help-hero__eyebrow">Help</div>
+    <div class="help-hero__content">
+      <p class="help-hero__context">Direct · Execute · Verify</p>
+      <h1>Your on-call Marketing Director.</h1>
+      <p class="help-hero__lead">Give Maya direction, let her execute, then check what she got done.</p>
+    </div>
+    <nav class="help-quick-links" aria-label="Maya help pages">
+      <a routerLink="/">Talk to Maya</a>
+      <a routerLink="/about">About</a>
+    </nav>
+  </header>
+
+  <section class="help-section" aria-labelledby="help-steps-title">
+    <div class="help-section__heading">
+      <p class="help-section-kicker">A practical walkthrough</p>
+      <h2 id="help-steps-title">From direction to executed work</h2>
+    </div>
+    <div class="help-steps">
+      <article class="help-step" *ngFor="let step of steps">
+        <div class="help-step__number">{{ step.number }}</div>
+        <div class="help-step__body">
+          <h3>{{ step.title }}</h3>
+          <p class="help-step__copy">{{ step.copy }}</p>
+          <ul *ngIf="step.details.length"><li *ngFor="let detail of step.details">{{ detail }}</li></ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="help-footer">
+    <a routerLink="/">← Back to Maya</a>
+    <a routerLink="/about">About Maya →</a>
+  </footer>
+</main>
