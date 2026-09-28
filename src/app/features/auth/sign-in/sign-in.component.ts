@@ -14,6 +14,11 @@ export class SignInComponent implements OnInit {
   isSigningIn = false;
   private returnUrl = '/';
   constructor(private readonly route: ActivatedRoute, private readonly auth: MayaAuthService) {}
-  ngOnInit(): void { this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/'; }
+  ngOnInit(): void {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+    // /login is a compatibility handoff route. Send visitors directly to
+    // TODD's shared hosted login instead of requiring a second click.
+    this.signIn();
+  }
   signIn(): void { this.isSigningIn = true; this.auth.signIn(this.returnUrl); }
 }

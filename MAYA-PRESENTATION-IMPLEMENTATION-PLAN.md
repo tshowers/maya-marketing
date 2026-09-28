@@ -232,6 +232,23 @@ interface MayaSlide {
 }
 ```
 
+### Content-first generation contract
+
+Maya should return the complete `MayaDeck` when the conversation reaches
+`READY_TO_GENERATE`. Each slide must carry a communication job, persuasive
+copy, and the evidence or source material supporting the claim. The renderer
+must not invent slide copy or metrics. If an older planning response does not
+include a deck, the client may build a grounded fallback from the narrative,
+uploaded source text, and extracted evidence, but the backend-generated deck
+is the preferred path.
+
+The content pass should answer four questions for every slide:
+
+1. What should this audience understand or believe after this slide?
+2. What evidence supports the point?
+3. What interpretation or implication helps the audience make sense of it?
+4. What should the audience do next?
+
 Speaker notes should be generated even though the initial download format is PDF. They provide a future path to PPTX or Keynote-compatible exports.
 
 ## Semantic slide compositions

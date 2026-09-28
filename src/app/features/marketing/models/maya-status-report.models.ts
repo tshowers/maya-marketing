@@ -21,10 +21,14 @@ export interface MayaStatusReportSection {
 
 export interface MayaStatusReport {
   company: MayaStatusReportCompany;
+  preparedFor?: { name: string; company: string };
   reportingPeriod: { start?: string; end: string; label: string };
   executiveSummary: string;
   metrics: MayaStatusReportMetric[];
   outreach?: MayaStatusReportSection;
+  social?: MayaStatusReportSection;
+  network?: MayaStatusReportSection;
+  pipelineStatus?: MayaStatusReportSection;
   engagement?: MayaStatusReportSection;
   pipeline?: MayaStatusReportSection;
   channels: MayaStatusReportMetric[];

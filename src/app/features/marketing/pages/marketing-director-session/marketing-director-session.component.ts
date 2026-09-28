@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -14,6 +15,7 @@ import {
   PublicMarketingDirectorMessage,
   PublicMarketingDirectorSystemAction,
   PublicMarketingDirectorWorkspaceContext,
+  MayaPresentationRequirements,
   PublicMarketingDirectorService
 } from '../../services/public-marketing-director.service';
 import { MarketingEmployeeActionRecord, MarketingEmployeeOutcomeRecord, MarketingPlanRecord } from '../../models/marketing-employee.models';
@@ -28,7 +30,6 @@ import { DocService } from '../../../document/doc.service';
 import { TaskService } from '../../../../services/task.service';
 import { SurveyApiService } from '../../../survey/services/survey-api.service';
 import { ResponseFlowService } from '../../../knowledge/response-flow.service';
-import { EmailService } from '../../../../services/email.service';
 import { Task } from '../../../../shared/data/interfaces/task.model';
 import { Survey } from '../../../survey/models/survey.model';
 import { AssistantBoxUtilityService } from '../../../../services/assistant-box-utility.service';
@@ -36,11 +37,31 @@ import { MarketingDirectorCapabilitiesService } from '../../services/marketing-d
 import { BUILD_VERSION } from '../../../../version';
 import { MayaStatusReport } from '../../models/maya-status-report.models';
 import { MayaStatusReportService } from '../../services/maya-status-report.service';
+import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/maya-deck-preview.component';
+import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
+import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
+import { DataService } from '../../../../services/data.service';
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import {
+  EmailDraftPayload,
+  HandoffDraft,
+  buildHandoffUrl,
+  getHandoffExpiry,
+  handoffCollectionPath,
+} from '@taliferro/ui/handoff/handoff.model';
+
+interface ReportOperationalData {
+  socialPosts?: SocialPost[];
+  contacts?: Contact[];
+  todayMomentum?: { sent?: number; opens?: number; clicks?: number; visits?: number };
+  visitorSummary?: { overview?: { uniqueVisitorCount?: number; returningVisitorCount?: number } };
+  engineState?: any;
+}
 
 @Component( {
   selector: 'app-marketing-director-session',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MayaDeckPreviewComponent],
   templateUrl: './marketing-director-session.component.html',
   styleUrls: ['./marketing-director-session.component.css']
 } )
@@ -66,6 +87,16 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   showSuggestionTray = true;
   showApps = false;
   statusReportGenerating = false;
+  presentationMode = false;
+  presentationState: 'NEEDS_INFORMATION' | 'READY_TO_GENERATE' = 'NEEDS_INFORMATION';
+  presentationRequirements: MayaPresentationRequirements = {};
+  presentationNarrative: string[] = [];
+  presentationDeck?: MayaDeck;
+  presentationTheme: MayaDeckTheme = 'corporate';
+  presentationAccentColor = '#ff8a24';
+  presentationLogoDataUrl = '';
+  presentationFiles: Array<{ name: string; type: string; size: number; content?: string; dataUrl?: string }> = [];
+  presentationPreviewOpen = false;
   readonly appLinks = [
     { label: 'Home', route: 'https://ask.taliferro.tech', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
     { label: 'Find', route: 'https://find.taliferro.tech', image: 'assets/find/entities/find/logo-bw-icon.png', external: true },
@@ -116,10 +147,12 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     private readonly taskService: TaskService,
     private readonly surveyApiService: SurveyApiService,
     private readonly responseFlowService: ResponseFlowService,
-    private readonly emailService: EmailService,
     private readonly assistantBoxUtilityService: AssistantBoxUtilityService,
     private readonly marketingDirectorCapabilitiesService: MarketingDirectorCapabilitiesService,
     private readonly mayaStatusReportService: MayaStatusReportService,
+    private readonly outreachApiService: OutreachApiService,
+    private readonly dataService: DataService,
+    private readonly http: HttpClient,
     private readonly route: ActivatedRoute
   ) { }
 
@@ -271,6 +304,11 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     const normalizedPrompt = String( presetPrompt || this.prompt || '' ).trim();
     if ( !normalizedPrompt || this.sending ) return;
 
+    if ( this.presentationMode || this.isPresentationRequest( normalizedPrompt ) ) {
+      await this.sendPresentationMessage( normalizedPrompt );
+      return;
+    }
+
     await this.ensureWorkspaceSessionConnection();
 
     this.errorMessage = '';
@@ -331,6 +369,92 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     }
   }
 
+  private isPresentationRequest ( prompt: string ): boolean {
+    return /(create|make|build|generate|draft|help\s+me\s+with).{0,40}(presentation|slide\s+deck|deck)|(presentation|slide\s+deck|deck).{0,40}(create|make|build|generate|draft)/i.test( prompt );
+  }
+
+  private async sendPresentationMessage ( normalizedPrompt: string ): Promise<void> {
+    // Keep legacy extraction isolated from generation; the backend pipeline owns deck content.
+    void this.extractMetrics;
+    this.errorMessage = '';
+    this.sending = true;
+    this.presentationMode = true;
+    this.messages = [...this.messages, this.buildMessage( 'user', normalizedPrompt )];
+    this.prompt = '';
+    this.hasUserMessages = true;
+    this.showSuggestionTray = false;
+    try {
+      const response = await this.publicMarketingDirectorService.runPresentationTurn( normalizedPrompt, this.messages, { ...this.presentationRequirements, supportingMaterial: this.presentationFiles } );
+      this.presentationState = response.state;
+      this.presentationRequirements = { ...this.presentationRequirements, ...( response.requirements || {} ) };
+      this.presentationNarrative = response.deckPlan?.narrative || this.presentationNarrative;
+      if ( response.deck ) this.presentationDeck = response.deck;
+      this.messages = [...this.messages, this.buildMessage( 'director', response.message )];
+      this.persistSessionMemory();
+      await this.appendWorkspaceMessage( 'employee', response.message );
+    } catch {
+      this.errorMessage = 'Maya could not start the presentation workflow right now. Please try again.';
+    } finally {
+      this.sending = false;
+      this.scrollLatestUserMessageIntoView();
+    }
+  }
+
+  async handlePresentationFiles ( event: Event ): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from( input.files || [] ).slice( 0, 6 );
+    const accepted = await Promise.all( files.map( file => this.readPresentationFile( file ) ) );
+    this.presentationFiles = [...this.presentationFiles, ...accepted.filter( Boolean ) as any].slice( 0, 6 );
+    this.presentationRequirements = { ...this.presentationRequirements, supportingMaterial: this.presentationFiles };
+    input.value = '';
+  }
+
+  async handlePresentationLogo ( event: Event ): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if ( !file ) return;
+    this.presentationLogoDataUrl = await this.readFileAsDataUrl( file );
+    input.value = '';
+  }
+
+  removePresentationFile ( index: number ): void { this.presentationFiles = this.presentationFiles.filter( (_file, itemIndex) => itemIndex !== index ); }
+
+  generatePresentationDeck (): void {
+    if ( !this.presentationMode || this.presentationState !== 'READY_TO_GENERATE' ) return;
+    this.errorMessage = '';
+    const deck = this.presentationDeck;
+    if ( !deck || deck.slides.length < 8 || deck.slides.some( slide => !slide.purpose || !slide.narrativeRole || !slide.takeaway || !slide.headline || !slide.transitionToNextSlide ) ) {
+      this.errorMessage = 'Maya has not finished the presentation-quality review yet. Please continue the conversation before generating the deck.';
+      return;
+    }
+    this.presentationPreviewOpen = true;
+  }
+
+  get presentationImageUploads (): string[] {
+    return this.presentationFiles.filter( file => file.dataUrl?.startsWith( 'data:image/' ) ).map( file => file.dataUrl! );
+  }
+
+  /* Legacy transcript heuristics intentionally removed. The backend owns content development. */
+
+  // Content is developed by Maya's backend pipeline rather than local heuristics.
+
+  private extractMetrics ( text: string ): Array<{ value: string; label: string }> {
+    const results: Array<{ value: string; label: string }> = [];
+    const pattern = /\b\$?\d+(?:\.\d+)?\s?(?:%|[KMB])?\b/gi;
+    text.split( /\n|(?<=[.!?])\s+/ ).forEach( sentence => { const match = sentence.match( pattern )?.[0]; if ( match && /\d/.test( match ) ) { const label = sentence.replace( match, '' ).replace( /^[-:,.\s]+|[-:,.\s]+$/g, '' ); results.push( { value: match.trim(), label: label.slice( 0, 68 ) || 'User-supplied figure' } ); } } );
+    return results.slice( 0, 4 );
+  }
+
+  private readPresentationFile ( file: File ): Promise<{ name: string; type: string; size: number; content?: string; dataUrl?: string } | null> {
+    const allowed = /^(application\/pdf|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|text\/plain|text\/markdown|image\/)/i.test( file.type ) || /\.(pdf|docx|txt|md|markdown|png|jpe?g|webp)$/i.test( file.name );
+    if ( !allowed || file.size > 8 * 1024 * 1024 ) return Promise.resolve( null );
+    if ( /^image\//i.test( file.type ) || /\.(png|jpe?g|webp)$/i.test( file.name ) ) return this.readFileAsDataUrl( file ).then( dataUrl => ({ name: file.name, type: file.type, size: file.size, dataUrl }) );
+    if ( /\.(txt|md|markdown)$/i.test( file.name ) || /^text\//i.test( file.type ) ) return file.text().then( content => ({ name: file.name, type: file.type, size: file.size, content: content.slice( 0, 50000 ) }) );
+    return Promise.resolve({ name: file.name, type: file.type, size: file.size });
+  }
+
+  private readFileAsDataUrl ( file: File ): Promise<string> { return new Promise( resolve => { const reader = new FileReader(); reader.onload = () => resolve( String( reader.result || '' ) ); reader.onerror = () => resolve( '' ); reader.readAsDataURL( file ); } ); }
+
   trackById ( _index: number, item: PublicMarketingDirectorMessage ): string {
     return item.id;
   }
@@ -358,7 +482,36 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     if ( !this.hasPaidWorkspaceAccess || this.statusReportGenerating ) return;
     this.statusReportGenerating = true;
     try {
-      await this.mayaStatusReportService.download( this.buildMayaStatusReport(), true );
+      const operationalData = await this.loadReportOperationalData();
+      const baseReport = this.buildMayaStatusReport( operationalData );
+      let report = baseReport;
+      try {
+        const analysis = await this.publicMarketingDirectorService.analyzeStatusReport( this.buildDirectorWorkspaceContext() || {}, baseReport.reportingPeriod );
+        report = {
+          ...baseReport,
+          ...analysis,
+          company: baseReport.company,
+          preparedFor: baseReport.preparedFor,
+          reportingPeriod: baseReport.reportingPeriod,
+          social: baseReport.social,
+          network: baseReport.network,
+          pipelineStatus: baseReport.pipelineStatus,
+          metrics: Array.isArray( analysis.metrics ) ? analysis.metrics : baseReport.metrics,
+          channels: Array.isArray( analysis.channels ) ? analysis.channels : baseReport.channels,
+          insights: Array.isArray( analysis.insights ) ? analysis.insights : baseReport.insights,
+          recommendations: Array.isArray( analysis.recommendations ) ? analysis.recommendations : baseReport.recommendations,
+          mayaCommentary: Array.isArray( analysis.mayaCommentary ) ? analysis.mayaCommentary : baseReport.mayaCommentary
+        };
+      } catch ( analysisError ) {
+        console.warn( '[Maya Session] status report analysis unavailable; using verified local workspace data', analysisError );
+      }
+      report.outreach = this.normalizeReportSection( report.outreach );
+      report.social = this.normalizeReportSection( report.social );
+      report.network = this.normalizeReportSection( report.network );
+      report.pipelineStatus = this.normalizeReportSection( report.pipelineStatus );
+      report.engagement = this.normalizeReportSection( report.engagement );
+      report.pipeline = this.normalizeReportSection( report.pipeline );
+      await this.mayaStatusReportService.download( report, true );
       this.notificationService.show( 'Status Report Ready', 'Maya downloaded your Marketing Activity Status Report.', 'success' );
     } catch ( error ) {
       console.error( '[Maya Session] status report generation failed', error );
@@ -368,9 +521,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildMayaStatusReport (): MayaStatusReport {
+  private buildMayaStatusReport ( operationalData: ReportOperationalData = {} ): MayaStatusReport {
     const company = this.currentContact?.company;
     const companyName = String( company?.name || 'Your Company' ).trim();
+    const preparedName = [String( this.currentContact?.firstName || '' ).trim(), String( this.currentContact?.lastName || '' ).trim()].filter( Boolean ).join( ' ' ).trim() || 'Signed-in user';
     const metrics = ( Array.isArray( this.latestOutcome?.metrics ) ? this.latestOutcome?.metrics : [] )
       .map( metric => ( { label: String( metric.label || '' ).trim(), value: String( metric.value || '' ).trim(), detail: String( metric.detail || '' ).trim() || undefined } ) )
       .filter( metric => !!metric.label && !!metric.value );
@@ -387,9 +541,57 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     const date = new Date().toLocaleDateString( 'en-US', { year: 'numeric', month: 'long', day: 'numeric' } );
     const channelTerms = /email|linkedin|website|social|referral|outreach|content|search/i;
     const channels = metrics.filter( metric => channelTerms.test( metric.label ) );
+    const engagementMetrics = metrics.filter( metric => /engag|response|reply|click|meeting/i.test( metric.label ) );
+    const socialPosts = operationalData.socialPosts || [];
+    const socialItems = socialPosts.slice( 0, 8 ).map( post => {
+      const platform = this.formatReportLabel( post.platform );
+      const status = this.formatReportLabel( post.status );
+      const content = this.shortenText( String( post.content || '' ).replace( /\s+/g, ' ' ).trim(), 150 );
+      return `${platform} - ${status}: ${content || 'No post text recorded.'}`;
+    } );
+    const contacts = operationalData.contacts || [];
+    const reportOutcomes = operationalData.engineState?.channelOutcomes || {};
+    const reportPipelineStatus = reportOutcomes.pipelineStatus || {};
+    const reportTargetList = reportOutcomes.targetList || {};
+    const reportBucketCounts = reportPipelineStatus.planBucketCounts || {};
+    const visitorOverview = operationalData.visitorSummary?.overview;
+    const visitorCount = Number( visitorOverview?.uniqueVisitorCount || 0 );
+    const returningVisitorCount = Number( visitorOverview?.returningVisitorCount || 0 );
+    const customerCount = contacts.filter( contact => ( contact as any )?.subscriber === true ).length;
+    const networkMetrics = [
+      { label: 'Visitor', value: String( visitorCount ), detail: `Returning ${visitorCount ? Math.round( returningVisitorCount / visitorCount * 100 ) : 0}%` },
+      { label: 'Contacted', value: String( Number( reportBucketCounts.waiting || 0 ) ), detail: 'Maya outreach threads' },
+      { label: 'Engaged', value: String( Number( reportBucketCounts.engaged || 0 ) ), detail: 'Active conversations' },
+      { label: 'Qualified', value: String( Number( reportBucketCounts.watching || 0 ) ), detail: 'Warm follow-up' },
+      { label: 'Opportunity', value: String( Number( reportBucketCounts.needs_you || 0 ) ), detail: 'Needs your attention' },
+      { label: 'Customer', value: String( customerCount ), detail: 'Subscribers' }
+    ];
+    const mappedStatuses = contacts.filter( contact => !!String( contact?.status || '' ).trim() ).length;
+    const networkItems = [
+      `${mappedStatuses} of ${contacts.length} contacts have a saved status.`,
+      `Cold Reserve: ${Number( reportTargetList?.bestFitColdLeads?.count || 0 )} contacts.`,
+      `Active pipeline: ${Number( reportPipelineStatus.totalLiveThreads || 0 )} live threads.`,
+      ...networkMetrics.slice( 4 ).map( metric => `${metric.label}: ${metric.value} ${metric.detail.toLowerCase()}.` ),
+      ...( operationalData.todayMomentum ? [`Today's momentum: ${operationalData.todayMomentum.sent} sent, ${operationalData.todayMomentum.opens} opens, ${operationalData.todayMomentum.clicks} clicks, ${operationalData.todayMomentum.visits} visits.`] : [] )
+    ];
+    const outcomes = reportOutcomes;
+    const pipelineStatus = outcomes.pipelineStatus || {};
+    const pipelineCounts = pipelineStatus.userLaneCounts || {};
+    const pipelineMetrics = [
+      { label: 'Plan', value: String( Number( pipelineCounts.plan || 0 ) ), detail: 'Pipeline plan' },
+      { label: 'Drafts', value: String( Number( pipelineCounts.drafts || 0 ) ), detail: 'Drafts waiting' },
+      { label: 'Outbox', value: String( Number( pipelineCounts.outbox || 0 ) ), detail: 'Queued for execution' },
+      { label: 'Sent', value: String( Number( pipelineCounts.sent || 0 ) ), detail: 'Sent threads' }
+    ];
+    const pipelineItems = [
+      ...( outcomes.mayaStatus ? [`Maya drafted ${Number( outcomes.mayaStatus.draftedSoFar || 0 )} of ${Number( outcomes.mayaStatus.totalPlanned || 0 )} planned items.`] : [] ),
+      ...( outcomes.firstWaveExecution ? [`First wave: ${Number( outcomes.firstWaveExecution.draftsPendingCount || 0 )} approval pending, ${Number( outcomes.firstWaveExecution.outboxCount || 0 )} queued, ${Number( outcomes.firstWaveExecution.sentCount || 0 )} sent.`] : [] ),
+      ...( outcomes.closeLoop ? [`Close loop: ${Number( outcomes.closeLoop.draftsPendingCount || 0 )} approval pending and ${Number( outcomes.closeLoop.sentCount || 0 )} sent.`] : [] )
+    ];
     return {
-      company: { name: companyName, logoUrl: String( ( company as any )?.logo || ( company as any )?.logoUrl || '' ).trim() || undefined, tagline: String( company?.valueProp || '' ).trim() || undefined },
-      reportingPeriod: { label: `Current snapshot — ${date}`, end: new Date().toISOString() },
+      company: { name: companyName, logoUrl: String( ( company as any )?.logo || ( company as any )?.logoUrl || '' ).trim() || undefined, tagline: this.shortenText( String( company?.valueProp || '' ).trim(), 110 ) || undefined },
+      preparedFor: { name: preparedName, company: companyName },
+      reportingPeriod: { label: `Current snapshot - ${date}`, end: new Date().toISOString() },
       executiveSummary: commentary[0] || ( allWork.length ? `Maya is tracking ${allWork.length} recorded marketing work item${allWork.length === 1 ? '' : 's'} across the current workspace.` : 'There is not enough recorded activity yet for a fuller marketing status assessment.' ),
       metrics: reportMetrics,
       outreach: allWork.length ? { title: 'Outreach Activity', summary: 'Recorded Maya marketing work in the current workspace.', metrics: [
@@ -397,8 +599,13 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
         ...( approvals ? [{ label: 'Pending approvals', value: String( approvals ) }] : [] ),
         ...( completed ? [{ label: 'Completed work', value: String( completed ) }] : [] )
       ], items: allWork.slice( 0, 6 ).map( item => item.title ), commentary: commentary[1] || undefined } : undefined,
-      engagement: metrics.some( metric => /engag|response|reply|click|meeting/i.test( metric.label ) ) ? { title: 'Audience Engagement', summary: 'Engagement metrics reported by Maya’s connected workspace data.', metrics: metrics.filter( metric => /engag|response|reply|click|meeting/i.test( metric.label ) ).slice( 0, 4 ), commentary: commentary[1] || undefined } : undefined,
-      pipeline: allWork.length ? { title: 'Pipeline Overview', summary: 'Current work and approval state available to Maya.', items: allWork.slice( 0, 8 ).map( item => `${item.title}${item.status ? ` — ${item.status}` : ''}` ), commentary: commentary[0] || undefined } : undefined,
+      social: { title: 'Social Activity Today', summary: socialItems.length ? 'Social posts Maya created or updated today, including the destination platform and current status.' : 'Maya has no social posts recorded for today.', metrics: [
+        { label: 'Posts today', value: String( socialPosts.length ), detail: 'Created, scheduled, or published' }
+      ], items: socialItems.length ? socialItems : ['No social post activity recorded today.'], commentary: socialItems.length ? 'These posts come from the shared Social workspace.' : 'Maya will show social activity here as soon as a post is created.' },
+      network: { title: 'Networking Progress', summary: 'Network stage counts extracted from the saved contact records.', metrics: networkMetrics.slice( 0, 4 ), items: networkItems, commentary: 'Network remains the source of truth for relationship stage and momentum.' },
+      pipelineStatus: { title: 'Maya Pipeline Status', summary: 'The current Maya and TODD pipeline lanes extracted from the saved momentum state.', metrics: pipelineMetrics, items: pipelineItems.length ? pipelineItems : ['No pipeline status snapshot was available at generation time.'], commentary: 'This page reflects the same pipeline state shown in Network Pipeline Status.' },
+      engagement: { title: 'Audience Engagement', summary: engagementMetrics.length ? "Engagement metrics reported by Maya's connected workspace data." : 'No engagement activity has been recorded yet. Metrics will appear after outreach is approved and executed.', metrics: ( engagementMetrics.length ? engagementMetrics : [{ label: 'Engagement data', value: 'No data yet', detail: 'Available after outreach is executed.' }] ).slice( 0, 4 ), commentary: commentary[1] || 'Maya will track responses, clicks, replies, and meetings as activity is recorded.' },
+      pipeline: allWork.length ? { title: 'Pipeline Overview', summary: 'Current work and approval state available to Maya.', items: allWork.slice( 0, 8 ).map( item => `${item.title}${item.status ? ` - ${item.status}` : ''}` ), commentary: commentary[0] || undefined } : undefined,
       channels,
       insights: commentary.length > 1 ? commentary.slice( 0, 3 ) : [],
       recommendations: Array.isArray( this.latestOutcome?.handoff?.nextActions ) ? this.latestOutcome!.handoff!.nextActions.filter( Boolean ).slice( 0, 5 ) : [],
@@ -407,6 +614,71 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       limitations: ['Unrecorded offline activity is not included.', ...( !channels.length ? ['No channel-level performance data was available.'] : [] )],
       mayaCommentary: commentary
     };
+  }
+
+  private async loadReportOperationalData (): Promise<ReportOperationalData> {
+    if ( !this.tenantId || !this.userId ) return {};
+    const options = { tenantId: this.tenantId, userId: this.userId };
+    const headers = new HttpHeaders().set( 'x-tenant-id', this.tenantId ).set( 'x-user-id', this.userId );
+    const today = new Date().toISOString().slice( 0, 10 );
+    const [socialResult, contactsResult, momentumResult, engineResult, visitorResult] = await Promise.allSettled([
+      firstValueFrom( this.outreachApiService.listSocialPosts( { limit: 100 }, options ) ),
+      firstValueFrom( this.outreachApiService.listOutreachContacts( options ) ),
+      firstValueFrom( this.http.get<any>( `${environment.backendURL}/outreach/momentum/today-summary`, { headers } ) ),
+      firstValueFrom( this.http.get<any>( `${environment.backendURL}/momentum/engine-state`, { params: { tenantId: this.tenantId } } ) ),
+      firstValueFrom( this.http.get<any>( `${environment.backendURL}/anonymous-behavior/summary`, { params: { tenantId: this.tenantId, periodDays: 30 } } ) )
+    ]);
+    const socialPosts = socialResult.status === 'fulfilled' && Array.isArray( socialResult.value?.data )
+      ? socialResult.value.data.filter( post => [post.createdAt, post.updatedAt, post.publishedTimestamp, post.plannedForDate].some( value => String( value || '' ).slice( 0, 10 ) === today ) )
+      : [];
+    return {
+      socialPosts,
+      contacts: contactsResult.status === 'fulfilled' && Array.isArray( contactsResult.value?.data ) ? contactsResult.value.data : [],
+      todayMomentum: momentumResult.status === 'fulfilled' ? {
+        sent: Number( momentumResult.value?.data?.emailsSent || 0 ),
+        opens: Number( momentumResult.value?.data?.emailsOpened || 0 ),
+        clicks: Number( momentumResult.value?.data?.emailsClicked || 0 ),
+        visits: Number( momentumResult.value?.data?.visits || 0 )
+      } : undefined,
+      visitorSummary: visitorResult.status === 'fulfilled' ? visitorResult.value?.data : undefined,
+      engineState: engineResult.status === 'fulfilled' ? engineResult.value?.data?.engineState : undefined
+    };
+  }
+
+  private formatReportLabel ( value: unknown ): string {
+    const normalized = String( value || '' ).trim().toLowerCase();
+    return normalized ? normalized.charAt( 0 ).toUpperCase() + normalized.slice( 1 ) : 'Unknown';
+  }
+
+  private normalizeReportSection ( section?: MayaStatusReport['outreach'] ): MayaStatusReport['outreach'] {
+    if ( !section ) return section;
+    return { ...section, items: this.normalizeReportItems( ( section as any ).items ) };
+  }
+
+  private normalizeReportItems ( items: unknown ): string[] {
+    if ( !Array.isArray( items ) ) return [];
+    return items.map( item => this.reportItemText( item ) ).filter( Boolean );
+  }
+
+  private reportItemText ( item: unknown ): string {
+    if ( typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' ) return String( item ).trim();
+    if ( !item || typeof item !== 'object' ) return '';
+    const value = item as Record<string, unknown>;
+    for ( const key of ['title', 'name', 'label', 'description', 'summary', 'content', 'body', 'text'] ) {
+      const candidate = this.reportItemText( value[key] );
+      if ( candidate ) return candidate;
+    }
+    return Object.entries( value )
+      .filter( ( [, entry] ) => ['string', 'number', 'boolean'].includes( typeof entry ) )
+      .map( ( [key, entry] ) => `${this.formatReportLabel( key )}: ${String( entry ).trim()}` )
+      .filter( Boolean )
+      .join( ' - ' );
+  }
+
+  private shortenText ( value: string, maxLength: number ): string {
+    const text = String( value || '' ).trim();
+    if ( text.length <= maxLength ) return text;
+    return `${text.slice( 0, Math.max( 1, maxLength - 3 ) ).trimEnd()}...`;
   }
 
   handlePromptFocus (): void {
@@ -1015,31 +1287,52 @@ Pick one and I will keep moving:
     return true;
   }
 
+  /**
+   * Maya used to send this straight through EmailService the moment the
+   * AI proposed it - no review step between "AI decided to send" and the
+   * recipient's inbox. That's exactly the auto-send behavior the product
+   * has otherwise deliberately held off on (draft-only, approval-first).
+   * This now hands the concept to Catalyst instead: Catalyst can only
+   * queue an existing Network contact (never a bare email address) and
+   * always drafts the actual subject/body itself through its own AI
+   * call, so `text` becomes Catalyst's drafting brief, not literal
+   * outgoing copy - the closest fidelity the real handoff surface
+   * supports, and the same one Catalyst's own "blocked contact" handoff
+   * already uses.
+   */
   private async executeSendEmailAction ( action: PublicMarketingDirectorSystemAction ): Promise<boolean> {
     const to = String( action.to || '' ).trim();
     const subject = String( action.subject || action.title || '' ).trim();
     const text = String( action.text || action.body || action.description || '' ).trim();
-    if ( !to || !subject || !text ) return false;
+    if ( !to || !subject || !text || !this.tenantId ) return false;
 
-    const fromAddress = this.resolveSenderEmail();
-    if ( !fromAddress ) {
-      throw new Error( 'No sender identity available for Maya email send.' );
+    const contact = await firstValueFrom( this.dataService.getDocumentByField( 'CONTACTS', 'email', to, this.userId ) );
+    const contactId = String( contact?.id || '' ).trim();
+    if ( !contactId ) {
+      await this.appendReceiptTextMessage(
+        `Execution receipt: I drafted an email for ${to}, but Catalyst needs an existing Network contact for that address before it can pick it up - add ${to} as a contact first, then ask me again.`
+      );
+      return false;
     }
 
-    await firstValueFrom( this.emailService.sendEmail( {
-      to,
-      subject,
-      text,
-      html: String( action.html || `<div>${this.escapeHtml( text ).replace( /\n/g, '<br />' )}</div>` ).trim(),
-      contactName: to,
-      date: new Date().toISOString(),
-      from: fromAddress,
-      signalOrigin: 'maya',
-      sourceSystem: 'maya'
-    } as any, this.tenantId, this.userId ) );
+    const draftId = crypto.randomUUID();
+    const draft: HandoffDraft<'email-draft'> = {
+      id: draftId,
+      tenantId: this.tenantId,
+      kind: 'email-draft',
+      producedBy: 'maya',
+      status: 'pending',
+      payload: { contactIds: [contactId], reasonLabel: subject, reasonDetail: text } satisfies EmailDraftPayload,
+      sourceContext: { contactId },
+      createdAt: Date.now(),
+      expiresAt: getHandoffExpiry(),
+    };
 
-    await this.appendReceiptTextMessage( `Execution receipt: sent email to ${to} with subject "${subject}".` );
-    await this.recordCompletedExecutionTask( subject, '/signal-engine?tab=sent', action, `Email sent by Maya to ${to}.` );
+    await setDoc( doc( getFirestore(), handoffCollectionPath( this.tenantId ), draftId ), draft );
+
+    const catalystUrl = buildHandoffUrl( 'email-draft', draftId );
+    await this.appendArtifactReceiptMessage( 'Ready in Catalyst', subject, catalystUrl );
+    await this.recordCompletedExecutionTask( subject, catalystUrl, action, `Email concept for ${to} handed off to Catalyst for review and send.` );
     return true;
   }
 
@@ -1567,16 +1860,6 @@ Pick one and I will keep moving:
       return 'maya';
     }
     return 'maya';
-  }
-
-  private resolveSenderEmail (): string {
-    const directEmail = String( this.currentContact?.email || '' ).trim();
-    if ( directEmail ) {
-      return directEmail;
-    }
-
-    const primaryEmailAddress = String( this.currentContact?.emailAddresses?.[0]?.emailAddress || '' ).trim();
-    return primaryEmailAddress;
   }
 
   private getActionLabel ( type: PublicMarketingDirectorSystemAction['type'] ): string {

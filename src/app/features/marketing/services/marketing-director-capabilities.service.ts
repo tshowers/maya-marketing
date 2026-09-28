@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { getAdminUrl, getDocumentUrl } from '@taliferro/ui/platform/account-menu.model';
 
 export type MarketingDirectorCapabilityResult =
   | { handled: false; }
@@ -18,7 +19,7 @@ export class MarketingDirectorCapabilitiesService {
   private readonly routeGuides: MarketingDirectorRouteGuide[] = [
     {
       id: 'outreach-home',
-      route: '/outreach/app',
+      route: 'https://outreach.taliferro.tech/app',
       phrases: [
         'what outreach should we be doing',
         'show me outreach',
@@ -32,12 +33,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This belongs in Outreach.</strong></p>',
-        '<p>Open <strong>/outreach/app</strong> for the big-picture view of outreach health, progress, activity, opportunities, and recommended next moves.</p>'
+        '<p>Open <a href="https://outreach.taliferro.tech/app" target="_blank" rel="noopener noreferrer">Outreach</a> for the big-picture view of outreach health, progress, activity, opportunities, and recommended next moves.</p>'
       ].join( '' )
     },
     {
       id: 'compose-email',
-      route: '/compose-email',
+      route: 'https://outreach.taliferro.tech/compose-email',
       phrases: [
         'help me write an email to this prospect',
         'write an email',
@@ -49,12 +50,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is email-composer work.</strong></p>',
-        '<p>Open <strong>/compose-email</strong> to write, revise, personalize, or prepare an individual email.</p>'
+        '<p>Open <a href="https://outreach.taliferro.tech/compose-email" target="_blank" rel="noopener noreferrer">Compose Email</a> to write, revise, personalize, or prepare an individual email.</p>'
       ].join( '' )
     },
     {
       id: 'email-queue',
-      route: '/signal-engine',
+      route: 'https://outreach.taliferro.tech/signal-engine',
       phrases: [
         'what emails are waiting for approval',
         'show the email queue',
@@ -65,12 +66,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is queue work.</strong></p>',
-        '<p>Open <strong>/signal-engine</strong> to review, approve, or reject drafts waiting to be sent.</p>'
+        '<p>Open the <a href="https://outreach.taliferro.tech/signal-engine" target="_blank" rel="noopener noreferrer">Signal Engine</a> to review, approve, or reject drafts waiting to be sent.</p>'
       ].join( '' )
     },
     {
       id: 'email-engagement',
-      route: '/engagement',
+      route: 'https://outreach.taliferro.tech/engagement',
       phrases: [
         'who opened our last email',
         'who clicked our email',
@@ -80,12 +81,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is engagement work.</strong></p>',
-        '<p>Open <strong>/engagement</strong> to see who opened, clicked, or otherwise engaged with email.</p>'
+        '<p>Open <a href="https://outreach.taliferro.tech/engagement" target="_blank" rel="noopener noreferrer">Engagement</a> to see who opened, clicked, or otherwise engaged with email.</p>'
       ].join( '' )
     },
     {
       id: 'outbox-cockpit',
-      route: '/signal-engine',
+      route: 'https://outreach.taliferro.tech/signal-engine',
       phrases: [
         'what happened after we sent the campaign',
         'show follow up signals',
@@ -96,12 +97,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This belongs in the Signal Engine.</strong></p>',
-        '<p>Open <strong>/signal-engine</strong> to understand engagement signals, responses, stalled outreach, and what follow-up should happen next.</p>'
+        '<p>Open the <a href="https://outreach.taliferro.tech/signal-engine" target="_blank" rel="noopener noreferrer">Signal Engine</a> to understand engagement signals, responses, stalled outreach, and what follow-up should happen next.</p>'
       ].join( '' )
     },
     {
       id: 'inbox-access',
-      route: '/inbox-access',
+      route: 'https://outreach.taliferro.tech/inbox-access',
       phrases: [
         'connect my inbox',
         'connect our inbox',
@@ -111,7 +112,7 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is inbox setup.</strong></p>',
-        '<p>Open <strong>/inbox-access</strong> to connect an inbox or enable TODD to observe and coordinate email activity.</p>'
+        '<p>Open <a href="https://outreach.taliferro.tech/inbox-access" target="_blank" rel="noopener noreferrer">Inbox Access</a> to connect an inbox or enable TODD to observe and coordinate email activity.</p>'
       ].join( '' )
     },
     {
@@ -125,12 +126,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is signature-builder work.</strong></p>',
-        '<p>Open <strong>signature.taliferro.tech</strong> to create or improve an email signature.</p>'
+        '<p>Open the <a href="https://signature.taliferro.tech" target="_blank" rel="noopener noreferrer">Signature Builder</a> to create or improve an email signature.</p>'
       ].join( '' )
     },
     {
       id: 'social-home',
-      route: '/outreach/social',
+      route: 'https://social.taliferro.tech/',
       phrases: [
         'show social overview',
         'show social health',
@@ -140,12 +141,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This belongs in Social.</strong></p>',
-        '<p>Open <strong>/outreach/social</strong> for the overview of social visibility, activity, health, and priorities.</p>'
+        '<p>Open <a href="https://social.taliferro.tech/" target="_blank" rel="noopener noreferrer">Social</a> for the overview of social visibility, activity, health, and priorities.</p>'
       ].join( '' )
     },
     {
       id: 'social-command',
-      route: '/outreach/social/command',
+      route: 'https://social.taliferro.tech/command',
       phrases: [
         'manage today’s social work',
         'manage today social work',
@@ -156,12 +157,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is social-command work.</strong></p>',
-        '<p>Open <strong>/outreach/social/command</strong> to actively direct, manage, or execute today’s social-media work.</p>'
+        '<p>Open <a href="https://social.taliferro.tech/command" target="_blank" rel="noopener noreferrer">Social Command</a> to actively direct, manage, or execute today’s social-media work.</p>'
       ].join( '' )
     },
     {
       id: 'social-accounts',
-      route: '/outreach/social/accounts',
+      route: 'https://social.taliferro.tech/accounts',
       phrases: [
         'connect our linkedin account',
         'connect our social account',
@@ -171,12 +172,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is account-connection work.</strong></p>',
-        '<p>Open <strong>/outreach/social/accounts</strong> to connect, disconnect, inspect, or manage social-media accounts.</p>'
+        '<p>Open <a href="https://social.taliferro.tech/accounts" target="_blank" rel="noopener noreferrer">Social Accounts</a> to connect, disconnect, inspect, or manage social-media accounts.</p>'
       ].join( '' )
     },
     {
       id: 'social-drafts',
-      route: '/outreach/social/calendar',
+      route: 'https://social.taliferro.tech/calendar',
       phrases: [
         'show me the social posts todd drafted',
         'show social drafts',
@@ -186,12 +187,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is draft-content work.</strong></p>',
-        '<p>Open the Social Calendar to review and approve Maya\'s proposed social-media content.</p>'
+        '<p>Open the <a href="https://social.taliferro.tech/calendar" target="_blank" rel="noopener noreferrer">Social Calendar</a> to review and approve Maya\'s proposed social-media content.</p>'
       ].join( '' )
     },
     {
       id: 'social-queue',
-      route: '/outreach/social/queue',
+      route: 'https://social.taliferro.tech/queue',
       phrases: [
         'what is approved to publish',
         'show approved social posts',
@@ -201,12 +202,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is publishing-queue work.</strong></p>',
-        '<p>Open <strong>/outreach/social/queue</strong> to review content that has been approved or is waiting to be published.</p>'
+        '<p>Open the <a href="https://social.taliferro.tech/queue" target="_blank" rel="noopener noreferrer">Social Queue</a> to review content that has been approved or is waiting to be published.</p>'
       ].join( '' )
     },
     {
       id: 'social-strategy',
-      route: '/outreach/social/strategy',
+      route: 'https://social.taliferro.tech/strategy',
       phrases: [
         'what should our social strategy be',
         'define our social strategy',
@@ -219,12 +220,12 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is social-strategy work.</strong></p>',
-        '<p>Open <strong>/outreach/social/strategy</strong> to define audiences, channels, themes, goals, posting cadence, and overall social direction.</p>'
+        '<p>Open <a href="https://social.taliferro.tech/strategy" target="_blank" rel="noopener noreferrer">Social Strategy</a> to define audiences, channels, themes, goals, posting cadence, and overall social direction.</p>'
       ].join( '' )
     },
     {
       id: 'social-signals',
-      route: '/outreach/social/signals',
+      route: 'https://social.taliferro.tech/',
       phrases: [
         'what social opportunities did todd find',
         'show social opportunities',
@@ -234,7 +235,66 @@ export class MarketingDirectorCapabilitiesService {
       ],
       message: [
         '<p><strong>This is social-signals work.</strong></p>',
-        '<p>Open <strong>/outreach/social/signals</strong> to understand social engagement, reactions, opportunities, and recommended follow-up actions.</p>'
+        '<p>Open <a href="https://social.taliferro.tech/" target="_blank" rel="noopener noreferrer">Social</a> to understand social engagement, reactions, opportunities, and recommended follow-up actions.</p>'
+      ].join( '' )
+    },
+    {
+      id: 'invite-teammate',
+      route: getAdminUrl(),
+      phrases: [
+        'how do i add a teammate',
+        'add a team member',
+        'add a teammate',
+        'invite a team member',
+        'invite a teammate',
+        'invite someone',
+        'add a user',
+        'add users',
+        'give someone access',
+        'where do i manage my team',
+        'where is admin',
+        'go to admin',
+        'manage my team'
+      ],
+      message: [
+        '<p><strong>That\'s an Admin task.</strong></p>',
+        `<p>Open <a href="${getAdminUrl()}" target="_blank" rel="noopener noreferrer">Admin</a> to invite teammates, assign roles, or manage who has access.</p>`
+      ].join( '' )
+    },
+    {
+      id: 'document-review',
+      route: getDocumentUrl(),
+      phrases: [
+        'can i upload a document',
+        'upload a document for you to review',
+        'upload a document for maya to review',
+        'can maya review a document',
+        'can you review a document',
+        'can you review a file',
+        'review my document',
+        'review this document'
+      ],
+      message: [
+        '<p><strong>Yes — use Document.</strong></p>',
+        `<p>Open <a href="${getDocumentUrl()}" target="_blank" rel="noopener noreferrer">Document</a> to upload a file for review.</p>`
+      ].join( '' )
+    },
+    {
+      id: 'team-status-outreach',
+      route: '',
+      phrases: [
+        'give maya my team\'s emails',
+        'give her the emails for the other team',
+        'give her the emails for my team',
+        'have maya email my team',
+        'have her email my team',
+        'how do i give her contacts for status updates',
+        'reach out to my team for updates',
+        'reach out to my team for statuses'
+      ],
+      message: [
+        '<p><strong>Not yet — Maya can\'t email your team directly.</strong></p>',
+        '<p>She doesn\'t have a way to hold your team\'s contacts or send emails on your behalf right now. In the meantime, use "Generate status report" above and share it with them yourself.</p>'
       ].join( '' )
     }
   ];

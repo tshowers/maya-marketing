@@ -157,6 +157,54 @@ paths:
           description: Unauthorized - invalid or missing API key
         '500':
           description: Failed to generate Marketing Director advice
+  /marketing-director/status-report:
+    post:
+      summary: Generate structured analysis for a paid Maya marketing status report
+      tags: [Marketing Director]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workspaceContext:
+                  type: object
+                reportingPeriod:
+                  type: object
+      responses:
+        '200':
+          description: Structured Maya status-report analysis returned
+        '403':
+          description: Paid TODD Suite access required
+        '500':
+          description: Failed to generate Maya marketing status report
+  /marketing-director/presentation:
+    post:
+      summary: Advance Maya's conversational presentation-building workflow
+      tags: [Marketing Director]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                history:
+                  type: array
+                  items:
+                    type: object
+                requirements:
+                  type: object
+      responses:
+        '200':
+          description: Presentation workflow turn returned, optionally including a complete content-first MayaDeck
+        '403':
+          description: Unauthorized - invalid or missing API key
+        '500':
+          description: Failed to generate Maya presentation turn
   /parse-query:
     post:
       summary: Parse a free-text query into a structured AI-parsed query

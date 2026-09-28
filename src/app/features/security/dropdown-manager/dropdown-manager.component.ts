@@ -342,15 +342,6 @@ export class DropdownManagerComponent implements OnInit, OnDestroy {
         group: 'context',
       },
       {
-        id: 'dropdown-billing',
-        label: 'Billing',
-        icon: 'fa-solid fa-credit-card',
-        kind: 'route',
-        route: '/billing',
-        order: 40,
-        group: 'context',
-      },
-      {
         id: 'dropdown-help',
         label: 'Help',
         icon: 'fa-solid fa-circle-question',

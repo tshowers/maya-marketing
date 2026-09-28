@@ -3,17 +3,17 @@ import { Injectable } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class MayaReportImageService {
   private readonly coverImages = [
-    'assets/maya/report/cover-01.webp',
-    'assets/maya/report/cover-02.webp',
-    'assets/maya/report/cover-03.webp',
-    'assets/maya/report/cover-04.webp'
+    'assets/stock-images/cover-01.webp',
+    'assets/stock-images/cover-02.webp',
+    'assets/stock-images/cover-03.webp',
+    'assets/stock-images/cover-04.webp'
   ];
 
   private readonly accentImages = [
-    'assets/maya/report/accent-01.webp',
-    'assets/maya/report/accent-02.webp',
-    'assets/maya/report/accent-03.webp',
-    'assets/maya/report/accent-04.webp'
+    'assets/stock-images/accent-01.webp',
+    'assets/stock-images/accent-02.webp',
+    'assets/stock-images/accent-03.webp',
+    'assets/stock-images/accent-04.webp'
   ];
 
   selectCover(seed = ''): string | undefined {

@@ -3,6 +3,12 @@
     "target": "maya-marketing",
     "public": "dist/maya/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/index.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      }
+    ],
     "rewrites": [
       {
         "source": "**",

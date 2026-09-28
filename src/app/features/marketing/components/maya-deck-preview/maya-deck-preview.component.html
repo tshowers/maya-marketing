@@ -1,0 +1,47 @@
+<div class="preview" role="dialog" aria-modal="true" [attr.aria-label]="'Preview of ' + deck.metadata.title">
+  <header class="toolbar">
+    <div class="toolbar-title">
+      <span class="toolbar-eyebrow">Your deck · {{ slides.length }} slides</span>
+      <strong>{{ deck.metadata.title }}</strong>
+    </div>
+    <div class="toolbar-controls">
+      <div class="segmented" role="radiogroup" aria-label="Look">
+        <button type="button" role="radio" [attr.aria-checked]="look === 'corporate'" [class.active]="look === 'corporate'" (click)="setLook('corporate')" [disabled]="exporting">Corporate</button>
+        <button type="button" role="radio" [attr.aria-checked]="look === 'minimal'" [class.active]="look === 'minimal'" (click)="setLook('minimal')" [disabled]="exporting">Minimal</button>
+      </div>
+      <div class="swatches" role="radiogroup" aria-label="Accent color">
+        @for (color of theme.accentPresets; track color) {
+          <button type="button" role="radio" class="swatch" [style.background]="color" [attr.aria-checked]="accent === color" [class.active]="accent === color" [attr.aria-label]="'Accent ' + color" (click)="setAccent(color)" [disabled]="exporting"></button>
+        }
+        <label class="swatch swatch--custom" title="Custom accent color">
+          <input type="color" [value]="accent" (input)="setAccent($any($event.target).value)" aria-label="Custom accent color" [disabled]="exporting">
+        </label>
+      </div>
+      <button type="button" class="download" (click)="download()" [disabled]="exporting" [attr.aria-busy]="exporting">
+        @if (exporting) { <span class="spinner" aria-hidden="true"></span> {{ progress || 'Preparing…' }} } @else { Download PDF <span aria-hidden="true">↓</span> }
+      </button>
+      <button type="button" class="close" (click)="close()" [disabled]="exporting" aria-label="Close preview">×</button>
+    </div>
+  </header>
+
+  @if (error) { <div class="error" role="alert">{{ error }}</div> }
+
+  <div class="scroller">
+    <div #deckRoot class="deck" [ngStyle]="tokens" [style.--scale]="scale">
+      @for (view of slides; track view.index) {
+        <figure class="deck-card">
+          <div class="stage">
+            <div class="stage-inner">
+              <maya-deck-slide [view]="view" [meta]="deck.metadata" [logo]="logo" [look]="look" (overflowChange)="onOverflow(view.index, $event)"></maya-deck-slide>
+            </div>
+          </div>
+          <figcaption>
+            <span class="caption-index">{{ view.index + 1 }}</span>
+            <span class="caption-text">{{ view.slide.takeaway || view.slide.purpose }}</span>
+            @if (overflowing.has(view.index)) { <span class="caption-warning">Too much text for this slide</span> }
+          </figcaption>
+        </figure>
+      }
+    </div>
+  </div>
+</div>

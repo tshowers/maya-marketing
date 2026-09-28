@@ -9,8 +9,8 @@
           <div class="maya-welcome-actions"><button type="button" class="maya-reset maya-welcome-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation" title="Reset conversation">↻</button><button type="button" class="maya-primary-button" (click)="sendMessage()" [disabled]="sending">{{ sending ? '…' : 'Ask Maya' }} <span aria-hidden="true">↗</span></button></div>
         </div>
         <div class="maya-prompt-chips" aria-label="Maya prompts">
-          <button type="button" *ngFor="let item of ['Sharpen my message', 'Find my best audience', 'Clarify my offer']" (click)="sendMessage(item)">{{ item }} <span aria-hidden="true">↗</span></button>
-          <button type="button" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> {{ statusReportGenerating ? 'Creating report…' : 'Generate status report' }} <span aria-hidden="true">↓</span></button>
+          <button type="button" *ngFor="let item of ['Sharpen my message', 'Create a presentation', 'Clarify my offer']" (click)="sendMessage(item === 'Create a presentation' ? 'I want to create a presentation with Maya.' : item)">{{ item }} <span aria-hidden="true">↗</span></button>
+          <button type="button" class="maya-status-report-button" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" [attr.aria-busy]="statusReportGenerating"><span *ngIf="statusReportGenerating" class="maya-button-spinner" aria-hidden="true"></span><i *ngIf="!statusReportGenerating" class="fa-solid fa-chart-column" aria-hidden="true"></i> {{ statusReportGenerating ? 'Creating report…' : 'Generate status report' }} <span *ngIf="!statusReportGenerating" aria-hidden="true">↓</span></button>
         </div>
         <div class="maya-version-stamp" [title]="buildVersion.buildTime">v{{ buildVersion.version }} · {{ buildVersion.gitSha }}</div>
       </div>
@@ -28,10 +28,24 @@
           </div>
         </article>
         <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="Maya is thinking"><div class="maya-message-role">Maya</div><div class="maya-thinking"><span class="maya-thinking__label">Maya is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div></article>
+        <aside class="maya-presentation-ready" *ngIf="presentationMode && presentationState === 'READY_TO_GENERATE'">
+          <div class="maya-eyebrow">Presentation plan ready</div>
+          <p>Maya has enough information to build the story for this presentation.</p>
+          <div class="maya-presentation-options">
+            <label>Theme <select [(ngModel)]="presentationTheme"><option value="corporate">Corporate</option><option value="minimal">Minimal</option></select></label>
+            <label>Accent <input type="color" [(ngModel)]="presentationAccentColor" aria-label="Presentation accent color"></label>
+          </div>
+          <div class="maya-presentation-uploads">
+            <label class="maya-upload-button">+ Supporting files<input type="file" multiple accept=".pdf,.docx,.txt,.md,.markdown,image/*" (change)="handlePresentationFiles($event)"></label>
+            <label class="maya-upload-button">+ Company logo<input type="file" accept=".png,.jpg,.jpeg,.webp" (change)="handlePresentationLogo($event)"></label>
+          </div>
+          <div class="maya-presentation-file-list" *ngIf="presentationFiles.length || presentationLogoDataUrl"><span *ngFor="let file of presentationFiles; let i = index">{{ file.name }} <button type="button" (click)="removePresentationFile(i)" aria-label="Remove file">×</button></span><span *ngIf="presentationLogoDataUrl">Company logo added</span></div>
+          <button type="button" class="maya-primary-button" (click)="generatePresentationDeck()">Generate My Deck <span aria-hidden="true">↗</span></button>
+        </aside>
       </div>
-      <aside class="maya-upgrade" *ngIf="showUpgradePanel"><div class="maya-upgrade-copy"><div class="maya-eyebrow">Need execution?</div><h2>Maya can move from advice into real work inside TODD Suite.</h2><p>If you want drafts, approvals, and a live execution queue, that is where the paid account takes over.</p><div class="maya-actions"><a routerLink="/suite/pricing" class="maya-primary-button">Unlock Execution</a><a routerLink="/login" class="maya-secondary-button">Start Free Account</a></div></div></aside>
+      <aside class="maya-upgrade" *ngIf="showUpgradePanel"><div class="maya-upgrade-copy"><div class="maya-eyebrow">Need execution?</div><h2>Maya can move from advice into real work inside TODD Suite.</h2><p>If you want drafts, approvals, and a live execution queue, that is where the paid account takes over.</p></div></aside>
       <div class="maya-compact-composer" *ngIf="hasUserMessages"><textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya..." aria-label="Ask Maya"></textarea><button type="button" class="maya-export" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" aria-label="Generate status report" title="Generate status report"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></button><button type="button" class="maya-export" (click)="exportTranscript()" aria-label="Export transcript" title="Export transcript"><i class="fa-solid fa-download" aria-hidden="true"></i></button><button type="button" class="maya-reset" (click)="resetSession()" [disabled]="sending" aria-label="Reset conversation">↺</button><button type="button" class="maya-send" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">↗</button></div>
-      <div class="maya-status" *ngIf="sending || errorMessage">{{ sending ? 'Maya is working on your answer…' : errorMessage }}</div>
+      <div class="maya-status" *ngIf="sending || statusReportGenerating || errorMessage">{{ sending ? 'Maya is working on your answer…' : statusReportGenerating ? 'Maya is creating your status report…' : errorMessage }}</div>
     </section>
   </main>
   <div class="maya-apps-card" *ngIf="showApps" role="dialog" aria-label="All apps">
@@ -39,3 +53,4 @@
     <div class="maya-app-grid"><ng-container *ngFor="let app of appLinks"><a *ngIf="app.external; else internalMayaApp" [href]="app.route" (click)="showApps = false"><img [src]="app.image" [alt]="app.label"><span>{{ app.label }}</span></a><ng-template #internalMayaApp><a [routerLink]="app.route" (click)="showApps = false"><img [src]="app.image" [alt]="app.label"><span>{{ app.label }}</span></a></ng-template></ng-container></div>
   </div>
 </div>
+<maya-deck-preview *ngIf="presentationPreviewOpen && presentationDeck" [deck]="presentationDeck" [(look)]="presentationTheme" [(accent)]="presentationAccentColor" [logo]="presentationLogoDataUrl || presentationDeck.assets.logo" [uploadedImages]="presentationImageUploads" (closed)="presentationPreviewOpen = false"></maya-deck-preview>

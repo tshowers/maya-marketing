@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
+import { MayaStatusReport } from '../models/maya-status-report.models';
+import { MayaContentSufficiency, MayaDeck, MayaDeckCritique, MayaEnrichedArgument, MayaKnownFacts, MayaPresentationStrategy } from '../models/maya-deck.models';
 
 export interface PublicMarketingDirectorMessage {
   id: string;
@@ -11,6 +13,37 @@ export interface PublicMarketingDirectorMessage {
   /** Concise rationale for Maya's recommendation, separate from the answer. */
   why?: string;
   whyExpanded?: boolean;
+}
+
+export interface MayaPresentationRequirements {
+  deckType?: string;
+  audience?: string;
+  objective?: string;
+  supportingMaterial?: any[];
+  company?: { name?: string; logo?: string };
+  theme?: 'corporate' | 'minimal';
+  accentColor?: string;
+}
+
+export interface MayaPresentationTurn {
+  state: 'NEEDS_INFORMATION' | 'READY_TO_GENERATE';
+  message: string;
+  requirements: MayaPresentationRequirements;
+  /** Full content-first deck, when Maya has completed planning. */
+  deck?: MayaDeck;
+  knownFacts?: MayaKnownFacts;
+  contentSufficiency?: MayaContentSufficiency;
+  strategy?: MayaPresentationStrategy;
+  enrichedArgument?: MayaEnrichedArgument;
+  critique?: MayaDeckCritique;
+  deckPlan?: {
+    title?: string;
+    objective?: string;
+    audience?: string;
+    narrative?: string[];
+    missingInformation?: string[];
+    recommendedCompositions?: string[];
+  };
 }
 
 export interface PublicMarketingDirectorSystemActionQuestion {
@@ -165,6 +198,29 @@ export class PublicMarketingDirectorService {
       throw new Error( 'Marketing Director did not return a usable reply.' );
     }
 
+    return response.response;
+  }
+
+  async analyzeStatusReport (workspaceContext: PublicMarketingDirectorWorkspaceContext, reportingPeriod: MayaStatusReport['reportingPeriod']): Promise<Partial<MayaStatusReport>> {
+    const apiKey = environment.apiKey;
+    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const response = await this.http.post<{ report?: Partial<MayaStatusReport>; }>(
+      `${environment.backendURL}/marketing-director/status-report`,
+      { workspaceContext, reportingPeriod },
+      { headers }
+    ).toPromise();
+    return response?.report || {};
+  }
+
+  async runPresentationTurn (message: string, history: PublicMarketingDirectorMessage[], requirements: MayaPresentationRequirements): Promise<MayaPresentationTurn> {
+    const apiKey = environment.apiKey;
+    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const response = await this.http.post<{ response?: MayaPresentationTurn; }>(
+      `${environment.backendURL}/marketing-director/presentation`,
+      { message, history, requirements },
+      { headers }
+    ).toPromise();
+    if ( !response?.response?.message ) throw new Error( 'Maya did not return a presentation response.' );
     return response.response;
   }
 

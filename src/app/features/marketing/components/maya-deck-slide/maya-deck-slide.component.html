@@ -1,0 +1,199 @@
+<div #frame class="slide" [attr.data-layout]="view.layout" [attr.data-tone]="tone" [class.minimal]="look === 'minimal'" [style.--h]="headlineSize">
+  <ng-template #brand>
+    @if (logo) {
+      <span class="brand"><img class="brand-logo" [src]="logo" alt=""></span>
+    } @else if (organization) {
+      <span class="brand brand-name">{{ organization }}</span>
+    }
+  </ng-template>
+
+  <ng-template #eyebrowTpl>
+    @if (eyebrow) { <div class="eyebrow">{{ eyebrow }}</div> }
+  </ng-template>
+
+  <ng-template #metricsTpl>
+    @if (view.slide.metrics?.length) {
+      <div class="metric-row">
+        @for (metric of view.slide.metrics!.slice(0, 3); track $index) {
+          <div class="metric-mini"><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span></div>
+        }
+      </div>
+    }
+  </ng-template>
+
+  @switch (view.layout) {
+    @case ('cover') {
+      @if (view.image; as image) {
+        <div class="art cover-art" [class.art--contain]="image.fit === 'contain'" [class.art--figure]="image.figure">
+          <img [src]="image.src" [style.object-position]="image.position || 'center'" alt="">
+        </div>
+        <div class="cover-scrim"></div>
+      } @else {
+        <div class="cover-shape" aria-hidden="true"></div>
+      }
+      <div class="s-body cover-body">
+        <div class="cover-top"><ng-container [ngTemplateOutlet]="brand"></ng-container></div>
+        <div class="cover-main">
+          <div class="accent-rule"></div>
+          <h1 class="headline">{{ coverTitle }}</h1>
+          @if (coverSubtitle) { <p class="s-lead">{{ coverSubtitle }}</p> }
+        </div>
+        <div class="cover-bottom">
+          @if (meta?.audience) { <span>Prepared for {{ meta?.audience }}</span> }
+        </div>
+      </div>
+    }
+
+    @case ('statement') {
+      <div class="s-body statement-body">
+        <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+        <div class="accent-rule"></div>
+        <h2 class="headline">{{ view.slide.headline }}</h2>
+        @if (view.slide.supportingText) { <p class="s-lead">{{ view.slide.supportingText }}</p> }
+        <ng-container [ngTemplateOutlet]="metricsTpl"></ng-container>
+      </div>
+    }
+
+    @case ('bullets') {
+      <div class="s-body bullets-body">
+        <div class="bullets-head">
+          <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+          <h2 class="headline">{{ view.slide.headline }}</h2>
+          @if (view.slide.supportingText) { <p class="body-text">{{ view.slide.supportingText }}</p> }
+        </div>
+        <ol class="bullet-list">
+          @for (item of view.items; track $index) {
+            <li><span class="bullet-mark"></span><div><strong>{{ item.title }}</strong>@if (item.detail) { <span>{{ item.detail }}</span> }</div></li>
+          }
+        </ol>
+      </div>
+    }
+
+    @case ('split') {
+      @if (view.image; as image) {
+        <div class="art split-art" [class.art--contain]="image.fit === 'contain'" [class.art--figure]="image.figure" [class.art--dark]="image.backdrop === 'dark'">
+          <img [src]="image.src" [style.object-position]="image.position || 'center'" alt="">
+        </div>
+      }
+      <div class="s-body split-body">
+        <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+        <h2 class="headline">{{ view.slide.headline }}</h2>
+        @if (view.slide.supportingText) { <p class="body-text">{{ view.slide.supportingText }}</p> }
+        @if (view.slide.metrics?.length) {
+          <ng-container [ngTemplateOutlet]="metricsTpl"></ng-container>
+        } @else if (view.items.length) {
+          <ul class="compact-list">
+            @for (item of view.items.slice(0, 4); track $index) { <li>{{ item.title }}</li> }
+          </ul>
+        }
+      </div>
+    }
+
+    @case ('columns') {
+      <div class="s-body stack-body">
+        <header class="stack-head">
+          <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+          <h2 class="headline">{{ view.slide.headline }}</h2>
+          @if (view.slide.supportingText) { <p class="body-text">{{ view.slide.supportingText }}</p> }
+        </header>
+        <div class="columns" [style.--count]="view.items.length">
+          @for (item of view.items; track $index) {
+            <div class="column">
+              <span class="column-index">{{ ($index + 1).toString().padStart(2, '0') }}</span>
+              <strong>{{ item.title }}</strong>
+              @if (item.detail) { <span class="column-detail">{{ item.detail }}</span> }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @case ('steps') {
+      <div class="s-body stack-body">
+        <header class="stack-head">
+          <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+          <h2 class="headline">{{ view.slide.headline }}</h2>
+          @if (view.slide.supportingText) { <p class="body-text">{{ view.slide.supportingText }}</p> }
+        </header>
+        <ol class="steps" [style.--count]="view.items.length">
+          @for (item of view.items; track $index) {
+            <li class="step">
+              <span class="step-node">{{ $index + 1 }}</span>
+              @if (item.date) { <span class="step-date">{{ item.date }}</span> }
+              <strong>{{ item.title }}</strong>
+              @if (item.detail) { <span class="step-detail">{{ item.detail }}</span> }
+            </li>
+          }
+        </ol>
+      </div>
+    }
+
+    @case ('metrics') {
+      <div class="s-body stack-body">
+        <header class="stack-head">
+          <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+          <h2 class="headline">{{ view.slide.headline }}</h2>
+        </header>
+        <div class="metrics" [style.--count]="view.slide.metrics!.length" [class.metrics--single]="view.slide.metrics!.length === 1" [style.--mv]="metricSize">
+          @for (metric of view.slide.metrics; track $index) {
+            <div class="metric"><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span></div>
+          }
+        </div>
+        @if (view.slide.supportingText) { <p class="body-text metrics-note">{{ view.slide.supportingText }}</p> }
+      </div>
+    }
+
+    @case ('chart') {
+      <div class="s-body chart-body">
+        <div class="chart-head">
+          <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+          <h2 class="headline">{{ view.slide.headline }}</h2>
+          @if (view.slide.supportingText) { <p class="body-text">{{ view.slide.supportingText }}</p> }
+        </div>
+        <div class="chart">
+          @for (point of view.slide.chartData; track $index) {
+            <div class="bar-row" [class.bar-row--max]="point.value === chartMax">
+              <span class="bar-label">{{ point.label }}</span>
+              <span class="bar-track"><span class="bar" [style.width.%]="barWidth(point.value)"></span></span>
+              <span class="bar-value">{{ formatValue(point.value) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @case ('quote') {
+      <div class="s-body quote-body">
+        <div class="quote-mark" aria-hidden="true">“</div>
+        <blockquote class="quote" [style.--q]="quoteSize">{{ quoteText }}</blockquote>
+        @if (view.slide.attribution) { <div class="attribution">{{ view.slide.attribution }}</div> }
+      </div>
+    }
+
+    @case ('closing') {
+      @if (view.image; as image) {
+        <div class="art closing-art"><img [src]="image.src" [style.object-position]="image.position || 'center'" alt=""></div>
+        <div class="cover-scrim"></div>
+      } @else {
+        <div class="closing-shape" aria-hidden="true"></div>
+      }
+      <div class="s-body closing-body">
+        <ng-container [ngTemplateOutlet]="eyebrowTpl"></ng-container>
+        <h2 class="headline">{{ view.slide.headline }}</h2>
+        @if (view.slide.supportingText) { <p class="s-lead">{{ view.slide.supportingText }}</p> }
+        @if (view.items.length) {
+          <ul class="next-steps">
+            @for (item of view.items.slice(0, 3); track $index) { <li>{{ item.title }}</li> }
+          </ul>
+        }
+      </div>
+    }
+  }
+
+  @if (view.layout !== 'cover') {
+    <footer class="footer">
+      <ng-container [ngTemplateOutlet]="brand"></ng-container>
+      <span class="page">{{ pageNumber }}</span>
+    </footer>
+  }
+</div>
