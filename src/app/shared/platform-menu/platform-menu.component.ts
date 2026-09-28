@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import packageJson from '../../../../package.json';
 
 import { getPlatformMenuItems, PlatformMenuItem } from '@taliferro/ui/platform/account-menu.model';
@@ -20,12 +21,13 @@ interface ProductLink {
 @Component( {
   selector: 'app-platform-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './platform-menu.component.html',
   styleUrl: './platform-menu.component.css',
 } )
 export class PlatformMenuComponent implements OnChanges {
   @Input() isAdmin = false;
+  @Input() isLoggedIn = false;
 
   isOpen = false;
   readonly appVersion = String(packageJson.version || '').trim();
@@ -57,7 +59,10 @@ export class PlatformMenuComponent implements OnChanges {
   }
 
   private recompute (): void {
-    this.accountItems = getPlatformMenuItems().filter( ( item ) => item.label !== 'Billing' && ( !item.adminOnly || this.isAdmin ) );
+    // Profile is in-app (/profile), shown as its own routerLink in the
+    // template - not TODD's page.
+    this.accountItems = getPlatformMenuItems().filter( ( item ) =>
+      item.id !== 'platform-profile' && item.label !== 'Billing' && ( !item.adminOnly || this.isAdmin ) );
   }
 
   trackByLabel ( _index: number, item: { label: string } ): string {

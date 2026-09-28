@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { getAuth, onAuthStateChanged, signInWithCustomToken, signOut, User } from 'firebase/auth';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class MayaAuthService {
@@ -8,6 +8,10 @@ export class MayaAuthService {
 
   getUser(): Observable<User | null> {
     return new Observable((subscriber) => onAuthStateChanged(getAuth(), (user) => subscriber.next(user)));
+  }
+
+  isLoggedIn(): Observable<boolean> {
+    return this.getUser().pipe(map((user) => !!user));
   }
 
   signIn(returnUrl = '/'): void {

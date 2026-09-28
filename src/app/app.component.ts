@@ -14,7 +14,7 @@ import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.comp
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, CommandPaletteComponent, NotificationComponent, PlatformMenuComponent],
   template: `
     <div class="maya-session-indicator" [class.maya-session-indicator--logged-out]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'" [attr.aria-label]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'"><span></span></div>
-    <app-platform-menu [isAdmin]="(isAdmin$ | async) ?? false" />
+    <app-platform-menu [isAdmin]="(isAdmin$ | async) ?? false" [isLoggedIn]="(isLoggedIn$ | async) ?? false" />
     <app-command-palette />
     <app-notification />
     <router-outlet />
@@ -28,7 +28,7 @@ import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.comp
       <ng-container *ngIf="isLoggedIn$ | async; else signInLink">
         <button type="button" class="maya-shared-session-action" (click)="signOut()"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span class="maya-shared-session-label"><span class="maya-shared-session-dot maya-shared-session-dot--in"></span>Sign Out</span></button>
       </ng-container>
-      <ng-template #signInLink><a routerLink="/login" class="maya-shared-session-action"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i><span class="maya-shared-session-label"><span class="maya-shared-session-dot maya-shared-session-dot--out"></span>Sign In</span></a></ng-template>
+      <ng-template #signInLink><a routerLink="/get-started" class="maya-shared-session-action"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i><span class="maya-shared-session-label"><span class="maya-shared-session-dot maya-shared-session-dot--out"></span>Sign In</span></a></ng-template>
     </nav>
   `,
   styleUrl: './app.component.css'

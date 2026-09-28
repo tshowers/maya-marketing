@@ -15,6 +15,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/mobile-handoff/mobile-handoff.component').then((m) => m.MobileHandoffComponent),
   },
   {
+    // Sign-in wizard (web twin of maya-ios's MayaOnboardingView): "Already
+    // use a TODD app? Sign in", else name, role, company, goals, then sign
+    // in. /login stays a direct handoff for returning users.
+    path: 'get-started',
+    loadComponent: () => import('./features/get-started/get-started.component').then((m) => m.GetStartedComponent),
+  },
+  {
+    // In-app profile (shared fields/API with the iOS apps' TODDProfileKit).
+    path: 'profile',
+    loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+  },
+  {
     path: 'help',
     loadComponent: () => import('./features/help/help.component').then((m) => m.HelpComponent),
   },

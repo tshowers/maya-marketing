@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { SeoService } from '../../shared/seo.service';
+import { MayaAuthService } from '../../services/maya-auth.service';
+import { GettingStarted, GettingStartedService, GettingStartedStep } from '../../services/getting-started.service';
 
 interface HelpStep {
   number: string;
@@ -19,13 +22,31 @@ interface HelpStep {
   styleUrl: './help.component.css',
 })
 export class HelpComponent implements OnInit {
+  /** Signed-in only: the Getting Started checklist, checked off from real data. */
+  progress: GettingStarted | null = null;
+  showAfterSignIn = true;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   constructor(
     private readonly title: Title,
     private readonly meta: Meta,
     private readonly seo: SeoService,
+    private readonly authService: MayaAuthService,
+    readonly gettingStarted: GettingStartedService,
   ) {}
 
   ngOnInit(): void {
+    // Help is prerendered for SEO - progress needs the signed-in browser.
+    if (this.isBrowser) {
+      this.showAfterSignIn = this.gettingStarted.showAfterSignIn;
+      this.authService.getUser().subscribe((user) => {
+        if (!user) {
+          this.progress = null;
+          return;
+        }
+        this.gettingStarted.load().then((progress) => (this.progress = progress)).catch(() => (this.progress = null));
+      });
+    }
     const pageTitle = 'Help — Maya, Marketing Director';
     const description = 'How to work with Maya: start a session, give direction on message clarity and campaigns, then check Status and Plan to see what she executed.';
     this.title.setTitle(pageTitle);
@@ -75,4 +96,17 @@ export class HelpComponent implements OnInit {
       details: [],
     },
   ];
+
+  toggleShowAfterSignIn(value: boolean): void {
+    this.showAfterSignIn = value;
+    this.gettingStarted.showAfterSignIn = value;
+  }
+
+  trackStep(_index: number, step: GettingStartedStep): string {
+    return step.id;
+  }
+
+  isExternal(step: GettingStartedStep): boolean {
+    return this.gettingStarted.routeFor(step).startsWith('http');
+  }
 }
