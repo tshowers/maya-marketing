@@ -10,7 +10,13 @@
   font-family: 'Manrope', sans-serif;
   padding: 24px 16px 48px;
 }
-@media (prefers-color-scheme: dark) { .gs-shell { --gs-accent-ink: #04121f; } }
+/* Dark mode: follows the site's Light/Dark toggle (data-theme on <html>)
+ * where there is one, and the system setting where there isn't. */
+@media (prefers-color-scheme: dark) {
+  :host-context(html:not([data-theme='light'])) .gs-shell { --gs-accent-ink: #04121f; }
+}
+:host-context(html[data-theme='dark']) .gs-shell { --gs-accent-ink: #04121f; }
+
 .gs-shell * { box-sizing: border-box; }
 
 .gs-topbar { max-width: 640px; margin: 0 auto; padding: 26px 0 0; }

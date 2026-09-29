@@ -15,7 +15,7 @@ describe( 'MarketingDirectorCapabilitiesService', () => {
       return;
     }
 
-    expect( result.message ).toContain( '/outreach/app' );
+    expect( result.message ).toContain( 'https://outreach.taliferro.tech/app' );
   } );
 
   it( 'routes email-queue questions to Signal Engine', () => {
@@ -37,6 +37,6 @@ describe( 'MarketingDirectorCapabilitiesService', () => {
       return;
     }
 
-    expect( result.message ).toContain( '/outreach/social/strategy' );
+    expect( result.message ).toContain( 'https://social.taliferro.tech/strategy' );
   } );
 } );

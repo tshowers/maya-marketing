@@ -20,7 +20,7 @@ import {
 } from '../../services/public-marketing-director.service';
 import { MarketingEmployeeActionRecord, MarketingEmployeeOutcomeRecord, MarketingPlanRecord } from '../../models/marketing-employee.models';
 import { AuthService } from '../../../../services/auth.service';
-import { EntitlementService } from '../../../../services/entitlement.service';
+import { WriteAccessService } from '../../../../services/write-access.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { UserService } from '../../../../services/user.service';
 import { environment } from '../../../../../environments/environment';
@@ -139,7 +139,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     private readonly publicMarketingDirectorService: PublicMarketingDirectorService,
     private readonly marketingEmployeeService: MarketingEmployeeService,
     private readonly authService: AuthService,
-    private readonly entitlementService: EntitlementService,
+    private readonly writeAccess: WriteAccessService,
     private readonly userService: UserService,
     private readonly employeePlanService: EmployeePlanService,
     private readonly notificationService: NotificationService,
@@ -199,9 +199,13 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
 
             return combineLatest( [
               this.userService.getLoggedInContactInfo( true ).pipe( take( 1 ) ),
-              this.entitlementService.getResolvedEntitlements().pipe(
+              // Maya "doing the work" (creating items, status reports,
+              // decks, transcripts) needs the Maya App Store purchase or the
+              // master tenant (Ty, 2026-09-28); advice and personalization
+              // are free once signed in. TODD Suite no longer counts.
+              this.writeAccess.state( 'maya' ).pipe(
                 take( 1 ),
-                map( entitlements => !!entitlements.suite || isMasterTenant ),
+                map( state => state === 'canWrite' || isMasterTenant ),
                 catchError( () => of( isMasterTenant ) )
               ),
               this.marketingEmployeeService.watchCurrentWork(
@@ -421,6 +425,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
 
   generatePresentationDeck (): void {
     if ( !this.presentationMode || this.presentationState !== 'READY_TO_GENERATE' ) return;
+    if ( !this.hasPaidWorkspaceAccess ) {
+      this.showUpgradePanel = true;
+      return;
+    }
     this.errorMessage = '';
     const deck = this.presentationDeck;
     if ( !deck || deck.slides.length < 8 || deck.slides.some( slide => !slide.purpose || !slide.narrativeRole || !slide.takeaway || !slide.headline || !slide.transitionToNextSlide ) ) {
@@ -461,6 +469,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
 
   exportTranscript (): void {
     if ( !this.messages.length ) return;
+    if ( !this.hasPaidWorkspaceAccess ) {
+      this.showUpgradePanel = true;
+      return;
+    }
 
     const stamp = new Date();
     const lines = this.messages.map( message => {

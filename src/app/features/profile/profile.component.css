@@ -10,7 +10,13 @@
   font-family: 'Manrope', sans-serif;
   padding: 88px 16px 120px;
 }
-@media (prefers-color-scheme: dark) { .pf-shell { --pf-accent: var(--tl-blue); --pf-accent-ink: #04121f; --pf-danger: #ff8a80; } }
+/* Dark mode: follows the site's Light/Dark toggle (data-theme on <html>)
+ * where there is one, and the system setting where there isn't. */
+@media (prefers-color-scheme: dark) {
+  :host-context(html:not([data-theme='light'])) .pf-shell { --pf-accent: var(--tl-blue); --pf-accent-ink: #04121f; --pf-danger: #ff8a80; }
+}
+:host-context(html[data-theme='dark']) .pf-shell { --pf-accent: var(--tl-blue); --pf-accent-ink: #04121f; --pf-danger: #ff8a80; }
+
 .pf-shell * { box-sizing: border-box; }
 
 .pf-inner { max-width: 760px; margin: 0 auto; }

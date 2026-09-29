@@ -8,6 +8,7 @@
     "build": "node scripts/generate-version.js && ng build && npm run postbuild",
     "build:production": "node scripts/generate-version.js && ng build --configuration production && npm run postbuild",
     "postbuild": "cp dist/maya/browser/index.csr.html dist/maya/browser/index.html",
+    "deploy:hosting": "./deploy.sh",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
     "serve:ssr:maya": "node dist/maya/server/server.mjs"

@@ -27,6 +27,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),
   },
   {
+    // "Browse free, create with the app" (Ty, 2026-09-28) - shared wording
+    // in @taliferro/ui/platform/get-the-app.model.ts.
+    path: 'pricing',
+    data: { product: 'maya' },
+    loadComponent: () => import('./features/get-the-app/get-the-app.component').then((m) => m.GetTheAppComponent),
+  },
+  {
     path: 'help',
     loadComponent: () => import('./features/help/help.component').then((m) => m.HelpComponent),
   },

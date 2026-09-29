@@ -13,11 +13,12 @@ import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { tenantInterceptor } from './core/interceptors/tenant.interceptor';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { idTokenInterceptor } from './core/interceptors/id-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ anchorScrolling: 'enabled' })),
-    provideHttpClient(withFetch(), withInterceptors([tenantInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([idTokenInterceptor, tenantInterceptor])),
     provideAnimationsAsync(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
