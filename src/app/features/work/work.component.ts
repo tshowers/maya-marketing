@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
@@ -13,6 +13,14 @@ interface ApprovalItem {
   step: MayaJobStep;
   /** The drafted post this approval would schedule (from the step it depends on). */
   preview: Record<string, any> | null;
+}
+
+/** A finished email from a job, ready to open in Docs. */
+interface EmailResult {
+  documentId: string;
+  subject: string;
+  preheader: string;
+  fillIns: string[];
 }
 
 const ACTIVE_STATUSES = new Set( ['queued', 'running'] );
@@ -37,6 +45,7 @@ export class WorkComponent implements OnInit, OnDestroy {
     'Build a LinkedIn calendar for the next two weeks',
     'Plan three posts about our newest product',
     'Fill next week with posts on every account I have connected',
+    'Write an email introducing us to new prospects',
   ];
 
   /** null until Firebase reports auth state; false shows the sign-in panel. */
@@ -50,6 +59,9 @@ export class WorkComponent implements OnInit, OnDestroy {
   answers: Record<string, string> = {};
   busy: Record<string, boolean> = {};
   expanded: Record<string, boolean> = {};
+  previews: Record<string, SafeHtml> = {};
+  previewOpen: Record<string, boolean> = {};
+  private emailHtml: Record<string, string> = {};
 
   private authSubscription?: Subscription;
   private pollTimer?: ReturnType<typeof setTimeout>;
@@ -59,6 +71,7 @@ export class WorkComponent implements OnInit, OnDestroy {
     private readonly api: MayaJobsService,
     private readonly authService: MayaAuthService,
     private readonly title: Title,
+    private readonly sanitizer: DomSanitizer,
   ) { }
 
   ngOnInit (): void {
@@ -144,6 +157,53 @@ export class WorkComponent implements OnInit, OnDestroy {
     for ( const item of this.approvals.filter( ( entry ) => entry.job.id === job.id ) ) {
       await this.decide( item, 'approve' );
     }
+  }
+
+  /** Emails Maya designed in this job, with anything still to fill in before sending. */
+  emails ( job: MayaJob ): EmailResult[] {
+    return job.steps
+      .filter( ( step ) => step.tool === 'email.create' && step.status === 'done' && step.output?.['documentId'] )
+      .map( ( step ) => ( {
+        documentId: String( step.output!['documentId'] ),
+        subject: String( step.output!['subject'] || 'Email from Maya' ),
+        preheader: String( step.output!['preheader'] || '' ),
+        fillIns: Array.isArray( step.output!['fillIns'] ) ? step.output!['fillIns'] : [],
+      } ) );
+  }
+
+  /** Loads (once) and shows or hides an email's preview. */
+  async togglePreview ( email: EmailResult ): Promise<void> {
+    if ( this.previews[email.documentId] !== undefined ) {
+      this.previewOpen[email.documentId] = !this.previewOpen[email.documentId];
+      return;
+    }
+    this.busy[email.documentId] = true;
+    try {
+      const loaded = await this.api.email( email.documentId );
+      this.emailHtml[email.documentId] = loaded.html;
+      // The frame is sandboxed with no permissions (no scripts, forms or
+      // navigation), so rendering Maya's generated HTML in it is safe.
+      this.previews[email.documentId] = this.sanitizer.bypassSecurityTrustHtml( loaded.html );
+      this.previewOpen[email.documentId] = true;
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load that email.';
+    } finally {
+      this.busy[email.documentId] = false;
+    }
+  }
+
+  async downloadHtml ( email: EmailResult ): Promise<void> {
+    let html = this.emailHtml[email.documentId];
+    if ( html === undefined ) {
+      html = ( await this.api.email( email.documentId ) ).html;
+      this.emailHtml[email.documentId] = html;
+    }
+    const url = URL.createObjectURL( new Blob( [html], { type: 'text/html' } ) );
+    const link = document.createElement( 'a' );
+    link.href = url;
+    link.download = `${email.subject.replace( /[^a-z0-9_ -]/gi, '' ).trim().replace( /\s+/g, '-' ) || 'email'}.html`;
+    link.click();
+    setTimeout( () => URL.revokeObjectURL( url ), 1000 );
   }
 
   approvalCount ( job: MayaJob ): number {
@@ -235,6 +295,7 @@ export class WorkComponent implements OnInit, OnDestroy {
         return `${platform} post${day ? ` for ${this.shortDate( String( day ) )}` : ''}`;
       }
       case 'social.approvePost': return step.approvedBy === 'autopilot' ? 'Approved by autopilot' : 'Your approval to post';
+      case 'email.create': return `Email: ${String( step.output?.['subject'] || 'design' )}`;
       default: return step.tool;
     }
   }

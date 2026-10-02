@@ -29,13 +29,13 @@ export interface MayaJob {
   summary: string;
   questions?: string[];
   brief: { goal: string; audience: string; deliverables: string[]; constraints: string[] } | null;
-  estimate: { images: number; socialPosts: number } | null;
+  estimate: { images: number; socialPosts: number; emails?: number } | null;
   steps: MayaJobStep[];
   status: MayaJobStatus;
   statusDetail: string;
   resumeAt: string | null;
   planner: { provider: string; model: string } | null;
-  artifacts: Array<{ kind: 'image' | 'social_post'; id: string; url?: string | null; plannedForDate?: string | null }>;
+  artifacts: Array<{ kind: 'image' | 'social_post' | 'email'; id: string; url?: string | null; plannedForDate?: string | null; subject?: string | null }>;
   approvals?: Record<string, { decision: 'approved' | 'rejected'; by: string; at: string }>;
   createdAt: string;
   updatedAt: string;
@@ -72,6 +72,13 @@ export class MayaJobsService {
     await firstValueFrom( this.http.post(
       `${environment.backendURL}/maya/jobs/${encodeURIComponent( jobId )}/steps/${encodeURIComponent( stepId )}/${decision}`,
       {}, { headers: await this.headers() } ) );
+  }
+
+  /** An email Maya designed, for previewing. */
+  async email ( documentId: string ): Promise<{ id: string; subject: string; preheader: string; html: string; }> {
+    const response = await firstValueFrom( this.http.get<{ email: { id: string; subject: string; preheader: string; html: string; } }>(
+      `${environment.backendURL}/maya/emails/${encodeURIComponent( documentId )}`, { headers: await this.headers() } ) );
+    return response.email;
   }
 
   async cancel ( jobId: string ): Promise<void> {

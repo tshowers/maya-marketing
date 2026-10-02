@@ -83,10 +83,24 @@
           <p *ngIf="progress( job ).total" class="wk-meta">
             {{ progress( job ).done }} of {{ progress( job ).total }} steps
             <span *ngIf="job.estimate?.socialPosts"> · {{ job.estimate?.socialPosts }} post{{ job.estimate?.socialPosts === 1 ? '' : 's' }}</span>
+            <span *ngIf="job.estimate?.emails"> · {{ job.estimate?.emails }} email{{ job.estimate?.emails === 1 ? '' : 's' }}</span>
             <span *ngIf="job.estimate?.images"> · up to {{ job.estimate?.images }} new image{{ job.estimate?.images === 1 ? '' : 's' }}</span>
             <span *ngIf="approvalCount( job )"> · {{ approvalCount( job ) }} waiting for you</span>
           </p>
           <p *ngIf="job.status === 'failed' || job.status === 'waiting' || job.status === 'stopped'" class="wk-note">{{ job.statusDetail }}</p>
+
+          <div *ngFor="let email of emails( job )" class="wk-email" data-cy="work-email">
+            <p class="wk-email__subject">{{ email.subject }}</p>
+            <p *ngIf="email.preheader" class="wk-meta">{{ email.preheader }}</p>
+            <p *ngIf="email.fillIns.length" class="wk-email__fill">Fill in before sending: {{ email.fillIns.join( ', ' ) }}</p>
+            <div class="wk-actions">
+              <button type="button" class="wk-button wk-button--ghost" (click)="togglePreview( email )" [disabled]="busy[email.documentId]" data-cy="work-email-preview">
+                {{ previewOpen[email.documentId] ? 'Hide preview' : 'Preview' }}</button>
+              <button type="button" class="wk-button wk-button--ghost" (click)="downloadHtml( email )" data-cy="work-email-download">Download HTML</button>
+            </div>
+            <iframe *ngIf="previewOpen[email.documentId]" class="wk-email__frame" sandbox="" [srcdoc]="previews[email.documentId]"
+                    [title]="'Preview of ' + email.subject"></iframe>
+          </div>
 
           <div *ngIf="expanded[job.id]" class="wk-job__detail">
             <ol class="wk-steps" *ngIf="job.steps.length">

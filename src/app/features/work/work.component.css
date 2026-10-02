@@ -75,6 +75,12 @@
 @keyframes wk-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .wk-spinner { animation: none; } }
 
+.wk-email { margin: 10px 0; padding: 14px 16px; border: 1px solid var(--todd-panel-border); border-radius: 14px; background: var(--todd-surface-1); }
+.wk-email__subject { margin: 0 0 4px; font-weight: 800; }
+.wk-email__fill { margin: 0 0 10px; color: var(--wk-attention); font-size: .88rem; font-weight: 700; }
+.wk-email .wk-actions { margin-top: 8px; }
+.wk-email__frame { display: block; width: 100%; height: 640px; margin-top: 12px; border: 1px solid var(--todd-panel-border); border-radius: 12px; background: #fff; }
+
 .wk-job__detail { margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--todd-panel-border); }
 .wk-steps { margin: 0 0 10px; padding-left: 20px; }
 .wk-steps li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: .9rem; }
