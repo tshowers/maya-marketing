@@ -8,9 +8,45 @@ Maya stops pointing users at tools and starts running them. A user tells her wha
 2. **Plans** the work as a job: a set of steps across Image Creator, Email Creator, Social, Catalyst, Docs and her own presentation pipeline.
 3. **Runs** the job, stopping for approval before anything is published, sent or paid for.
 
-Today she mostly routes. `MarketingDirectorCapabilitiesService` matches phrases and replies "This is email-composer work. Open Compose Email." The user then does the coordinating. That is the problem this design removes.
+Before this work she only routed: `MarketingDirectorCapabilitiesService` matches phrases and replies "This is email-composer work. Open Compose Email," and the user does the coordinating. That is the problem this design removes. (Her chat still routes until gap 8; jobs start from Maya's work page.)
 
 This document is grounded in the API as documented on 2026-10-01 (`taliferrotech/frontend/src/assets/api/*.yaml`). Every operation there carries an `x-maya` tag (`direct`, `approval`, `internal`, `never`) that this design treats as the source of truth for what Maya may do.
+
+## Status (2026-10-02)
+
+Phase 1 is built except gap 4, plus single emails from Phase 2. **None of it has run live yet:** the backend functions and Maya's web app need deploying (the Firestore indexes for jobs are already deployed).
+
+### Done
+
+| Piece | Where |
+|---|---|
+| API docs match the backend, every operation tagged `x-maya` | `taliferrotech/frontend/src/assets/api/*.yaml` |
+| OpenAI/Claude switch for planning (OpenAI by default) | `aiProvider.service.js`, Admin Control Panel → Maya tab |
+| Organization size: required in Maya's sign-up wizard, default 2 | `employeeCount.js`, `/get-started`, `/profile` |
+| Gap 1: save images to the Docs library | `imageLibrary.service.js`, `POST /image-creator/save-to-library` |
+| Gap 2: image and email allowances per workspace | `tenantAllowance.js` |
+| Gap 3: job store, planner, runner, trigger, sweeper | `todd-backend/functions/maya/`, `/maya/jobs` |
+| Gap 5: plan-fit check and decisions | `maya/planFit.js`, `POST /maya/jobs/:id/decision` |
+| Gap 6: Maya's work page (approvals, questions, jobs) | `maya-marketing/src/app/features/work/` (`/work`) |
+| Gap 7: pushback setting | `operatorConfig.maya.pushbackLevel`, `/maya/settings` |
+| Single emails (part of flow B): Maya writes the brief, Email Creator designs it, saved to Docs, previewed on Maya's work page | `email.create` tool, `GET /maya/emails/:id` |
+
+Tools Maya can use today: `image.obtain`, `social.draftPost`, `social.approvePost`, `email.create`.
+
+### Not done
+
+| Piece | Phase | Note |
+|---|---|---|
+| Gap 4: tool/doc consistency | 1 | Recommended change: instead of generating tools from the docs, a test that fails if a tool's access level disagrees with its API doc's `x-maya` tag. |
+| Deploy and try it on staging | 1 | Backend functions, then Maya. Planning runs on OpenAI; Claude needs Anthropic credits. |
+| Gap 10: email series on the calendar, and sending | 2 | Emails are designed and saved but not yet sent from a job; the dispatcher, exit rules and calendar display remain. |
+| Gap 9: deck images | 2 | |
+| Gap 11: post engagement collection (LinkedIn, Bluesky first) | 3 | |
+| Gap 12: numeric plan targets and starting benchmarks | 3 | Organization size, the input it needs, is done. |
+| Gap 13: learnings and the 6 AM review | 3 | |
+| Gap 8: Maya's chat starts jobs instead of routing | 4 | Until then, jobs start from Maya's work page; the chat still answers "This is email-composer work". |
+| Daily duty on jobs | 4 | Her 6 AM planner and social runner still run the old way. |
+| Other apps' sign-up wizards ask for organization size | — | Not decided; they default to 2. |
 
 ## Principles
 
@@ -436,7 +472,7 @@ In the order the flows need them:
 1. ~~**Save images to the library.**~~ Built: `imageLibrary.service.js` (`saveImageToLibrary`, used in-process by the runner) and `POST /image-creator/save-to-library`. Files go to `{tenantId}/documents/maya/` with a permanent URL; the Docs record is `eligibleForSocial` by default and counts against the plan's document limit.
 2. ~~**Tenant allowance.**~~ Built: Image Creator and Email Creator counters are per workspace (`imageCreatorUsage/{tenantId}`, `emailCreatorUsage/{tenantId}`), defaults 5 images and 10 emails a day, with optional tenant overrides `imageCreatorDailyLimit`, `emailCreatorDailyLimit` and `emailCreatorHostedImageDailyLimit` (`tenantAllowance.js`). Spreading image steps across days with `notBefore` belongs to the job runner (gap 3).
 3. ~~**Job store and runner.**~~ Built in `todd-backend/functions/maya/`: `jobs.store.js` (jobs at `tenants/{tenantId}/maya-jobs`, a lease so one runner works a job, and `approvals`/`cancelRequested` fields only people write), `planner.js` (one planning call through the provider switch, validated before saving), `context.js`, `runner.js`, `tools.js`, and `jobs.routes.js` (`/maya/jobs`). The `mayaJobRunner` Firestore trigger runs a job whenever it's written as `queued`; `scheduledMayaJobs` (every 10 minutes) resumes `waiting` jobs and recovers expired leases. Phase 1 tools: `image.obtain` (reuse a library image, else generate and save), `social.draftPost`, `social.approvePost` (approval; autopilot honored). Starting a job requires the TODD Suite, the Maya app, or the master tenant.
-4. **Tool registry generator.** Builds tool definitions from the `x-maya` tags and operation schemas in the docs.
+4. **Tool/doc consistency.** Originally a generator that builds tool definitions from the `x-maya` tags. Recommended instead: with four hand-written tools, a test that fails if a tool's access level disagrees with the `x-maya` tag of the operation it wraps.
 5. ~~**Plan-fit evaluator.**~~ Built: `maya/planFit.js`. After planning and before any step runs, one call through the provider switch judges fit and the strategic ramifications; capacity and cost are computed from the real allowances and review queue. A conflict stops the job (`awaiting_decision`) at firm and standard; the user picks Maya's way (she replans with her rewritten request), as asked (she states what it costs, recorded on the job) or cancel. A failed check is recorded and the job proceeds. Adjacent requests proceed as asked with her recommendation shown.
 6. ~~**Approvals in Maya.**~~ Built: the **Maya's work** page (`/work`, linked from the menu). A box to give Maya a job; one "Waiting for you" list across all jobs showing each post's text, image, account and planned day, where Approve schedules the post and "Not this one" skips it; questions Maya needs answered; and every job's steps, status and progress (refreshing every 5 seconds while she works). Email series and Catalyst sends join the same list in Phase 2.
 7. ~~**Pushback setting.**~~ Built: `operatorConfig.maya.pushbackLevel` (`firm` default, `standard`, `light`), `GET/PUT /maya/settings`, and a control on Maya's work page. Decision outcomes in her status report come with the learning loop (gap 13).
@@ -449,13 +485,13 @@ In the order the flows need them:
 
 ## 8. Phasing
 
-**Phase 1: Social calendar end to end.** Gaps 1 to 7, with the approval list in Maya from the start. It's the most-requested flow, it exercises every layer, and the Social side (drafts, `plannedForDate`, cadence slots, autopilot) already exists.
+**Phase 1: Social calendar end to end.** Gaps 1 to 7, with the approval list in Maya from the start. *Built except gap 4; not yet deployed.* It's the most-requested flow, it exercises every layer, and the Social side (drafts, `plannedForDate`, cadence slots, autopilot) already exists.
 
-**Phase 2: Email series and decks.** Flow B as email series on the calendar with the dispatcher (gap 10), flow C with deck images (gap 9).
+**Phase 2: Email series and decks.** Flow B as email series on the calendar with the dispatcher (gap 10), flow C with deck images (gap 9). *Single emails (`email.create`) are built; series, sending and decks are not.*
 
-**Phase 3: The learning loop.** Engagement collection (gap 11), numeric targets (gap 12) and the learnings store with the morning review (gap 13).
+**Phase 3: The learning loop.** *Not started.* Engagement collection (gap 11), numeric targets (gap 12) and the learnings store with the morning review (gap 13).
 
-**Phase 4: Duty on jobs.** Move her daily planner and social runner onto jobs, and replace the routing service (gap 8).
+**Phase 4: Duty on jobs.** *Not started.* Move her daily planner and social runner onto jobs, and replace the routing service (gap 8).
 
 ## 9. Decisions (2026-10-01)
 
