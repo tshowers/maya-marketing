@@ -142,7 +142,7 @@ interface MayaJob {
   decision: { choice: string; decidedBy: string; decidedAt: string } | null;
   estimate: { images: number; emails: number; socialPosts: number; aiUsd: number };
   steps: MayaJobStep[];
-  status: 'judging' | 'awaiting_user' | 'running' | 'awaiting_approval' | 'done' | 'failed' | 'cancelled';
+  status: 'queued' | 'running' | 'awaiting_user' | 'awaiting_approval' | 'waiting' | 'done' | 'failed' | 'stopped' | 'cancelled';
   artifacts: { kind: 'image' | 'social_post' | 'email' | 'deck' | 'document'; id: string; url?: string }[];
   createdAt: string;
   updatedAt: string;
@@ -150,7 +150,7 @@ interface MayaJob {
 
 interface MayaJobStep {
   id: string;
-  tool: string;                    // e.g. 'image.generate', 'social.saveDraft'
+  tool: string;                    // e.g. 'image.obtain', 'social.draftPost'
   input: Record<string, unknown>;
   dependsOn: string[];
   access: 'direct' | 'approval';   // copied from the tool's x-maya tag
@@ -185,13 +185,12 @@ Generated from the `x-maya` tags so the docs and Maya can't drift apart. `direct
 
 | Tool | Wraps | Access |
 |---|---|---|
-| `image.generate` | `imageCreator.service.generateImage` (`/image-creator/generate`) | direct |
-| `image.saveToLibrary` | `imageLibrary.service.saveImageToLibrary` (`/image-creator/save-to-library`) | direct |
+| `image.obtain` (built) | Reuses a fitting library image; otherwise `imageCreator.service.generateImage` then `imageLibrary.service.saveImageToLibrary`. Merged into one tool so a plan never has to branch on whether the library had something. | direct |
 | `email.generate` | `emailCreator.service.generateEmail` (`/email-creator/generate`) | direct |
 | `email.hostImage` | `/email-creator/host-image` (30-day URLs, for imminent sends only) | direct |
 | `social.generateDrafts` | `/outreach/social-posts/generate` with `autoApprove: false` | direct |
-| `social.saveDraft` | `/outreach/social-posts` POST/PUT with `status: draft`, `plannedForDate`, `mediaAttachment`, `planId` | direct |
-| `social.approve` | PUT with `status: approved` (backend picks the slot by cadence) | approval |
+| `social.draftPost` (built) | `social.service.generateDrafts` + `upsertSocialPost` with `status: draft`, `plannedForDate`, the image, `planId` - the same calls Maya's daily social duty makes | direct |
+| `social.approvePost` (built) | `upsertSocialPost` with `status: approved` (Social picks the time from the cadence); auto-approved when `socialAutoApprove` is on | approval |
 | `social.publishNow` | `/outreach/social-posts/{id}/publish` | approval |
 | `series.create` / `series.saveStep` | **new**, email series on the calendar (section 4) | direct |
 | `series.approve` | **new**, locks the series content for sending | approval |
@@ -230,8 +229,8 @@ Every piece exists except saving images to the library.
 2. **Plan.** For each platform, compute the slots the cadence allows over the period. Reuse the logic in `resolvePlannedForDate`, which already fills days up to `cadenceMaxPerDay` and skips full days. Assign a theme to each slot from the plan.
 3. **Run:**
    - `social.generateDrafts` per platform and theme, with `strategyContext.cadence`, `planId` and `autoApprove: false`.
-   - For posts that need images: prefer an unused `eligibleForSocial` image from the library (the same rotation `selectImageForPlatform` uses). Otherwise `image.generate`, then `image.saveToLibrary`.
-   - `social.saveDraft` with `plannedForDate`, `mediaAttachment` (permanent library URL) and `planId`.
+   - For posts that need images: `image.obtain`, which prefers an unused `eligibleForSocial` library image (the same rotation `selectImageForPlatform` uses) and otherwise generates one and saves it to the library.
+   - `social.draftPost` with `plannedForDate`, the image (permanent library URL) and `planId`.
 4. **Review.** Posts appear on the existing Social calendar as drafts on their planned days. Approving a post (`social.approve`) lets the backend pick the exact time from the cadence. With Social autopilot on (`socialAutoApprove: true`), Maya's daily duty approves them as it does today.
 
 ### B. "Create me an email about this topic"
@@ -239,7 +238,7 @@ Every piece exists except saving images to the library.
 1. **Judge.** Ask what the email is for only if unclear: invite, announcement, newsletter, follow-up. Ask who receives it, since that decides whether this is a one-off or a list send. Check the plan for audience fit.
 2. **Plan.** Maya writes the copy brief herself, using the plan, profile and facts the user gave. Email Creator's chat step exists to get a brief from a person; Maya already has one, so she skips it.
 3. **Run:**
-   - `image.generate` for each image the brief calls for (header, product). Reuse library images when they fit.
+   - `image.obtain` for each image the brief calls for (header, product), reusing library images when they fit.
    - `email.generate` with `brief` and `images` (ids referenced as `src="todd-image:<id>"`).
    - Resolve placeholders: hosted library URLs for durable use; `email.hostImage` only for a send happening within 30 days.
    - Return `notes` (bracketed facts the user must fill) as questions, not as a finished email.
@@ -248,7 +247,7 @@ Every piece exists except saving images to the library.
 ### C. "I need a PowerPoint"
 
 1. **Judge and plan.** `deck.turn` already does fact extraction, strategy and a critic pass, and returns `NEEDS_INFORMATION` until it can build a credible story. Maya relays those questions.
-2. **Images.** When the deck is `READY_TO_GENERATE`, find slides whose `visualIntent` calls for an image (`imageStatement`, `hero`, `product`). Generate each with `image.generate`, guided by `visualIntent` and the deck theme, then save it to the library. Put the permanent URL in `slides[].image`.
+2. **Images.** When the deck is `READY_TO_GENERATE`, find slides whose `visualIntent` calls for an image (`imageStatement`, `hero`, `product`). Get each with `image.obtain`, guided by `visualIntent` and the deck theme. Put the permanent URL in `slides[].image`.
 3. **Render.** The existing PDF renderer (`maya-deck-pdf.service.ts`) produces the file. A `.pptx` export is a separate item; today's output is PDF.
 4. **Rule kept.** Generated images illustrate; they never stand in for evidence. Charts and metrics still come only from supplied data.
 
@@ -436,7 +435,7 @@ In the order the flows need them:
 0. ~~**Planning provider switch.**~~ Built: `aiProvider.service.js`, `GET/PUT /admin/ai-provider`, and the Planning Model control on the Admin Control Panel's Maya tab. OpenAI by default.
 1. ~~**Save images to the library.**~~ Built: `imageLibrary.service.js` (`saveImageToLibrary`, used in-process by the runner) and `POST /image-creator/save-to-library`. Files go to `{tenantId}/documents/maya/` with a permanent URL; the Docs record is `eligibleForSocial` by default and counts against the plan's document limit.
 2. ~~**Tenant allowance.**~~ Built: Image Creator and Email Creator counters are per workspace (`imageCreatorUsage/{tenantId}`, `emailCreatorUsage/{tenantId}`), defaults 5 images and 10 emails a day, with optional tenant overrides `imageCreatorDailyLimit`, `emailCreatorDailyLimit` and `emailCreatorHostedImageDailyLimit` (`tenantAllowance.js`). Spreading image steps across days with `notBefore` belongs to the job runner (gap 3).
-3. **Job store and runner.** `maya-jobs` collection, the planning call, step execution, retry and stop handling.
+3. ~~**Job store and runner.**~~ Built in `todd-backend/functions/maya/`: `jobs.store.js` (jobs at `tenants/{tenantId}/maya-jobs`, a lease so one runner works a job, and `approvals`/`cancelRequested` fields only people write), `planner.js` (one planning call through the provider switch, validated before saving), `context.js`, `runner.js`, `tools.js`, and `jobs.routes.js` (`/maya/jobs`). The `mayaJobRunner` Firestore trigger runs a job whenever it's written as `queued`; `scheduledMayaJobs` (every 10 minutes) resumes `waiting` jobs and recovers expired leases. Phase 1 tools: `image.obtain` (reuse a library image, else generate and save), `social.draftPost`, `social.approvePost` (approval; autopilot honored). Starting a job requires the TODD Suite, the Maya app, or the master tenant.
 4. **Tool registry generator.** Builds tool definitions from the `x-maya` tags and operation schemas in the docs.
 5. **Plan-fit evaluator.** The prompt and contract above, with capacity and cost computed from real data.
 6. **Approvals in Maya.** One list inside Maya of everything waiting on the user: social posts, email series, Catalyst sends, and conflicts awaiting a decision. Approving there performs the action itself: it calls the same service functions as the product's own approve button. The user never has to visit Social or Signal Engine to clear Maya's work. Each item links to its product for detailed editing.
