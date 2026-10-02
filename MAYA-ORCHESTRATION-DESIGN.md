@@ -14,7 +14,7 @@ This document is grounded in the API as documented on 2026-10-01 (`taliferrotech
 
 ## Status (2026-10-02)
 
-Phase 1 is built except gap 4, plus single emails from Phase 2. **None of it has run live yet:** the backend functions and Maya's web app need deploying (the Firestore indexes for jobs are already deployed).
+Phase 1 is built, plus single emails from Phase 2. **None of it has run live yet:** the backend functions and Maya's web app need deploying (the Firestore indexes for jobs are already deployed).
 
 ### Done
 
@@ -29,6 +29,7 @@ Phase 1 is built except gap 4, plus single emails from Phase 2. **None of it has
 | Gap 5: plan-fit check and decisions | `maya/planFit.js`, `POST /maya/jobs/:id/decision` |
 | Gap 6: Maya's work page (approvals, questions, jobs) | `maya-marketing/src/app/features/work/` (`/work`) |
 | Gap 7: pushback setting | `operatorConfig.maya.pushbackLevel`, `/maya/settings` |
+| Gap 4: tools can't be looser than the API docs | `__tests__/maya.toolDocs.test.js`; each tool lists the operations it wraps |
 | Single emails (part of flow B): Maya writes the brief, Email Creator designs it, saved to Docs, previewed on Maya's work page | `email.create` tool, `GET /maya/emails/:id` |
 
 Tools Maya can use today: `image.obtain`, `social.draftPost`, `social.approvePost`, `email.create`.
@@ -37,7 +38,6 @@ Tools Maya can use today: `image.obtain`, `social.draftPost`, `social.approvePos
 
 | Piece | Phase | Note |
 |---|---|---|
-| Gap 4: tool/doc consistency | 1 | Recommended change: instead of generating tools from the docs, a test that fails if a tool's access level disagrees with its API doc's `x-maya` tag. |
 | Deploy and try it on staging | 1 | Backend functions, then Maya. Planning runs on OpenAI; Claude needs Anthropic credits. |
 | Gap 10: email series on the calendar, and sending | 2 | Emails are designed and saved but not yet sent from a job; the dispatcher, exit rules and calendar display remain. |
 | Gap 9: deck images | 2 | |
@@ -472,7 +472,7 @@ In the order the flows need them:
 1. ~~**Save images to the library.**~~ Built: `imageLibrary.service.js` (`saveImageToLibrary`, used in-process by the runner) and `POST /image-creator/save-to-library`. Files go to `{tenantId}/documents/maya/` with a permanent URL; the Docs record is `eligibleForSocial` by default and counts against the plan's document limit.
 2. ~~**Tenant allowance.**~~ Built: Image Creator and Email Creator counters are per workspace (`imageCreatorUsage/{tenantId}`, `emailCreatorUsage/{tenantId}`), defaults 5 images and 10 emails a day, with optional tenant overrides `imageCreatorDailyLimit`, `emailCreatorDailyLimit` and `emailCreatorHostedImageDailyLimit` (`tenantAllowance.js`). Spreading image steps across days with `notBefore` belongs to the job runner (gap 3).
 3. ~~**Job store and runner.**~~ Built in `todd-backend/functions/maya/`: `jobs.store.js` (jobs at `tenants/{tenantId}/maya-jobs`, a lease so one runner works a job, and `approvals`/`cancelRequested` fields only people write), `planner.js` (one planning call through the provider switch, validated before saving), `context.js`, `runner.js`, `tools.js`, and `jobs.routes.js` (`/maya/jobs`). The `mayaJobRunner` Firestore trigger runs a job whenever it's written as `queued`; `scheduledMayaJobs` (every 10 minutes) resumes `waiting` jobs and recovers expired leases. Phase 1 tools: `image.obtain` (reuse a library image, else generate and save), `social.draftPost`, `social.approvePost` (approval; autopilot honored). Starting a job requires the TODD Suite, the Maya app, or the master tenant.
-4. **Tool/doc consistency.** Originally a generator that builds tool definitions from the `x-maya` tags. Recommended instead: with four hand-written tools, a test that fails if a tool's access level disagrees with the `x-maya` tag of the operation it wraps.
+4. ~~**Tool/doc consistency.**~~ Built (replacing the original generator idea, agreed 2026-10-02): each tool lists the documented operations it wraps, and `__tests__/maya.toolDocs.test.js` fails if a tool is looser than their `x-maya` tags, wraps an `internal`/`never` operation, or wraps something undocumented. A tool may be stricter (`social.approvePost` needs approval though the PUT it uses is `direct`).
 5. ~~**Plan-fit evaluator.**~~ Built: `maya/planFit.js`. After planning and before any step runs, one call through the provider switch judges fit and the strategic ramifications; capacity and cost are computed from the real allowances and review queue. A conflict stops the job (`awaiting_decision`) at firm and standard; the user picks Maya's way (she replans with her rewritten request), as asked (she states what it costs, recorded on the job) or cancel. A failed check is recorded and the job proceeds. Adjacent requests proceed as asked with her recommendation shown.
 6. ~~**Approvals in Maya.**~~ Built: the **Maya's work** page (`/work`, linked from the menu). A box to give Maya a job; one "Waiting for you" list across all jobs showing each post's text, image, account and planned day, where Approve schedules the post and "Not this one" skips it; questions Maya needs answered; and every job's steps, status and progress (refreshing every 5 seconds while she works). Email series and Catalyst sends join the same list in Phase 2.
 7. ~~**Pushback setting.**~~ Built: `operatorConfig.maya.pushbackLevel` (`firm` default, `standard`, `light`), `GET/PUT /maya/settings`, and a control on Maya's work page. Decision outcomes in her status report come with the learning loop (gap 13).
@@ -485,7 +485,7 @@ In the order the flows need them:
 
 ## 8. Phasing
 
-**Phase 1: Social calendar end to end.** Gaps 1 to 7, with the approval list in Maya from the start. *Built except gap 4; not yet deployed.* It's the most-requested flow, it exercises every layer, and the Social side (drafts, `plannedForDate`, cadence slots, autopilot) already exists.
+**Phase 1: Social calendar end to end.** Gaps 1 to 7, with the approval list in Maya from the start. *Built; not yet deployed.* It's the most-requested flow, it exercises every layer, and the Social side (drafts, `plannedForDate`, cadence slots, autopilot) already exists.
 
 **Phase 2: Email series and decks.** Flow B as email series on the calendar with the dispatcher (gap 10), flow C with deck images (gap 9). *Single emails (`email.create`) are built; series, sending and decks are not.*
 
