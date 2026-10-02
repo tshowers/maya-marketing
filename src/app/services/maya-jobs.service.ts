@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type MayaJobStatus =
-  | 'queued' | 'running' | 'awaiting_user' | 'awaiting_approval' | 'waiting'
+  | 'queued' | 'running' | 'awaiting_user' | 'awaiting_decision' | 'awaiting_approval' | 'waiting'
   | 'done' | 'failed' | 'stopped' | 'cancelled';
 
 export interface MayaJobStep {
@@ -23,9 +23,26 @@ export interface MayaJobStep {
   skipReason?: string;
 }
 
+export type PushbackLevel = 'firm' | 'standard' | 'light';
+
+/** Maya's judgment of a job against the marketing plan. */
+export interface MayaPlanFit {
+  verdict: 'fits' | 'adjacent' | 'conflicts' | 'no_plan' | 'unknown';
+  planReference?: string;
+  reasoning?: string;
+  ramifications?: Array<{ kind: string; detail: string; computed?: boolean }>;
+  recommendation?: string;
+  recommendedRequest?: string;
+  action?: 'proceed' | 'ask' | 'skip';
+  pushbackLevel?: PushbackLevel;
+}
+
 export interface MayaJob {
   id: string;
   request: string;
+  originalRequest?: string;
+  planFit?: MayaPlanFit | null;
+  decision?: { choice: 'recommended' | 'as_asked' | 'cancel'; by: string; at: string; acknowledgement?: string } | null;
   summary: string;
   questions?: string[];
   brief: { goal: string; audience: string; deliverables: string[]; constraints: string[] } | null;
@@ -79,6 +96,24 @@ export class MayaJobsService {
     const response = await firstValueFrom( this.http.get<{ email: { id: string; subject: string; preheader: string; html: string; } }>(
       `${environment.backendURL}/maya/emails/${encodeURIComponent( documentId )}`, { headers: await this.headers() } ) );
     return response.email;
+  }
+
+  /** The user's answer when Maya pushed back. */
+  async decidePlan ( jobId: string, choice: 'recommended' | 'as_asked' | 'cancel' ): Promise<MayaJob> {
+    const response = await firstValueFrom( this.http.post<{ job: MayaJob }>(
+      `${environment.backendURL}/maya/jobs/${encodeURIComponent( jobId )}/decision`, { choice }, { headers: await this.headers() } ) );
+    return response.job;
+  }
+
+  async settings (): Promise<{ pushbackLevel: PushbackLevel; socialAutoApprove: boolean; }> {
+    const response = await firstValueFrom( this.http.get<{ settings: { pushbackLevel: PushbackLevel; socialAutoApprove: boolean; } }>(
+      `${environment.backendURL}/maya/settings`, { headers: await this.headers() } ) );
+    return response.settings;
+  }
+
+  async saveSettings ( pushbackLevel: PushbackLevel ): Promise<void> {
+    await firstValueFrom( this.http.put(
+      `${environment.backendURL}/maya/settings`, { pushbackLevel }, { headers: await this.headers() } ) );
   }
 
   async cancel ( jobId: string ): Promise<void> {

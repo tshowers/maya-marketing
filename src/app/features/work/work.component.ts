@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
-import { MayaJob, MayaJobStep, MayaJobsService } from '../../services/maya-jobs.service';
+import { MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
 
 /** One thing waiting on the user, from any job. */
 interface ApprovalItem {
@@ -41,6 +41,12 @@ const SLOW_POLL_MS = 30000;
   styleUrl: './work.component.css',
 } )
 export class WorkComponent implements OnInit, OnDestroy {
+  readonly pushbackOptions: Array<{ id: PushbackLevel; label: string; detail: string; }> = [
+    { id: 'firm', label: 'Firm', detail: 'Stops and makes her case when a request works against the plan.' },
+    { id: 'standard', label: 'Standard', detail: 'Stops and lists the consequences, without arguing.' },
+    { id: 'light', label: 'Light', detail: 'Goes ahead and tells you the consequences up front.' },
+  ];
+
   readonly suggestions = [
     'Build a LinkedIn calendar for the next two weeks',
     'Plan three posts about our newest product',
@@ -59,6 +65,8 @@ export class WorkComponent implements OnInit, OnDestroy {
   answers: Record<string, string> = {};
   busy: Record<string, boolean> = {};
   expanded: Record<string, boolean> = {};
+  pushbackLevel: PushbackLevel | null = null;
+  socialAutopilot = false;
   previews: Record<string, SafeHtml> = {};
   previewOpen: Record<string, boolean> = {};
   private emailHtml: Record<string, string> = {};
@@ -79,7 +87,10 @@ export class WorkComponent implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isLoggedIn().subscribe( ( signedIn ) => {
       const wasSignedIn = this.isSignedIn;
       this.isSignedIn = signedIn;
-      if ( signedIn && !wasSignedIn ) void this.refresh();
+      if ( signedIn && !wasSignedIn ) {
+        void this.refresh();
+        void this.loadSettings();
+      }
     } );
   }
 
@@ -108,6 +119,48 @@ export class WorkComponent implements OnInit, OnDestroy {
       }
     }
     return items;
+  }
+
+  /** Jobs Maya stopped because they work against the marketing plan. */
+  get decisionJobs (): MayaJob[] {
+    return this.jobs.filter( ( job ) => job.status === 'awaiting_decision' );
+  }
+
+  async decidePlan ( job: MayaJob, choice: 'recommended' | 'as_asked' | 'cancel' ): Promise<void> {
+    if ( this.busy[job.id] ) return;
+    this.busy[job.id] = true;
+    this.errorMessage = '';
+    try {
+      this.replace( await this.api.decidePlan( job.id, choice ) );
+      this.expanded[job.id] = true;
+      this.schedulePoll( FAST_POLL_MS );
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'That didn’t go through. Please try again.';
+    } finally {
+      this.busy[job.id] = false;
+    }
+  }
+
+  async setPushback ( level: PushbackLevel ): Promise<void> {
+    if ( level === this.pushbackLevel ) return;
+    const previous = this.pushbackLevel;
+    this.pushbackLevel = level;
+    try {
+      await this.api.saveSettings( level );
+    } catch ( error: any ) {
+      this.pushbackLevel = previous;
+      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t save that setting.';
+    }
+  }
+
+  verdictLabel ( planFit: MayaPlanFit | null | undefined ): string {
+    switch ( planFit?.verdict ) {
+      case 'fits': return 'Fits your plan';
+      case 'adjacent': return 'Close to your plan';
+      case 'conflicts': return 'Works against your plan';
+      case 'no_plan': return 'No marketing plan yet';
+      default: return '';
+    }
   }
 
   get questionJobs (): MayaJob[] {
@@ -261,6 +314,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       case 'queued':
       case 'running': return job.steps.length ? 'Working on it' : 'Planning';
       case 'awaiting_user': return 'Needs your answer';
+      case 'awaiting_decision': return 'Maya has concerns';
       case 'awaiting_approval': return 'Waiting for your approval';
       case 'waiting': return job.resumeAt ? `Continues ${this.shortDateTime( job.resumeAt )}` : 'Paused';
       case 'done': return 'Done';
@@ -273,7 +327,7 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   statusTone ( job: MayaJob ): 'active' | 'attention' | 'done' | 'muted' | 'error' {
     if ( this.isActive( job ) ) return 'active';
-    if ( job.status === 'awaiting_user' || job.status === 'awaiting_approval' || job.status === 'stopped' ) return 'attention';
+    if ( ['awaiting_user', 'awaiting_decision', 'awaiting_approval', 'stopped'].includes( job.status ) ) return 'attention';
     if ( job.status === 'done' ) return 'done';
     if ( job.status === 'failed' ) return 'error';
     return 'muted';
@@ -332,6 +386,16 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   trackApproval ( _index: number, item: ApprovalItem ): string {
     return `${item.job.id}/${item.step.id}`;
+  }
+
+  private async loadSettings (): Promise<void> {
+    try {
+      const settings = await this.api.settings();
+      this.pushbackLevel = settings.pushbackLevel;
+      this.socialAutopilot = settings.socialAutoApprove;
+    } catch {
+      this.pushbackLevel = 'firm';
+    }
   }
 
   private replace ( job: MayaJob ): void {

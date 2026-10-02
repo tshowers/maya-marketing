@@ -33,6 +33,22 @@
         <a *ngIf="needsPurchase" routerLink="/pricing">See plans</a>
       </p>
 
+      <section *ngFor="let job of decisionJobs; trackBy: trackById" class="wk-card wk-card--attention" data-cy="work-decision">
+        <h2>Maya has concerns</h2>
+        <p class="wk-quote">“{{ job.request }}”</p>
+        <p class="wk-verdict">{{ verdictLabel( job.planFit ) }}<span *ngIf="job.planFit?.planReference"> · {{ job.planFit?.planReference }}</span></p>
+        <p>{{ job.planFit?.reasoning }}</p>
+        <ul *ngIf="job.planFit?.ramifications?.length" class="wk-ramifications">
+          <li *ngFor="let item of job.planFit?.ramifications">{{ item.detail }}</li>
+        </ul>
+        <p *ngIf="job.planFit?.recommendation" class="wk-recommendation"><strong>What I’d do instead:</strong> {{ job.planFit?.recommendation }}</p>
+        <div class="wk-actions">
+          <button *ngIf="job.planFit?.recommendedRequest" type="button" class="wk-button" (click)="decidePlan( job, 'recommended' )" [disabled]="busy[job.id]" data-cy="work-decision-recommended">Do it your way, Maya</button>
+          <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'as_asked' )" [disabled]="busy[job.id]" data-cy="work-decision-as-asked">Go ahead as I asked</button>
+          <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'cancel' )" [disabled]="busy[job.id]" data-cy="work-decision-cancel">Cancel</button>
+        </div>
+      </section>
+
       <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" data-cy="work-question">
         <h2>Maya has a question</h2>
         <p class="wk-quote">“{{ job.request }}”</p>
@@ -80,6 +96,11 @@
               <span *ngIf="isActive( job )" class="wk-spinner" aria-hidden="true"></span>{{ statusLabel( job ) }}</span>
           </button>
           <p *ngIf="job.summary" class="wk-note">{{ job.summary }}</p>
+          <p *ngIf="job.decision?.acknowledgement" class="wk-acknowledgement">{{ job.decision?.acknowledgement }}</p>
+          <p *ngIf="!job.decision && job.planFit?.action === 'proceed' && (job.planFit?.verdict === 'conflicts' || job.planFit?.verdict === 'adjacent')" class="wk-acknowledgement">
+            {{ verdictLabel( job.planFit ) }}: {{ job.planFit?.reasoning }}
+            <span *ngFor="let item of job.planFit?.ramifications"> {{ item.detail }}</span>
+          </p>
           <p *ngIf="progress( job ).total" class="wk-meta">
             {{ progress( job ).done }} of {{ progress( job ).total }} steps
             <span *ngIf="job.estimate?.socialPosts"> · {{ job.estimate?.socialPosts }} post{{ job.estimate?.socialPosts === 1 ? '' : 's' }}</span>
@@ -117,6 +138,20 @@
             </div>
           </div>
         </article>
+      </section>
+
+      <section class="wk-section" data-cy="work-settings">
+        <div class="wk-section__head"><h2>How hard Maya pushes back</h2></div>
+        <p class="wk-note">When something you ask for works against your marketing plan. She always tells you what it will cost.</p>
+        <div class="wk-levels" role="radiogroup" aria-label="How hard Maya pushes back">
+          <button *ngFor="let option of pushbackOptions" type="button" role="radio" class="wk-level"
+                  [class.is-selected]="pushbackLevel === option.id" [attr.aria-checked]="pushbackLevel === option.id"
+                  (click)="setPushback( option.id )" [disabled]="pushbackLevel === null" [attr.data-cy]="'work-pushback-' + option.id">
+            <strong>{{ option.label }}</strong>
+            <span>{{ option.detail }}</span>
+          </button>
+        </div>
+        <p class="wk-meta">Social autopilot is {{ socialAutopilot ? 'on: Maya approves her own posts.' : 'off: you approve every post.' }}</p>
       </section>
     </ng-container>
   </div>
