@@ -186,7 +186,7 @@ Generated from the `x-maya` tags so the docs and Maya can't drift apart. `direct
 | Tool | Wraps | Access |
 |---|---|---|
 | `image.generate` | `imageCreator.service.generateImage` (`/image-creator/generate`) | direct |
-| `image.saveToLibrary` | **new**, see Gaps | direct |
+| `image.saveToLibrary` | `imageLibrary.service.saveImageToLibrary` (`/image-creator/save-to-library`) | direct |
 | `email.generate` | `emailCreator.service.generateEmail` (`/email-creator/generate`) | direct |
 | `email.hostImage` | `/email-creator/host-image` (30-day URLs, for imminent sends only) | direct |
 | `social.generateDrafts` | `/outreach/social-posts/generate` with `autoApprove: false` | direct |
@@ -209,7 +209,7 @@ Before running, the runner totals the plan: images, emails, social posts and exp
 
 - **The creation guard** (`mayaCreationGuard.service.js`): open drafts and social posts. A 30-post calendar fits under the 100-post limit, but not on top of 80 waiting posts.
 - **The platform budget** (`mayaAiBudget.service.js`, `TODD_DAILY_AI_BUDGET_USD`).
-- **The tenant's creative allowance:** 5 images a day per tenant, as today, with Maya's work counting against it. It's set per tenant, so a tenant's limit can be raised without changing anyone else's. (Today's code actually counts per *user*, in `imageCreatorUsage/{uid}`. Gap 2 moves it to the tenant.)
+- **The tenant's creative allowance:** 5 images a day per tenant, as today, with Maya's work counting against it. It's set per tenant, so a tenant's limit can be raised without changing anyone else's. (Counted per workspace in `imageCreatorUsage/{tenantId}`.)
 
 Because 5 images a day won't cover a month of posts in one sitting, the plan does two things:
 
@@ -434,8 +434,8 @@ Every row maps to `x-maya` tags in the API docs. Changing what she's allowed to 
 In the order the flows need them:
 
 0. ~~**Planning provider switch.**~~ Built: `aiProvider.service.js`, `GET/PUT /admin/ai-provider`, and the Planning Model control on the Admin Control Panel's Maya tab. OpenAI by default.
-1. **Save images to the library.** A backend function that uploads Image Creator's PNG data URL to permanent Storage (not the `email-creator/` 30-day prefix) and creates a `documents` record with `mimeType`, `src`, `title`, `topic` and `eligibleForSocial: true`. This one function makes images reusable by social posts, emails, decks and her social runner's rotation.
-2. **Tenant allowance.** Move the Image Creator and Email Creator daily counters from per user (`imageCreatorUsage/{uid}`) to per tenant, keeping 5 images a day as the default, with a per-tenant override. Maya's work counts against it. Image steps support `notBefore` so generation spreads across days.
+1. ~~**Save images to the library.**~~ Built: `imageLibrary.service.js` (`saveImageToLibrary`, used in-process by the runner) and `POST /image-creator/save-to-library`. Files go to `{tenantId}/documents/maya/` with a permanent URL; the Docs record is `eligibleForSocial` by default and counts against the plan's document limit.
+2. ~~**Tenant allowance.**~~ Built: Image Creator and Email Creator counters are per workspace (`imageCreatorUsage/{tenantId}`, `emailCreatorUsage/{tenantId}`), defaults 5 images and 10 emails a day, with optional tenant overrides `imageCreatorDailyLimit`, `emailCreatorDailyLimit` and `emailCreatorHostedImageDailyLimit` (`tenantAllowance.js`). Spreading image steps across days with `notBefore` belongs to the job runner (gap 3).
 3. **Job store and runner.** `maya-jobs` collection, the planning call, step execution, retry and stop handling.
 4. **Tool registry generator.** Builds tool definitions from the `x-maya` tags and operation schemas in the docs.
 5. **Plan-fit evaluator.** The prompt and contract above, with capacity and cost computed from real data.
