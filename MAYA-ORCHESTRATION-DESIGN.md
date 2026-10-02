@@ -14,7 +14,7 @@ This document is grounded in the API as documented on 2026-10-01 (`taliferrotech
 
 ## Status (2026-10-02)
 
-Phase 1 is built, plus single emails from Phase 2. **None of it has run live yet:** the backend functions and Maya's web app need deploying (the Firestore indexes for jobs are already deployed).
+Phase 1 is built, plus single emails from Phase 2. **None of it has run live yet:** the backend functions and Maya's web app need deploying (the Firestore indexes for jobs are already deployed). There is no staging for Maya (or the other web products), so the first test is in production.
 
 ### Done
 
@@ -38,7 +38,8 @@ Tools Maya can use today: `image.obtain`, `social.draftPost`, `social.approvePos
 
 | Piece | Phase | Note |
 |---|---|---|
-| Deploy and try it on staging | 1 | Backend functions, then Maya. Planning runs on OpenAI; Claude needs Anthropic credits. |
+| Deploy and try it live | 1 | Backend functions, then Maya. No staging exists, so test first on the master tenant with Social autopilot off: nothing publishes without an approval, and jobs can be cancelled or halted with Maya's stop switch. Planning runs on OpenAI; Claude needs Anthropic credits. |
+| Staging server for all web products | — | To do. Today only the TODD frontend has staging (todd-staging); Maya and the other web products deploy straight to production. |
 | Gap 10: email series on the calendar, and sending | 2 | Emails are designed and saved but not yet sent from a job; the dispatcher, exit rules and calendar display remain. |
 | Gap 9: deck images | 2 | |
 | Gap 11: post engagement collection (LinkedIn, Bluesky first) | 3 | |
