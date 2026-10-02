@@ -1,0 +1,109 @@
+<main class="wk-shell" data-cy="work-shell">
+  <div class="wk-inner">
+    <header class="wk-header">
+      <h1>Maya’s work</h1>
+      <p>Tell Maya what you need. She plans it, does the work, and asks you before anything is posted.</p>
+    </header>
+
+    <section *ngIf="isSignedIn === false" class="wk-card" data-cy="work-signed-out">
+      <h2>Sign in to work with Maya</h2>
+      <p class="wk-note">Maya’s work is saved to your TODD workspace.</p>
+      <button type="button" class="wk-button" (click)="signIn()" data-cy="work-sign-in">Sign in</button>
+    </section>
+
+    <ng-container *ngIf="isSignedIn">
+      <section class="wk-card wk-ask" data-cy="work-ask">
+        <form (ngSubmit)="start()">
+          <label class="wk-ask__label" for="wk-request">What should Maya do?</label>
+          <textarea id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
+                    placeholder="e.g. Build a LinkedIn calendar for the rest of October"
+                    [(ngModel)]="request" data-cy="work-request"></textarea>
+          <div class="wk-ask__row">
+            <div class="wk-chips" aria-label="Ideas">
+              <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="start( idea )" [disabled]="isStarting">{{ idea }}</button>
+            </div>
+            <button type="submit" class="wk-button" [disabled]="!request.trim() || isStarting" data-cy="work-start">
+              {{ isStarting ? 'Starting…' : 'Give it to Maya' }}</button>
+          </div>
+        </form>
+      </section>
+
+      <p *ngIf="errorMessage" class="wk-error" role="alert" data-cy="work-error">
+        {{ errorMessage }}
+        <a *ngIf="needsPurchase" routerLink="/pricing">See plans</a>
+      </p>
+
+      <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" data-cy="work-question">
+        <h2>Maya has a question</h2>
+        <p class="wk-quote">“{{ job.request }}”</p>
+        <ul class="wk-questions"><li *ngFor="let question of job.questions">{{ question }}</li></ul>
+        <form class="wk-answer" (ngSubmit)="sendAnswer( job )">
+          <input class="wk-input" [name]="'answer-' + job.id" [(ngModel)]="answers[job.id]" placeholder="Your answer" data-cy="work-answer" />
+          <button type="submit" class="wk-button" [disabled]="!( answers[job.id] || '' ).trim() || busy[job.id]">Send</button>
+        </form>
+      </section>
+
+      <section class="wk-section" data-cy="work-approvals">
+        <div class="wk-section__head">
+          <h2>Waiting for you</h2>
+          <span class="wk-count" *ngIf="approvals.length">{{ approvals.length }}</span>
+        </div>
+        <p *ngIf="loaded && !approvals.length" class="wk-note">Nothing needs your approval right now.</p>
+
+        <article *ngFor="let item of approvals; trackBy: trackApproval" class="wk-card wk-approval" data-cy="work-approval">
+          <img *ngIf="item.preview?.['imageSrc']" class="wk-approval__image" [src]="item.preview?.['imageSrc']" alt="" loading="lazy" />
+          <div class="wk-approval__body">
+            <p class="wk-meta">
+              <strong>{{ platformLabel( item.preview?.['platform'] || 'social' ) }}</strong>
+              <span *ngIf="item.preview?.['accountLabel']"> · {{ item.preview?.['accountLabel'] }}</span>
+              <span *ngIf="item.preview?.['plannedForDate']"> · {{ shortDate( item.preview?.['plannedForDate'] ) }}</span>
+            </p>
+            <p class="wk-post">{{ item.preview?.['content'] || 'Draft ready - open Social to read it.' }}</p>
+            <p class="wk-from">From: “{{ item.job.request }}”</p>
+            <div class="wk-actions">
+              <button type="button" class="wk-button" (click)="decide( item, 'approve' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-approve">Approve</button>
+              <button type="button" class="wk-button wk-button--ghost" (click)="decide( item, 'reject' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-reject">Not this one</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="wk-section" data-cy="work-jobs">
+        <div class="wk-section__head"><h2>Jobs</h2></div>
+        <p *ngIf="!loaded" class="wk-note">Loading…</p>
+        <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. Ask Maya for something above.</p>
+
+        <article *ngFor="let job of jobs; trackBy: trackById" class="wk-card wk-job" data-cy="work-job">
+          <button type="button" class="wk-job__head" (click)="expanded[job.id] = !expanded[job.id]" [attr.aria-expanded]="!!expanded[job.id]">
+            <span class="wk-job__title">{{ job.request }}</span>
+            <span class="wk-status" [attr.data-tone]="statusTone( job )">
+              <span *ngIf="isActive( job )" class="wk-spinner" aria-hidden="true"></span>{{ statusLabel( job ) }}</span>
+          </button>
+          <p *ngIf="job.summary" class="wk-note">{{ job.summary }}</p>
+          <p *ngIf="progress( job ).total" class="wk-meta">
+            {{ progress( job ).done }} of {{ progress( job ).total }} steps
+            <span *ngIf="job.estimate?.socialPosts"> · {{ job.estimate?.socialPosts }} post{{ job.estimate?.socialPosts === 1 ? '' : 's' }}</span>
+            <span *ngIf="job.estimate?.images"> · up to {{ job.estimate?.images }} new image{{ job.estimate?.images === 1 ? '' : 's' }}</span>
+            <span *ngIf="approvalCount( job )"> · {{ approvalCount( job ) }} waiting for you</span>
+          </p>
+          <p *ngIf="job.status === 'failed' || job.status === 'waiting' || job.status === 'stopped'" class="wk-note">{{ job.statusDetail }}</p>
+
+          <div *ngIf="expanded[job.id]" class="wk-job__detail">
+            <ol class="wk-steps" *ngIf="job.steps.length">
+              <li *ngFor="let step of job.steps" [attr.data-status]="step.status">
+                <span>{{ stepLabel( step ) }}</span>
+                <span class="wk-steps__state">{{ stepState( step ) }}</span>
+              </li>
+            </ol>
+            <p *ngIf="job.planner" class="wk-meta">Planned with {{ job.planner.provider === 'anthropic' ? 'Claude' : 'OpenAI' }}</p>
+            <div class="wk-actions">
+              <button *ngIf="approvalCount( job ) > 1" type="button" class="wk-button" (click)="approveAll( job )">Approve all {{ approvalCount( job ) }}</button>
+              <button *ngIf="job.status === 'stopped'" type="button" class="wk-button" (click)="resume( job )" [disabled]="busy[job.id]">Continue</button>
+              <button *ngIf="canCancel( job )" type="button" class="wk-button wk-button--ghost" (click)="cancel( job )" [disabled]="busy[job.id]">Cancel job</button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+  </div>
+</main>

@@ -22,6 +22,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/get-started/get-started.component').then((m) => m.GetStartedComponent),
   },
   {
+    // Maya's work: give her a job, approve what's waiting, follow progress
+    // (MAYA-ORCHESTRATION-DESIGN.md, gap 6).
+    path: 'work',
+    loadComponent: () => import('./features/work/work.component').then((m) => m.WorkComponent),
+  },
+  {
     // In-app profile (shared fields/API with the iOS apps' TODDProfileKit).
     path: 'profile',
     loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),

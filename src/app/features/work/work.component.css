@@ -1,0 +1,89 @@
+:host { display: block; }
+
+/* Same tokens as the profile page, so light and dark follow the site toggle. */
+.wk-shell {
+  --wk-accent: var(--tl-blue);
+  --wk-accent-ink: #ffffff;
+  --wk-danger: #b42318;
+  --wk-attention: #b54708;
+  --wk-success: #067647;
+  min-height: 100vh;
+  background: var(--todd-surface-1);
+  color: var(--todd-text);
+  font-family: 'Manrope', sans-serif;
+  padding: 88px 16px 120px;
+}
+@media (prefers-color-scheme: dark) {
+  :host-context(html:not([data-theme='light'])) .wk-shell { --wk-accent-ink: #04121f; --wk-danger: #ff8a80; --wk-attention: #fdb022; --wk-success: #47cd89; }
+}
+:host-context(html[data-theme='dark']) .wk-shell { --wk-accent-ink: #04121f; --wk-danger: #ff8a80; --wk-attention: #fdb022; --wk-success: #47cd89; }
+
+.wk-shell * { box-sizing: border-box; }
+.wk-inner { max-width: 760px; margin: 0 auto; }
+
+.wk-header h1 { margin: 0 0 6px; font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+.wk-header p { margin: 0 0 24px; color: var(--todd-subtext); }
+
+.wk-card { margin-bottom: 16px; padding: 20px clamp(16px, 4vw, 26px); border: 1px solid var(--todd-panel-border); border-radius: 20px; background: var(--todd-card-bg); }
+.wk-card h2 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; }
+.wk-card--attention { border-color: color-mix(in srgb, var(--wk-attention) 45%, var(--todd-panel-border)); }
+
+.wk-section { margin-top: 28px; }
+.wk-section__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.wk-section__head h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.wk-count { min-width: 26px; padding: 2px 9px; border-radius: 999px; background: var(--wk-accent); color: var(--wk-accent-ink); font-size: .85rem; font-weight: 800; text-align: center; }
+
+.wk-note { margin: 0 0 10px; color: var(--todd-subtext); line-height: 1.5; }
+.wk-meta { margin: 0 0 8px; color: var(--todd-subtext); font-size: .88rem; }
+.wk-meta strong { color: var(--todd-text); }
+.wk-error { padding: 12px 16px; border-radius: 12px; background: color-mix(in srgb, var(--wk-danger) 14%, transparent); color: var(--wk-danger); font-weight: 600; }
+.wk-error a { margin-left: 6px; color: inherit; font-weight: 800; }
+
+.wk-ask__label { display: block; margin-bottom: 8px; font-weight: 800; }
+.wk-input { display: block; width: 100%; padding: 11px 14px; border: 1px solid var(--todd-panel-border); border-radius: 12px; background: var(--todd-surface-1); color: var(--todd-text); font: inherit; resize: vertical; }
+.wk-input:focus { outline: 2px solid color-mix(in srgb, var(--wk-accent) 60%, transparent); outline-offset: 1px; }
+.wk-ask__row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 12px; }
+
+.wk-chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 320px; }
+.wk-chip { padding: 7px 12px; border: 1px solid var(--todd-panel-border); border-radius: 999px; background: var(--todd-surface-1); color: var(--todd-text); font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; text-align: left; }
+.wk-chip:hover:not(:disabled) { border-color: var(--wk-accent); }
+
+.wk-button { min-height: 42px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--wk-accent); color: var(--wk-accent-ink); font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.wk-button--ghost { background: transparent; color: var(--todd-text); border: 1px solid var(--todd-panel-border); }
+.wk-button:disabled, .wk-chip:disabled { opacity: .5; cursor: default; }
+.wk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+.wk-quote { margin: 0 0 8px; font-style: italic; color: var(--todd-subtext); }
+.wk-questions { margin: 0 0 12px; padding-left: 20px; line-height: 1.5; }
+.wk-answer { display: flex; gap: 10px; }
+.wk-answer .wk-input { flex: 1; }
+
+.wk-approval { display: flex; gap: 16px; align-items: flex-start; }
+.wk-approval__image { flex: 0 0 120px; width: 120px; height: 120px; object-fit: cover; border-radius: 14px; border: 1px solid var(--todd-panel-border); }
+.wk-approval__body { flex: 1; min-width: 0; }
+.wk-post { margin: 0 0 8px; white-space: pre-line; line-height: 1.55; overflow-wrap: anywhere; }
+.wk-from { margin: 0; color: var(--todd-subtext); font-size: .82rem; }
+
+.wk-job__head { display: flex; width: 100%; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.wk-job__title { font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+.wk-status { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: .8rem; font-weight: 800; background: color-mix(in srgb, var(--todd-subtext) 14%, transparent); color: var(--todd-subtext); }
+.wk-status[data-tone='active'] { background: color-mix(in srgb, var(--wk-accent) 16%, transparent); color: var(--wk-accent); }
+.wk-status[data-tone='attention'] { background: color-mix(in srgb, var(--wk-attention) 16%, transparent); color: var(--wk-attention); }
+.wk-status[data-tone='done'] { background: color-mix(in srgb, var(--wk-success) 16%, transparent); color: var(--wk-success); }
+.wk-status[data-tone='error'] { background: color-mix(in srgb, var(--wk-danger) 16%, transparent); color: var(--wk-danger); }
+.wk-spinner { width: 10px; height: 10px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: wk-spin .8s linear infinite; }
+@keyframes wk-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wk-spinner { animation: none; } }
+
+.wk-job__detail { margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--todd-panel-border); }
+.wk-steps { margin: 0 0 10px; padding-left: 20px; }
+.wk-steps li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: .9rem; }
+.wk-steps__state { color: var(--todd-subtext); text-align: right; }
+.wk-steps li[data-status='done'] .wk-steps__state { color: var(--wk-success); }
+.wk-steps li[data-status='failed'] .wk-steps__state { color: var(--wk-danger); }
+
+@media (max-width: 560px) {
+  .wk-approval { flex-direction: column; }
+  .wk-approval__image { width: 100%; height: 180px; flex-basis: auto; }
+  .wk-answer { flex-direction: column; }
+}

@@ -1,0 +1,302 @@
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { MayaAuthService } from '../../services/maya-auth.service';
+import { MayaJob, MayaJobStep, MayaJobsService } from '../../services/maya-jobs.service';
+
+/** One thing waiting on the user, from any job. */
+interface ApprovalItem {
+  job: MayaJob;
+  step: MayaJobStep;
+  /** The drafted post this approval would schedule (from the step it depends on). */
+  preview: Record<string, any> | null;
+}
+
+const ACTIVE_STATUSES = new Set( ['queued', 'running'] );
+const FAST_POLL_MS = 5000;
+const SLOW_POLL_MS = 30000;
+
+/**
+ * Maya's work: ask her to do something, see one list of everything waiting
+ * on you across all her jobs (approving there does the action - the post is
+ * scheduled, nothing else to open), and follow each job's progress.
+ * Backed by /api/maya/jobs (MAYA-ORCHESTRATION-DESIGN.md, gaps 3 and 6).
+ */
+@Component( {
+  selector: 'app-work',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './work.component.html',
+  styleUrl: './work.component.css',
+} )
+export class WorkComponent implements OnInit, OnDestroy {
+  readonly suggestions = [
+    'Build a LinkedIn calendar for the next two weeks',
+    'Plan three posts about our newest product',
+    'Fill next week with posts on every account I have connected',
+  ];
+
+  /** null until Firebase reports auth state; false shows the sign-in panel. */
+  isSignedIn: boolean | null = null;
+  jobs: MayaJob[] = [];
+  loaded = false;
+  errorMessage = '';
+  needsPurchase = false;
+  request = '';
+  isStarting = false;
+  answers: Record<string, string> = {};
+  busy: Record<string, boolean> = {};
+  expanded: Record<string, boolean> = {};
+
+  private authSubscription?: Subscription;
+  private pollTimer?: ReturnType<typeof setTimeout>;
+  private destroyed = false;
+
+  constructor (
+    private readonly api: MayaJobsService,
+    private readonly authService: MayaAuthService,
+    private readonly title: Title,
+  ) { }
+
+  ngOnInit (): void {
+    this.title.setTitle( "Maya's work — Maya | Taliferro Tech" );
+    this.authSubscription = this.authService.isLoggedIn().subscribe( ( signedIn ) => {
+      const wasSignedIn = this.isSignedIn;
+      this.isSignedIn = signedIn;
+      if ( signedIn && !wasSignedIn ) void this.refresh();
+    } );
+  }
+
+  ngOnDestroy (): void {
+    this.destroyed = true;
+    this.authSubscription?.unsubscribe();
+    if ( this.pollTimer ) clearTimeout( this.pollTimer );
+  }
+
+  signIn (): void {
+    this.authService.signIn( '/work' );
+  }
+
+  /** Everything waiting for a yes or no, oldest job first. */
+  get approvals (): ApprovalItem[] {
+    const items: ApprovalItem[] = [];
+    for ( const job of [...this.jobs].reverse() ) {
+      if ( job.status === 'cancelled' || job.status === 'failed' ) continue;
+      const byId = new Map( job.steps.map( ( step ) => [step.id, step] ) );
+      for ( const step of job.steps ) {
+        const decided = !!job.approvals?.[step.id];
+        const ready = step.dependsOn.every( ( id ) => byId.get( id )?.status === 'done' );
+        if ( step.access !== 'approval' || step.status !== 'pending' || step.approvedBy || decided || !ready ) continue;
+        const source = step.dependsOn.map( ( id ) => byId.get( id ) ).find( ( dep ) => dep?.tool === 'social.draftPost' );
+        items.push( { job, step, preview: source?.output || null } );
+      }
+    }
+    return items;
+  }
+
+  get questionJobs (): MayaJob[] {
+    return this.jobs.filter( ( job ) => job.status === 'awaiting_user' );
+  }
+
+  async start ( text?: string ): Promise<void> {
+    const request = ( text ?? this.request ).trim();
+    if ( !request || this.isStarting ) return;
+    this.isStarting = true;
+    this.errorMessage = '';
+    this.needsPurchase = false;
+    try {
+      const job = await this.api.start( request );
+      this.jobs = [job, ...this.jobs];
+      this.expanded[job.id] = true;
+      this.request = '';
+      this.schedulePoll( FAST_POLL_MS );
+    } catch ( error: any ) {
+      this.needsPurchase = error?.error?.error === 'APP_PURCHASE_REQUIRED';
+      this.errorMessage = error?.error?.message || error?.message || 'Maya couldn’t start that.';
+    } finally {
+      this.isStarting = false;
+    }
+  }
+
+  async decide ( item: ApprovalItem, decision: 'approve' | 'reject' ): Promise<void> {
+    const key = `${item.job.id}/${item.step.id}`;
+    if ( this.busy[key] ) return;
+    this.busy[key] = true;
+    this.errorMessage = '';
+    try {
+      await this.api.decide( item.job.id, item.step.id, decision );
+      item.job.approvals = {
+        ...( item.job.approvals || {} ),
+        [item.step.id]: { decision: decision === 'approve' ? 'approved' : 'rejected', by: 'you', at: new Date().toISOString() },
+      };
+      this.schedulePoll( FAST_POLL_MS );
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'That didn’t go through. Please try again.';
+    } finally {
+      this.busy[key] = false;
+    }
+  }
+
+  async approveAll ( job: MayaJob ): Promise<void> {
+    for ( const item of this.approvals.filter( ( entry ) => entry.job.id === job.id ) ) {
+      await this.decide( item, 'approve' );
+    }
+  }
+
+  approvalCount ( job: MayaJob ): number {
+    return this.approvals.filter( ( entry ) => entry.job.id === job.id ).length;
+  }
+
+  async sendAnswer ( job: MayaJob ): Promise<void> {
+    const answer = ( this.answers[job.id] || '' ).trim();
+    if ( !answer || this.busy[job.id] ) return;
+    this.busy[job.id] = true;
+    try {
+      const updated = await this.api.answer( job.id, answer );
+      this.replace( updated );
+      this.answers[job.id] = '';
+      this.schedulePoll( FAST_POLL_MS );
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'Maya didn’t get that answer. Please try again.';
+    } finally {
+      this.busy[job.id] = false;
+    }
+  }
+
+  async cancel ( job: MayaJob ): Promise<void> {
+    if ( this.busy[job.id] ) return;
+    this.busy[job.id] = true;
+    try {
+      await this.api.cancel( job.id );
+      await this.refresh();
+    } finally {
+      this.busy[job.id] = false;
+    }
+  }
+
+  async resume ( job: MayaJob ): Promise<void> {
+    if ( this.busy[job.id] ) return;
+    this.busy[job.id] = true;
+    try {
+      await this.api.resume( job.id );
+      this.schedulePoll( FAST_POLL_MS );
+    } finally {
+      this.busy[job.id] = false;
+    }
+  }
+
+  isActive ( job: MayaJob ): boolean {
+    return ACTIVE_STATUSES.has( job.status );
+  }
+
+  canCancel ( job: MayaJob ): boolean {
+    return !['done', 'failed', 'cancelled'].includes( job.status );
+  }
+
+  statusLabel ( job: MayaJob ): string {
+    switch ( job.status ) {
+      case 'queued':
+      case 'running': return job.steps.length ? 'Working on it' : 'Planning';
+      case 'awaiting_user': return 'Needs your answer';
+      case 'awaiting_approval': return 'Waiting for your approval';
+      case 'waiting': return job.resumeAt ? `Continues ${this.shortDateTime( job.resumeAt )}` : 'Paused';
+      case 'done': return 'Done';
+      case 'failed': return 'Couldn’t finish';
+      case 'stopped': return 'Stopped';
+      case 'cancelled': return 'Cancelled';
+      default: return job.status;
+    }
+  }
+
+  statusTone ( job: MayaJob ): 'active' | 'attention' | 'done' | 'muted' | 'error' {
+    if ( this.isActive( job ) ) return 'active';
+    if ( job.status === 'awaiting_user' || job.status === 'awaiting_approval' || job.status === 'stopped' ) return 'attention';
+    if ( job.status === 'done' ) return 'done';
+    if ( job.status === 'failed' ) return 'error';
+    return 'muted';
+  }
+
+  progress ( job: MayaJob ): { done: number; total: number; } {
+    const total = job.steps.length;
+    const done = job.steps.filter( ( step ) => step.status !== 'pending' ).length;
+    return { done, total };
+  }
+
+  stepLabel ( step: MayaJobStep ): string {
+    const input = step.input || {};
+    switch ( step.tool ) {
+      case 'image.obtain': return step.output?.['reused'] ? 'Reused a library image' : `Image: ${String( input['title'] || input['topic'] || 'for a post' )}`;
+      case 'social.draftPost': {
+        const platform = this.platformLabel( String( step.output?.['platform'] || input['platform'] || 'social' ) );
+        const day = step.output?.['plannedForDate'] || input['plannedForDate'];
+        return `${platform} post${day ? ` for ${this.shortDate( String( day ) )}` : ''}`;
+      }
+      case 'social.approvePost': return step.approvedBy === 'autopilot' ? 'Approved by autopilot' : 'Your approval to post';
+      default: return step.tool;
+    }
+  }
+
+  stepState ( step: MayaJobStep ): string {
+    if ( step.status === 'done' ) return 'Done';
+    if ( step.status === 'failed' ) return step.error?.message || 'Failed';
+    if ( step.status === 'skipped' ) return step.skipReason === 'rejected' ? 'You said no' : 'Skipped';
+    if ( step.notBefore ) return `Waiting until ${this.shortDateTime( step.notBefore )}`;
+    return 'To do';
+  }
+
+  platformLabel ( platform: string ): string {
+    const names: Record<string, string> = {
+      linkedin: 'LinkedIn', threads: 'Threads', bluesky: 'Bluesky', reddit: 'Reddit', youtube: 'YouTube',
+      google_business_profile: 'Google Business', instagram: 'Instagram', facebook: 'Facebook',
+    };
+    return names[platform] || platform;
+  }
+
+  shortDate ( dateKey: string ): string {
+    const date = new Date( `${dateKey}T12:00:00` );
+    return Number.isNaN( date.getTime() ) ? dateKey : date.toLocaleDateString( undefined, { weekday: 'short', month: 'short', day: 'numeric' } );
+  }
+
+  shortDateTime ( iso: string ): string {
+    const date = new Date( iso );
+    return Number.isNaN( date.getTime() ) ? iso : date.toLocaleString( undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' } );
+  }
+
+  trackById ( _index: number, item: { id: string } ): string {
+    return item.id;
+  }
+
+  trackApproval ( _index: number, item: ApprovalItem ): string {
+    return `${item.job.id}/${item.step.id}`;
+  }
+
+  private replace ( job: MayaJob ): void {
+    this.jobs = this.jobs.map( ( existing ) => existing.id === job.id ? job : existing );
+  }
+
+  private async refresh (): Promise<void> {
+    try {
+      this.jobs = await this.api.list();
+      this.loaded = true;
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load Maya’s work.';
+    }
+    this.schedulePoll( this.jobs.some( ( job ) => this.isActive( job ) ) ? FAST_POLL_MS : SLOW_POLL_MS );
+  }
+
+  /** Polls quickly while Maya is working, slowly otherwise, and not while the tab is hidden. */
+  private schedulePoll ( delay: number ): void {
+    if ( this.destroyed || !this.isSignedIn ) return;
+    if ( this.pollTimer ) clearTimeout( this.pollTimer );
+    this.pollTimer = setTimeout( () => {
+      if ( typeof document !== 'undefined' && document.hidden ) {
+        this.schedulePoll( delay );
+        return;
+      }
+      void this.refresh();
+    }, delay );
+  }
+}
