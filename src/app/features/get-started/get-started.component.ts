@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { MayaAuthService } from '../../services/maya-auth.service';
-import { HELP_OPTIONS, OnboardingProfileDraft, OnboardingProfileService, ROLE_OPTIONS } from '../../services/onboarding-profile.service';
+import { HELP_OPTIONS, OnboardingProfileDraft, OnboardingProfileService, ROLE_OPTIONS, employeeCount } from '../../services/onboarding-profile.service';
 
-type StepKey = 'firstName' | 'lastName' | 'role' | 'company' | 'helpWith' | 'timezone' | 'signIn';
+type StepKey = 'firstName' | 'lastName' | 'role' | 'company' | 'employees' | 'helpWith' | 'timezone' | 'signIn';
 
 interface Section { key: string; title: string; }
 
@@ -53,6 +53,7 @@ export class GetStartedComponent implements OnInit {
     { key: 'lastName', section: 1, question: 'And your last name?', hint: '' },
     { key: 'role', section: 1, question: "What's your role?", hint: 'Pick the closest fit.' },
     { key: 'company', section: 2, question: "What's your company called?", hint: 'Maya uses it in the plans and posts she drafts.', optional: true },
+    { key: 'employees', section: 2, question: 'How many people work there?', hint: "Including you. Enter 1 if it's just you. Maya uses this to set realistic goals for a business your size." },
     { key: 'helpWith', section: 2, question: 'What should Maya help you with?', hint: 'Pick as many as you like.' },
     { key: 'timezone', section: 3, question: 'What timezone is your workday in?', hint: 'So reminders and follow-ups land during your business hours.' },
     { key: 'signIn', section: 3, question: 'Last step: sign in', hint: 'Your answers go to your TODD profile, so Network, Docs and the rest know you too.' },
@@ -91,7 +92,7 @@ export class GetStartedComponent implements OnInit {
   }
 
   get isTextStep (): boolean {
-    return ['firstName', 'lastName', 'company'].includes( this.step.key )
+    return ['firstName', 'lastName', 'company', 'employees'].includes( this.step.key )
       || ( this.step.key === 'role' && this.hasCustomRole );
   }
 
@@ -101,6 +102,7 @@ export class GetStartedComponent implements OnInit {
       case 'lastName': return this.draft.lastName;
       case 'role': return this.draft.role;
       case 'company': return this.draft.companyName;
+      case 'employees': return this.draft.numberOfEmployees;
       default: return '';
     }
   }
@@ -111,6 +113,7 @@ export class GetStartedComponent implements OnInit {
       case 'lastName': this.draft.lastName = value; break;
       case 'role': this.draft.role = value; break;
       case 'company': this.draft.companyName = value; break;
+      case 'employees': this.draft.numberOfEmployees = value; break;
     }
     this.persist();
   }
@@ -130,6 +133,7 @@ export class GetStartedComponent implements OnInit {
       case 'firstName': return !!this.draft.firstName.trim();
       case 'lastName': return !!this.draft.lastName.trim();
       case 'role': return !!this.draft.role.trim();
+      case 'employees': return !!employeeCount( this.draft.numberOfEmployees );
       case 'helpWith': return this.draft.helpWith.length > 0 || !!this.draft.helpNote.trim();
       case 'timezone': return !!this.draft.timezone;
       default: return true;

@@ -17,7 +17,7 @@ import {
 } from '@taliferro/ui/platform/profile-choices.model';
 import { getProfileUrl } from '@taliferro/ui/platform/account-menu.model';
 import { MayaAuthService } from '../../services/maya-auth.service';
-import { OnboardingProfileService } from '../../services/onboarding-profile.service';
+import { OnboardingProfileService, employeeCount } from '../../services/onboarding-profile.service';
 import { ProfileApiService } from '../../services/profile-api.service';
 
 interface ChoiceField {
@@ -112,6 +112,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get missingSummary (): string {
     return ( this.completion?.missing || [] ).map( ( item ) => item.label.toLowerCase() ).join( ', ' );
+  }
+
+  /** Company size is required; a blank or non-numeric entry blocks saving. */
+  get isEmployeeCountValid (): boolean {
+    return !!employeeCount( this.profile?.numberOfEmployees ?? '' );
   }
 
   get isDirty (): boolean {

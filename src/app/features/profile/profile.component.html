@@ -32,6 +32,7 @@
         <h2>Your business</h2>
         <dl class="pf-read">
           <div><dt>Company</dt><dd [class.is-empty]="!profile.companyName">{{ profile.companyName || 'Not set' }}</dd></div>
+          <div><dt>People at your company</dt><dd data-cy="profile-employees-read">{{ profile.numberOfEmployees || '2' }}</dd></div>
           <div><dt>What your company does</dt><dd [class.is-empty]="!profile.companyDescription">{{ profile.companyDescription || 'Not set' }}</dd></div>
           <div><dt>Value proposition</dt><dd [class.is-empty]="!profile.valueProp">{{ profile.valueProp || 'Not set' }}</dd></div>
           <div><dt>Mission</dt><dd [class.is-empty]="!profile.companyGoal">{{ profile.companyGoal || 'Not set' }}</dd></div>
@@ -85,6 +86,10 @@
         <h2>Your business</h2>
         <label class="pf-field"><span>Company name</span>
           <input class="pf-input" name="companyName" autocomplete="organization" [(ngModel)]="profile.companyName" /></label>
+        <label class="pf-field"><span>People at your company (including you)</span>
+          <input class="pf-input" name="numberOfEmployees" inputmode="numeric" autocomplete="off" required placeholder="e.g. 12"
+                 [(ngModel)]="profile.numberOfEmployees" data-cy="profile-employees" />
+          <small *ngIf="!isEmployeeCountValid" class="pf-field-error" role="alert" data-cy="profile-employees-error">Enter a whole number, 1 or more.</small></label>
 
         <div *ngFor="let field of choiceFields" class="pf-field">
           <span [id]="'pf-' + field.key">{{ field.title }}</span>
@@ -120,7 +125,7 @@
       <div class="pf-savebar">
         <span class="pf-savebar__status" aria-live="polite">{{ justSaved ? 'Saved' : ( isDirty ? 'Unsaved changes' : '' ) }}</span>
         <button type="button" class="pf-button pf-button--ghost" (click)="cancelEditing()" [disabled]="isSaving" data-cy="profile-cancel">Cancel</button>
-        <button type="submit" class="pf-button" [disabled]="!isDirty || isSaving" data-cy="profile-save">{{ isSaving ? 'Saving…' : 'Save' }}</button>
+        <button type="submit" class="pf-button" [disabled]="!isDirty || isSaving || !isEmployeeCountValid" data-cy="profile-save">{{ isSaving ? 'Saving…' : 'Save' }}</button>
       </div>
     </form>
 

@@ -10,6 +10,8 @@ export interface OnboardingProfileDraft {
   lastName: string;
   role: string;
   companyName: string;
+  /** Required in the wizard; whole number as typed (e.g. "12"). */
+  numberOfEmployees: string;
   helpWith: string[];
   helpNote: string;
   timezone: string;
@@ -23,6 +25,18 @@ export interface OnboardingProfileDraft {
  * Shared with the in-app profile page and the iOS apps via @taliferro/ui. */
 export const ROLE_OPTIONS = PROFILE_ROLES;
 export const DEFAULT_ROLE = DEFAULT_PROFILE_ROLE;
+
+/**
+ * The wizard's company-size answer as a whole number, or '' when it isn't
+ * one. Commas and spaces are allowed ("1,200"). The backend applies the same
+ * rule and treats a missing count as 2.
+ */
+export function employeeCount ( value: string ): string {
+  const digits = String( value || '' ).replace( /[\s,]/g, '' );
+  if ( !/^\d+$/.test( digits ) ) return '';
+  const count = Number.parseInt( digits, 10 );
+  return count >= 1 && count <= 10_000_000 ? String( count ) : '';
+}
 
 /** Same choices as maya-ios's MayaOnboardingView. */
 export const HELP_OPTIONS = [
@@ -57,6 +71,7 @@ export class OnboardingProfileService {
       lastName: '',
       role: DEFAULT_ROLE,
       companyName: '',
+      numberOfEmployees: '',
       helpWith: [HELP_OPTIONS[0]],
       helpNote: '',
       timezone: this.detectTimezone(),
@@ -117,6 +132,7 @@ export class OnboardingProfileService {
           // a job role belongs in `profession`.
           profession: draft.role,
           companyName: draft.companyName,
+          numberOfEmployees: employeeCount( draft.numberOfEmployees ),
           jobDescriptionForTODD: this.jobDescription( draft ),
           timezone: draft.timezone,
         },

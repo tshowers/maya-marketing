@@ -35,6 +35,7 @@
 .pf-field { display: block; margin-bottom: 18px; }
 .pf-field > span { display: block; margin-bottom: 8px; font-size: .9rem; font-weight: 700; }
 .pf-field small { font-weight: 500; color: var(--todd-subtext); }
+.pf-field small.pf-field-error { display: block; margin-top: 6px; color: var(--pf-danger); font-weight: 600; }
 
 .pf-input { display: block; width: 100%; padding: 11px 14px; border: 1px solid var(--todd-panel-border); border-radius: 12px; background: var(--todd-surface-1); color: var(--todd-text); font: inherit; }
 .pf-input:focus { outline: 2px solid var(--pf-accent); outline-offset: 1px; }

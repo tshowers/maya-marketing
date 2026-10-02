@@ -51,7 +51,8 @@
 
       <input *ngIf="isTextStep" #answerInput class="gs-input" type="text" name="answer"
              [attr.autocomplete]="textAutocomplete" [attr.aria-label]="step.key === 'role' ? 'Your role' : step.question"
-             [attr.placeholder]="step.key === 'role' ? 'Your role' : null"
+             [attr.inputmode]="step.key === 'employees' ? 'numeric' : null"
+             [attr.placeholder]="step.key === 'role' ? 'Your role' : ( step.key === 'employees' ? 'e.g. 12' : null )"
              [(ngModel)]="textValue" data-cy="get-started-input" />
 
       <ng-container *ngIf="step.key === 'helpWith'">
