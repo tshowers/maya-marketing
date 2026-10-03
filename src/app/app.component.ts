@@ -4,18 +4,16 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { map } from 'rxjs';
 import { environment } from '../environments/environment';
 import { AuthService } from './services/auth.service';
-import { CommandPaletteComponent } from './shared/page/command-palette/command-palette.component';
 import { NotificationComponent } from './shared/page/notification/notification.component';
 import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.component';
 
 @Component({
   selector: 'maya-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, CommandPaletteComponent, NotificationComponent, PlatformMenuComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, NotificationComponent, PlatformMenuComponent],
   template: `
     <div class="maya-session-indicator" [class.maya-session-indicator--logged-out]="!(isLoggedIn$ | async)" [attr.title]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'" [attr.aria-label]="(isLoggedIn$ | async) ? 'Logged in' : 'Not logged in'"><span></span></div>
-    <app-platform-menu [isAdmin]="(isAdmin$ | async) ?? false" [isLoggedIn]="(isLoggedIn$ | async) ?? false" />
-    <app-command-palette />
+    <app-platform-menu [isAdmin]="(isAdmin$ | async) ?? false" [isLoggedIn]="(isLoggedIn$ | async) ?? false" [userName]="(userName$ | async) ?? ''" [userEmail]="(userEmail$ | async) ?? ''" (signOut)="signOut()" />
     <app-notification />
     <router-outlet />
     <nav class="maya-shared-bottom-nav" aria-label="Maya navigation">
@@ -38,6 +36,8 @@ export class AppComponent {
   private readonly router = inject( Router );
   readonly isLoggedIn$ = this.authService.getUser().pipe( map( user => !!user ) );
   readonly isAdmin$ = this.authService.getUser().pipe( map( user => user?.uid === environment.taliferroTenantId ) );
+  readonly userName$ = this.authService.getUser().pipe( map( user => user?.displayName || '' ) );
+  readonly userEmail$ = this.authService.getUser().pipe( map( user => user?.email || '' ) );
 
   get isChatHome (): boolean {
     return this.router.url.split( '?' )[0].split( '#' )[0] === '/';

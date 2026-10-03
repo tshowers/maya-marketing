@@ -68,7 +68,12 @@
             "production": { "buildTarget": "maya:build:production" },
             "development": { "buildTarget": "maya:build:development" }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "prebundle": {
+              "exclude": ["@taliferro/ui"]
+            }
+          }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
