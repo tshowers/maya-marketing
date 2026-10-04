@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
 import { MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
@@ -80,6 +80,7 @@ export class WorkComponent implements OnInit, OnDestroy {
     private readonly authService: MayaAuthService,
     private readonly title: Title,
     private readonly sanitizer: DomSanitizer,
+    private readonly router: Router,
   ) { }
 
   ngOnInit (): void {
@@ -100,8 +101,9 @@ export class WorkComponent implements OnInit, OnDestroy {
     if ( this.pollTimer ) clearTimeout( this.pollTimer );
   }
 
+  /** Sign in goes through the get-started wizard, then comes back here. */
   signIn (): void {
-    this.authService.signIn( '/work' );
+    void this.router.navigate( ['/get-started'], { queryParams: { returnUrl: '/work' } } );
   }
 
   /** Everything waiting for a yes or no, oldest job first. */

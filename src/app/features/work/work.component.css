@@ -2,21 +2,19 @@
 
 /* Same tokens as the profile page, so light and dark follow the site toggle. */
 .wk-shell {
+  /* White page, flat grey cards, white inputs inside them (the Find family). */
+  --todd-surface-1: var(--bg);
   --wk-accent: var(--tl-blue);
   --wk-accent-ink: #ffffff;
-  --wk-danger: #b42318;
-  --wk-attention: #b54708;
-  --wk-success: #067647;
+  --wk-danger: var(--danger);
+  --wk-attention: var(--t-yellow-fg);
+  --wk-success: var(--t-green-fg);
   min-height: 100vh;
-  background: var(--todd-surface-1);
+  background: var(--bg);
   color: var(--todd-text);
-  font-family: 'Manrope', sans-serif;
-  padding: 88px 16px 120px;
+  font-family: var(--font);
+  padding: 40px 16px 120px;
 }
-@media (prefers-color-scheme: dark) {
-  :host-context(html:not([data-theme='light'])) .wk-shell { --wk-accent-ink: #04121f; --wk-danger: #ff8a80; --wk-attention: #fdb022; --wk-success: #47cd89; }
-}
-:host-context(html[data-theme='dark']) .wk-shell { --wk-accent-ink: #04121f; --wk-danger: #ff8a80; --wk-attention: #fdb022; --wk-success: #47cd89; }
 
 .wk-shell * { box-sizing: border-box; }
 .wk-inner { max-width: 760px; margin: 0 auto; }
@@ -24,7 +22,7 @@
 .wk-header h1 { margin: 0 0 6px; font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
 .wk-header p { margin: 0 0 24px; color: var(--todd-subtext); }
 
-.wk-card { margin-bottom: 16px; padding: 20px clamp(16px, 4vw, 26px); border: 1px solid var(--todd-panel-border); border-radius: 20px; background: var(--todd-card-bg); }
+.wk-card { margin-bottom: 16px; padding: 20px clamp(16px, 4vw, 26px); border: 0; border-radius: 20px; background: var(--todd-card-bg); }
 .wk-card h2 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; }
 .wk-card--attention { border-color: color-mix(in srgb, var(--wk-attention) 45%, var(--todd-panel-border)); }
 

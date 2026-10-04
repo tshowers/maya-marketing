@@ -7,6 +7,7 @@
         <div class="maya-status-card__eyebrow">Maya Status</div>
         <h2>Sign in to view Maya's status</h2>
         <p>You need to be logged in to see Maya's pipeline, scorecard, and today's work.</p>
+        <a class="maya-status-signin" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee' }">Sign in</a>
       </section>
       <ng-template #loadedStateGate>
         <ng-container *ngTemplateOutlet="loadedState"></ng-container>

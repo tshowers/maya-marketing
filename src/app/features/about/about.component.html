@@ -1,43 +1,40 @@
-<main class="about-page" data-cy="about-shell">
-  <header class="about-hero">
-    <div class="about-hero__eyebrow">About</div>
-    <div class="about-hero__content">
-      <p class="about-hero__context">A Taliferro Tech product · Part of TODD</p>
-      <h1>Your on-call Marketing Director.</h1>
-      <p class="about-hero__lead">Maya gives candid advice on message clarity, campaigns, and audience focus — then executes the plan herself, and reports back what got done, what's still open, and what she couldn't do.</p>
+<!-- The shared About template (taliferro-ui); Maya's own story follows it. -->
+<app-product-pages page="about">
+  <section class="pp-section" aria-labelledby="maya-method-title">
+    <p class="pp-kicker">How Maya works</p>
+    <h2 id="maya-method-title">A marketing director, not a chatbot</h2>
+    <p>Most AI tools wait for instructions and point you at another app. Maya works the way a marketing director would: she decides whether the work should happen, plans it, and does it.</p>
+    <div class="pp-cards">
+      <article *ngFor="let item of method"><h3><span class="pp-num">{{ item.step }}</span>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
     </div>
-  </header>
-
-  <section class="about-grid" aria-label="Maya product definition">
-    <article class="about-card">
-      <span class="about-card__label">What it is</span>
-      <h2>Advice, then execution.</h2>
-      <p>Talk through a marketing problem with Maya the way you would with a real director — she'll push back if your message isn't clear, then turn the plan into actual work instead of just a recommendation.</p>
-    </article>
-    <article class="about-card">
-      <span class="about-card__label">Category</span>
-      <h2>Marketing automation.</h2>
-      <p>Maya runs a daily pipeline and keeps a scorecard of her own work — a Status page shows what she finished today, what's still open, and what she couldn't complete.</p>
-    </article>
-    <article class="about-card">
-      <span class="about-card__label">Who made it</span>
-      <h2>Taliferro Tech, LLC.</h2>
-      <p>Maya is made by Taliferro Tech and is part of TODD, the Momentum System. Taliferro Tech creates connected software products that help people move from information to action.</p>
-      <a href="https://taliferro.com" target="_blank" rel="noopener noreferrer">Visit Taliferro Tech <span aria-hidden="true">↗</span></a>
-    </article>
-    <article class="about-card">
-      <span class="about-card__label">How to use it</span>
-      <h2>Direct her, then check her work.</h2>
-      <p>Start a session to give direction. Use Status to see what Maya has done, and Plan to see what's queued up next.</p>
-    </article>
   </section>
 
-  <section class="about-links">
-    <a routerLink="/">Talk to Maya <span aria-hidden="true">→</span></a>
-    <a routerLink="/help">Read the Help guide <span aria-hidden="true">→</span></a>
+  <section class="pp-section" aria-labelledby="maya-principles-title">
+    <p class="pp-kicker">What she believes</p>
+    <h2 id="maya-principles-title">Her principles</h2>
+    <div class="pp-cards">
+      <article *ngFor="let item of principles"><h3>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
+    </div>
   </section>
-  <footer class="about-footer">
-    <a routerLink="/">← Back to Maya</a>
-    <span>Maya · Taliferro Tech, LLC</span>
-  </footer>
-</main>
+
+  <section class="pp-section" aria-labelledby="maya-tools-title">
+    <p class="pp-kicker">Works with the TODD tools</p>
+    <h2 id="maya-tools-title">One advisor, every tool</h2>
+    <p>Instead of sending you from app to app, Maya coordinates the TODD tools for you.</p>
+    <dl class="pp-rows">
+      <div *ngFor="let tool of tools"><dt><a [href]="tool.url">{{ tool.name }}</a></dt><dd>{{ tool.copy }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="pp-section" aria-labelledby="maya-where-title">
+    <p class="pp-kicker">Where she works</p>
+    <h2 id="maya-where-title">In your browser and on your iPhone</h2>
+    <p>Ask Maya for advice free in any browser. Creating documents, decks and status reports comes with the Maya app on iPhone and iPad, and one subscription unlocks it on the web too. <a routerLink="/pricing">See pricing</a>.</p>
+  </section>
+
+  <section class="pp-section" aria-labelledby="maya-who-title">
+    <p class="pp-kicker">Who makes her</p>
+    <h2 id="maya-who-title">Built by Taliferro Tech, as part of TODD</h2>
+    <p>Maya is made by Taliferro Tech in Seattle. She is part of TODD, a Momentum System that turns scattered information across relationships, growth, knowledge, execution and feedback into clear next moves.</p>
+  </section>
+</app-product-pages>

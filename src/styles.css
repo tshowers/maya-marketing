@@ -1,41 +1,53 @@
+@import "@taliferro/ui/styles/tokens.css";
 @import "@taliferro/ui/styles/controls.css";
 @import "@taliferro/ui/styles/universal-menu.css";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import "@taliferro/ui/styles/product-pages.css";
 
 html, body { min-height: 100%; }
+
+/* Maya uses the Find family tokens (tokens.css). Her pages were written
+ * against TODD's older variables; point those at the tokens so every route
+ * shares one palette and follows dark mode with no per-page dark blocks. */
 :root {
-  color-scheme: light;
-  --todd-text: #0f172a;
-  --todd-subtext: #667085;
-  --todd-card-bg: #ffffff;
-  --todd-surface-1: #f6f8fa;
-  --todd-surface-2: #ffffff;
-  --todd-panel-border: #dfe4ea;
-  --todd-input-border: #dfe4ea;
-  --tl-blue: #0066ff;
-  --tl-blue-mid: #1677ff;
-  --tl-blue-subtle: rgba(0, 102, 255, 0.08);
-  --tl-blue-glow: rgba(0, 102, 255, 0.16);
+  --todd-bg: var(--bg);
+  --todd-text: var(--text);
+  --todd-text-muted: var(--muted);
+  --todd-subtext: var(--muted);
+  --todd-card-bg: var(--surface);
+  --todd-surface-1: var(--surface);
+  --todd-surface-2: var(--bg);
+  --todd-panel-bg: var(--bg);
+  --todd-panel-text: var(--text);
+  --todd-panel-subtext: var(--muted);
+  --todd-panel-border: var(--surface2);
+  --todd-border: var(--surface2);
+  --todd-input-bg: var(--bg);
+  --todd-input-border: var(--surface2);
+  --todd-hover-bg: var(--surface2);
+  --todd-navbar-bg: var(--bg);
+  --todd-link: var(--blue-ink);
+  --todd-accent: var(--blue);
+  --todd-accent-hover: var(--blue-ink);
+  --todd-btn-text: #fff;
+  --todd-danger: var(--danger);
+  --todd-table-cell-bg: var(--bg);
+  --todd-table-row-hover-bg: var(--surface);
+  --tl-blue: var(--blue);
+  --tl-blue-mid: var(--blue-ink);
+  --tl-blue-deep: var(--blue-ink);
+  --tl-blue-light: var(--t-blue);
+  --tl-blue-subtle: var(--t-blue);
+  --tl-blue-border: var(--surface2);
+  --tl-blue-glow: color-mix(in srgb, var(--blue) 16%, transparent);
+  --tl-text: var(--text);
+  --tl-subtext: var(--muted);
+  --tl-dark: var(--text);
+  --tl-white: var(--bg);
+  --tl-cream: var(--surface);
+  --tl-card-bg: var(--surface);
+  --tl-card-alt: var(--bg);
 }
 
-body { margin: 0; padding-bottom: 70px; font-family: 'DM Sans', Arial, sans-serif; background: #f6f8fa; background-image: none !important; color: #0f172a; }
+body { margin: 0; font-family: var(--font); background: var(--bg); background-image: none !important; color: var(--text); }
 
 maya-root { display: block; min-height: 100vh; }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --todd-text: #e8f1ff;
-    --todd-subtext: #9aadc1;
-    --todd-card-bg: #131c27;
-    --todd-surface-1: #111b28;
-    --todd-surface-2: #162231;
-    --todd-panel-border: rgba(0, 191, 255, 0.18);
-    --todd-input-border: rgba(156, 190, 220, 0.18);
-    --tl-blue: #00bfff;
-    --tl-blue-mid: #38bdf8;
-    --tl-blue-subtle: rgba(56, 189, 248, 0.14);
-    --tl-blue-glow: rgba(0, 191, 255, 0.28);
-  }
-  body { background: #0b111a; color: #e8f1ff; }
-}

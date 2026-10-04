@@ -1,64 +1,36 @@
-<main class="help-page" data-cy="help-shell">
-  <header class="help-hero">
-    <div class="help-hero__eyebrow">Help</div>
-    <div class="help-hero__content">
-      <p class="help-hero__context">Direct · Execute · Verify</p>
-      <h1>Your on-call Marketing Director.</h1>
-      <p class="help-hero__lead">Give Maya direction, let her execute, then check what she got done.</p>
-    </div>
-    <nav class="help-quick-links" aria-label="Maya help pages">
-      <a routerLink="/">Talk to Maya</a>
-      <a routerLink="/about">About</a>
-    </nav>
-  </header>
-
-  <section *ngIf="progress" id="your-progress" class="help-section help-progress" aria-labelledby="help-progress-title" data-cy="help-progress">
-    <div class="help-section__heading">
-      <p class="help-section-kicker">Your progress</p>
-      <h2 id="help-progress-title">{{ progress.allDone ? "You're all set" : 'Get the most out of Maya' }}</h2>
-      <p>Each step checks itself off as you go.</p>
-    </div>
-    <div class="help-progress__meter" role="progressbar" [attr.aria-valuenow]="progress.completedSteps" aria-valuemin="0" [attr.aria-valuemax]="progress.totalSteps">
-      <span class="help-progress__meter-fill" [style.width.%]="progress.completedSteps / progress.totalSteps * 100"></span>
-    </div>
-    <p class="help-progress__count">{{ progress.completedSteps }} of {{ progress.totalSteps }} done</p>
-    <ol class="help-progress__list">
-      <li *ngFor="let step of progress.steps; trackBy: trackStep" class="help-progress__step" [class.is-done]="step.done" data-cy="help-progress-step">
-        <span class="help-progress__check" aria-hidden="true">{{ step.done ? '✓' : '' }}</span>
-        <div class="help-progress__body">
-          <strong>{{ step.title }}</strong>
-          <span>{{ step.detail }}</span>
-        </div>
-        <a *ngIf="!isExternal(step)" class="help-try-link" [routerLink]="gettingStarted.routeFor(step)">{{ gettingStarted.actionFor(step) }} <span aria-hidden="true">→</span></a>
-        <a *ngIf="isExternal(step)" class="help-try-link" [href]="gettingStarted.routeFor(step)">{{ gettingStarted.actionFor(step) }} <span aria-hidden="true">→</span></a>
-        <span class="visually-hidden">{{ step.done ? 'Done' : 'Not done' }}</span>
-      </li>
-    </ol>
-    <label class="help-progress__toggle">
-      <input type="checkbox" [checked]="showAfterSignIn" (change)="toggleShowAfterSignIn($any($event.target).checked)" />
-      Show this after I sign in
-    </label>
-  </section>
-
-  <section class="help-section" aria-labelledby="help-steps-title">
-    <div class="help-section__heading">
-      <p class="help-section-kicker">A practical walkthrough</p>
-      <h2 id="help-steps-title">From direction to executed work</h2>
-    </div>
-    <div class="help-steps">
-      <article class="help-step" *ngFor="let step of steps">
-        <div class="help-step__number">{{ step.number }}</div>
-        <div class="help-step__body">
-          <h3>{{ step.title }}</h3>
-          <p class="help-step__copy">{{ step.copy }}</p>
-          <ul *ngIf="step.details.length"><li *ngFor="let detail of step.details">{{ detail }}</li></ul>
-        </div>
-      </article>
+<!-- The shared Help template (taliferro-ui); Maya's own guide follows it. -->
+<app-product-pages page="help">
+  <section class="pp-section" aria-labelledby="maya-does-title">
+    <p class="pp-kicker">What Maya does</p>
+    <h2 id="maya-does-title">Advice, presentations, reports, and real work</h2>
+    <p>Maya is TODD’s marketing advisor. She reads your profile and your marketing plan before she answers, so her advice is about your business, not marketing in general.</p>
+    <div class="pp-cards">
+      <article *ngFor="let item of abilities"><h3>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
     </div>
   </section>
 
-  <footer class="help-footer">
-    <a routerLink="/">← Back to Maya</a>
-    <a routerLink="/about">About Maya →</a>
-  </footer>
-</main>
+  <section class="pp-section" aria-labelledby="maya-work-title">
+    <p class="pp-kicker">Maya’s work page</p>
+    <h2 id="maya-work-title">Approvals, questions, and jobs</h2>
+    <p>When you give Maya a job, everything she needs from you shows up on her <a routerLink="/work">work page</a>.</p>
+    <dl class="pp-rows">
+      <div *ngFor="let row of workPage"><dt>{{ row.term }}</dt><dd>{{ row.detail }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="pp-section" aria-labelledby="maya-where-title">
+    <p class="pp-kicker">Finding your way</p>
+    <h2 id="maya-where-title">Where things are</h2>
+    <dl class="pp-rows">
+      <div *ngFor="let row of places"><dt><a [routerLink]="row.route">{{ row.term }}</a></dt><dd>{{ row.detail }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="pp-section" aria-labelledby="maya-faq-title">
+    <p class="pp-kicker">More questions</p>
+    <h2 id="maya-faq-title">What people ask about Maya</h2>
+    <div class="pp-cards">
+      <article *ngFor="let item of questions"><h3>{{ item.q }}</h3><p>{{ item.a }}</p></article>
+    </div>
+  </section>
+</app-product-pages>

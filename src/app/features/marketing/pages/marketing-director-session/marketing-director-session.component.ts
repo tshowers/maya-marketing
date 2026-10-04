@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, inject } from '@angular/core';
+import { MayaChatStateService } from '../../../../services/maya-chat-state.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription, combineLatest, firstValueFrom, of } from 'rxjs';
@@ -80,6 +81,8 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   hasPaidWorkspaceAccess = false;
   messages: PublicMarketingDirectorMessage[] = [];
   prompt = '';
+  /** The header's New chat button resets this conversation. */
+  private readonly chatState = inject( MayaChatStateService );
   sending = false;
   errorMessage = '';
   showUpgradePanel = false;
@@ -157,6 +160,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit (): Promise<void> {
+    this.chatState.register( { hasConversation: () => this.hasUserMessages, newChat: () => void this.resetSession() } );
     await this.loadEmailContextFromQueryParams();
     this.authContextSubscription = this.authService.getUser().pipe(
       switchMap( user => {
@@ -285,6 +289,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy (): void {
+    this.chatState.unregister();
     this.authContextSubscription?.unsubscribe();
     this.workspaceConversationMessagesSubscription?.unsubscribe();
   }

@@ -4,9 +4,10 @@ import { MenuAppConfig } from '@taliferro/ui/platform/universal-menu.model';
 export const PLATFORM_MENU_CONFIG: MenuAppConfig = {
   app: 'maya',
   name: 'Maya',
-  logo: 'assets/find/entities/maya/logo.png',
   items: [
     { label: 'Home', icon: 'home', route: '/' },
+    { label: 'Status', icon: 'chart', route: '/marketing-employee', keywords: 'report progress' },
+    { label: 'Plan', icon: 'file', route: '/marketing-employee/plan', keywords: 'marketing plan board' },
     { label: 'Work', icon: 'grid', route: '/work', keywords: 'tasks projects' },
   ],
   secondaryItems: [

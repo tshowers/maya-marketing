@@ -1,43 +1,17 @@
-/* Scoped tokens (light/dark) so the page looks the same on every TODD site
- * whatever that site's global stylesheet defines. */
+/* Find family tokens (tokens.css); they handle dark mode. */
 :host {
   display: block;
-  --gta-bg: #f6f8fa;
-  --gta-card: #ffffff;
-  --gta-ink: #0f172a;
-  --gta-muted: #5b6b7d;
-  --gta-line: rgba(15, 23, 42, .1);
-  --gta-accent: #0a6ccf;
+  --gta-bg: var(--bg);
+  --gta-card: var(--surface);
+  --gta-ink: var(--text);
+  --gta-muted: var(--muted);
+  --gta-line: var(--surface2);
+  --gta-accent: var(--blue);
   --gta-accent-ink: #ffffff;
-  --gta-ok: #1f9d55;
+  --gta-ok: var(--t-green-fg);
 }
-/* Dark mode: follows the site's Light/Dark toggle (data-theme on <html>)
- * where there is one, and the system setting where there isn't. */
-@media (prefers-color-scheme: dark) {
-  :host-context(html:not([data-theme='light'])) {
-    --gta-bg: #0d1117;
-    --gta-card: #151f2b;
-    --gta-ink: #f0f6ff;
-    --gta-muted: #9aadc1;
-    --gta-line: rgba(0, 191, 255, .16);
-    --gta-accent: #38bdf8;
-    --gta-accent-ink: #04121f;
-    --gta-ok: #4ade80;
-  }
-}
-:host-context(html[data-theme='dark']) {
-    --gta-bg: #0d1117;
-    --gta-card: #151f2b;
-    --gta-ink: #f0f6ff;
-    --gta-muted: #9aadc1;
-    --gta-line: rgba(0, 191, 255, .16);
-    --gta-accent: #38bdf8;
-    --gta-accent-ink: #04121f;
-    --gta-ok: #4ade80;
-  }
 
-
-.gta { min-height: 100vh; background: var(--gta-bg); color: var(--gta-ink); padding: 96px 16px 120px; font-family: 'Manrope', system-ui, sans-serif; }
+.gta { min-height: 100vh; background: var(--gta-bg); color: var(--gta-ink); padding: 40px 16px 120px; font-family: var(--font); }
 .gta > section { max-width: 880px; margin: 0 auto 48px; }
 .gta-eyebrow { margin: 0 0 10px; color: var(--gta-accent); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .gta h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; letter-spacing: -.02em; }

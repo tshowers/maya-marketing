@@ -91,8 +91,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.authSubscription?.unsubscribe();
   }
 
+  /** Sign in goes through the get-started wizard, then comes back here. */
   signIn (): void {
-    this.authService.signIn( '/profile' );
+    void this.router.navigate( ['/get-started'], { queryParams: { returnUrl: '/profile' } } );
   }
 
   private async loadProfile (): Promise<void> {

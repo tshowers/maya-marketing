@@ -1859,34 +1859,6 @@ nav.main-nav .todd-command-scroll>.nav-item:has(.nav-pin-label) {
 }
 :host { display: block; }
 
-.maya-session-indicator {
-  position: fixed;
-  top: 12px;
-  right: 14px;
-  z-index: 10000;
-  width: 10px;
-  height: 10px;
-  padding: 3px;
-  border-radius: 50%;
-  background: rgba(34, 197, 94, 0.18);
-  pointer-events: auto;
-}
-
-.maya-session-indicator span { display: block; width: 100%; height: 100%; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.65); }
-.maya-session-indicator--logged-out { background: rgba(239, 68, 68, 0.16); }
-.maya-session-indicator--logged-out span { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.55); }
-
-.maya-shared-bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9990; display: flex; justify-content: center; gap: clamp(20px, 10vw, 100px); min-height: 70px; border-top: 1px solid var(--todd-panel-border); background: #fff; }
-.maya-shared-bottom-nav a, .maya-shared-bottom-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; gap: 4px; border: 0; color: var(--todd-text); background: transparent; font: inherit; font-size: .78rem; text-decoration: none; cursor: pointer; }
-.maya-shared-bottom-nav a:hover, .maya-shared-bottom-nav button:hover, .maya-shared-bottom-nav__active { color: var(--tl-blue) !important; }
-.maya-shared-bottom-nav__requires-auth { cursor: not-allowed !important; opacity: .42; }
-.maya-shared-bottom-nav__requires-auth:hover { color: var(--todd-text) !important; }
-.maya-shared-session-action { flex-direction: column !important; gap: 4px !important; }
-.maya-shared-session-action > i { font-size: .9rem; line-height: 1; }
-.maya-shared-session-label { display: inline-flex; align-items: center; gap: 5px; }
-.maya-shared-session-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-.maya-shared-session-dot--in { background: #22c55e; box-shadow: 0 0 7px rgba(34, 197, 94, .7); }
-.maya-shared-session-dot--out { background: #ef4444; box-shadow: 0 0 7px rgba(239, 68, 68, .55); }
 
 /* Maya uses a flat canvas. Neutralize legacy shell chrome while this route
    is active, including any pseudo-element glow or backdrop effect. */
@@ -1921,13 +1893,74 @@ nav.main-nav .todd-command-scroll>.nav-item:has(.nav-pin-label) {
   display: none !important;
 }
 
-body { padding-bottom: 70px; }
 
-@media (prefers-color-scheme: dark) {
-  .maya-shared-bottom-nav { background: #10182f; border-color: #202a44; }
-  .maya-shared-bottom-nav a, .maya-shared-bottom-nav button { color: #cbd5e1; }
+/* Maya header (design 11a/11b): avatar + name, Status, Plan, New chat, Menu. */
+.maya-head {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 40px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
 }
 
-@media (max-width: 600px) {
-  .maya-shared-bottom-nav { gap: 0; justify-content: space-around; }
+.maya-head__brand { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--text) !important; text-decoration: none; }
+
+.maya-head__avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--surface2);
+}
+
+/* The art has its own blue ring; crop just inside it. */
+.maya-head__avatar img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.18); }
+
+.maya-head__title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; }
+.maya-head__title span { font-weight: 500; color: var(--muted); }
+
+.maya-head__actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.maya-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text) !important;
+  font: 600 15px var(--font);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.maya-pill:hover, .maya-pill.is-on { background: var(--surface2); }
+.maya-pill:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.maya-pill svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 760px) {
+  .maya-head { padding: 14px 16px; gap: 8px; }
+  .maya-head__avatar { width: 32px; height: 32px; }
+  .maya-head__title { font-size: 17px; }
+  .maya-head__title span { display: none; }
+  .maya-pill { width: 40px; height: 40px; padding: 0; justify-content: center; }
+  .maya-pill span { display: none; }
+  .maya-head__actions { gap: 6px; }
 }

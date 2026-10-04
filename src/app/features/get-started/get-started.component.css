@@ -1,21 +1,19 @@
 :host { display: block; }
 
 .gs-shell {
+  /* White page, flat grey cards, white inputs inside them (the Find family). */
+  --todd-surface-1: var(--bg);
   --gs-accent: var(--tl-blue);
   --gs-accent-ink: #ffffff;
   position: relative;
   min-height: 100vh;
-  background: var(--todd-surface-1);
+  background: var(--bg);
   color: var(--todd-text);
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font);
   padding: 24px 16px 48px;
 }
 /* Dark mode: follows the site's Light/Dark toggle (data-theme on <html>)
  * where there is one, and the system setting where there isn't. */
-@media (prefers-color-scheme: dark) {
-  :host-context(html:not([data-theme='light'])) .gs-shell { --gs-accent-ink: #04121f; }
-}
-:host-context(html[data-theme='dark']) .gs-shell { --gs-accent-ink: #04121f; }
 
 .gs-shell * { box-sizing: border-box; }
 
@@ -23,7 +21,7 @@
 .gs-brand { display: inline-flex; align-items: center; gap: .5rem; font-weight: 800; color: var(--todd-text); text-decoration: none; }
 .gs-brand__mark { width: 24px; height: 24px; border-radius: 6px; }
 
-.gs-card { max-width: 640px; margin: 32px auto 0; padding: 28px clamp(20px, 5vw, 40px) 32px; border: 1px solid var(--todd-panel-border); border-radius: 24px; background: var(--todd-card-bg); }
+.gs-card { max-width: 640px; margin: 32px auto 0; padding: 28px clamp(20px, 5vw, 40px) 32px; border: 0; border-radius: 24px; background: var(--todd-card-bg); }
 
 .gs-card__nav { display: flex; align-items: center; min-height: 32px; margin-bottom: 12px; }
 .gs-back { border: 0; background: none; padding: 4px 0; color: var(--todd-text); font: inherit; font-weight: 700; cursor: pointer; }
@@ -65,4 +63,4 @@
 
 .gs-existing-card { display: grid; gap: 6px; margin: 0 0 20px; padding: 16px 18px; border: 1px solid var(--todd-panel-border); border-radius: 16px; background: var(--todd-surface-1); }
 .gs-existing-card span { color: var(--todd-subtext); }
-.gs-existing-card .gs-button { justify-self: start; margin-top: 6px; text-decoration: none; display: inline-flex; align-items: center; }
+.gs-existing-card .gs-button { justify-self: start; margin-top: 6px; padding: 0 22px; min-height: 44px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; }

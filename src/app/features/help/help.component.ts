@@ -1,112 +1,50 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
-import { SeoService } from '../../shared/seo.service';
-import { MayaAuthService } from '../../services/maya-auth.service';
-import { GettingStarted, GettingStartedService, GettingStartedStep } from '../../services/getting-started.service';
 
-interface HelpStep {
-  number: string;
-  title: string;
-  copy: string;
-  details: string[];
-}
+import { ProductPagesComponent } from '../../shared/product-pages/product-pages.component';
 
-@Component({
+/**
+ * Maya's Help: the shared Help template, then her own guide below it. Static
+ * (prerendered for search engines). The behaviour described here follows
+ * MAYA-ORCHESTRATION-DESIGN.md and what Maya's work page shows today.
+ */
+@Component( {
   selector: 'app-help',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ProductPagesComponent],
   templateUrl: './help.component.html',
-  styleUrl: './help.component.css',
-})
-export class HelpComponent implements OnInit {
-  /** Signed-in only: the Getting Started checklist, checked off from real data. */
-  progress: GettingStarted | null = null;
-  showAfterSignIn = true;
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-
-  constructor(
-    private readonly title: Title,
-    private readonly meta: Meta,
-    private readonly seo: SeoService,
-    private readonly authService: MayaAuthService,
-    readonly gettingStarted: GettingStartedService,
-  ) {}
-
-  ngOnInit(): void {
-    // Help is prerendered for SEO - progress needs the signed-in browser.
-    if (this.isBrowser) {
-      this.showAfterSignIn = this.gettingStarted.showAfterSignIn;
-      this.authService.getUser().subscribe((user) => {
-        if (!user) {
-          this.progress = null;
-          return;
-        }
-        this.gettingStarted.load().then((progress) => (this.progress = progress)).catch(() => (this.progress = null));
-      });
-    }
-    const pageTitle = 'Help — Maya, Marketing Director';
-    const description = 'How to work with Maya: start a session, give direction on message clarity and campaigns, then check Status and Plan to see what she executed.';
-    this.title.setTitle(pageTitle);
-    this.meta.updateTag({ name: 'description', content: description });
-    this.meta.updateTag({ property: 'og:title', content: pageTitle });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:url', content: 'https://maya.taliferro.tech/help' });
-    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
-    this.meta.updateTag({ name: 'twitter:description', content: description });
-    this.seo.setCanonical('https://maya.taliferro.tech/help');
-  }
-
-  readonly steps: HelpStep[] = [
-    {
-      number: '01',
-      title: 'Sign in',
-      copy: 'Maya needs a signed-in TODD session to track your work and execute on your behalf.',
-      details: [],
-    },
-    {
-      number: '02',
-      title: 'Start a session',
-      copy: 'Talk to Maya the way you would a real Marketing Director — describe the problem, share what you\'ve tried, and ask directly.',
-      details: [
-        'Maya gives candid feedback on message clarity, campaigns, and audience focus.',
-        'Expect pushback if something isn\'t clear yet — that\'s the point.',
-      ],
-    },
-    {
-      number: '03',
-      title: 'Let Maya execute',
-      copy: 'Once direction is set, Maya turns it into actual work instead of leaving you with just a recommendation.',
-      details: [],
-    },
-    {
-      number: '04',
-      title: 'Check Status',
-      copy: 'The Status page is Maya\'s own scorecard: what she finished today, what\'s still open, and what she couldn\'t do.',
-      details: [
-        'Each item links back to the real record it affected, so you can verify or act on it directly.',
-      ],
-    },
-    {
-      number: '05',
-      title: 'Review the Plan',
-      copy: 'The Plan page shows what\'s queued up next, separate from what\'s already been executed.',
-      details: [],
-    },
+} )
+export class HelpComponent {
+  readonly abilities = [
+    { title: 'Ask for advice', copy: 'Ask Maya anything about your marketing: your message, your offer, your audience, what to do this week. Advice is free.' },
+    { title: 'Build a presentation', copy: 'Tell Maya what the deck is for. She asks questions until she can tell a credible story, then builds the slides for you to download.' },
+    { title: 'Get a status report', copy: 'Choose Status report under the input for a downloadable summary of your marketing plan and where it stands.' },
+    { title: 'Give her a job', copy: 'On Maya’s work page, describe the work, for example “Build a LinkedIn calendar for the rest of October.” She plans it, drafts the posts, images and emails, and stops for your approval.' },
   ];
 
-  toggleShowAfterSignIn(value: boolean): void {
-    this.showAfterSignIn = value;
-    this.gettingStarted.showAfterSignIn = value;
-  }
+  readonly workPage = [
+    { term: 'Maya has concerns', detail: 'When a request works against your marketing plan, she says what it will cost (focus, time, images, audience) and recommends another way. You choose, and she records the decision.' },
+    { term: 'Maya has a question', detail: 'She asks one thing at a time, only when the answer changes the work, and offers likely answers.' },
+    { term: 'Waiting for you', detail: 'Anything that would publish, send or spend waits here. Approve items one at a time or all at once.' },
+    { term: 'Jobs', detail: 'Everything Maya is working on, step by step. Cancel a job at any time.' },
+    { term: 'How hard Maya pushes back', detail: 'Firm stops and makes her case. Standard stops and lists the consequences. Light goes ahead and tells you the consequences up front. She always tells you the consequences.' },
+  ];
 
-  trackStep(_index: number, step: GettingStartedStep): string {
-    return step.id;
-  }
+  readonly places = [
+    { term: 'Status', route: '/marketing-employee', detail: 'Maya’s pipeline, scorecard, and today’s work.' },
+    { term: 'Plan', route: '/marketing-employee/plan', detail: 'Your marketing plan as a board: goals, audiences, channels and campaigns.' },
+    { term: 'Work', route: '/work', detail: 'Jobs, approvals and Maya’s questions.' },
+    { term: 'Profile', route: '/profile', detail: 'Your company details. Maya reads them before she advises.' },
+    { term: 'Pricing', route: '/pricing', detail: 'What is free and what comes with the Maya app.' },
+  ];
 
-  isExternal(step: GettingStartedStep): boolean {
-    return this.gettingStarted.routeFor(step).startsWith('http');
-  }
+  readonly questions = [
+    { q: 'Is Maya free?', a: 'Advice is free, in any browser. Creating documents, decks and status reports, and downloading transcripts, come with the Maya app on iPhone and iPad; one subscription unlocks them on the web too.' },
+    { q: 'Will Maya publish or send anything without me?', a: 'No. Publishing, sending, spending and deleting always wait for your approval. The one exception is Social autopilot: if you turn it on, Maya approves her own social posts.' },
+    { q: 'Does Maya make things up?', a: 'No. She does not invent metrics, prices, dates, quotes or links. When a fact is missing she asks you, or leaves a [bracketed] placeholder for you to fill in.' },
+    { q: 'What won’t Maya do?', a: 'Sales follow-ups with a specific person go to Outreach. Work that isn’t marketing goes to TODD or Moves. She never changes settings, mailboxes, billing or connected accounts.' },
+    { q: 'Why is my calendar taking a few days to fill?', a: 'New images count against your workspace’s daily image allowance. Maya reuses images from your library first and spreads new ones across days, and tells you when they’ll be ready.' },
+    { q: 'Where does Maya get her information?', a: 'Your TODD profile, your marketing plan, reference material in your Knowledge Base, what is already scheduled, and this conversation.' },
+  ];
 }

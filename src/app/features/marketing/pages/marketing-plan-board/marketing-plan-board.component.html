@@ -2,6 +2,7 @@
   <div class="marketing-plan-board__login-required" *ngIf="!isLoggedIn">
     <h2>Sign in to view Maya's marketing plan</h2>
     <p>You need to be logged in to see the plan, its linked work, and the board.</p>
+    <a class="marketing-plan-board__sign-in" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee/plan' }">Sign in</a>
   </div>
 
   <ng-container *ngIf="isLoggedIn">

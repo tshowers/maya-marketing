@@ -7,7 +7,7 @@ import { AuthService } from '../../../../services/auth.service';
 import { SettingsService } from '../../../../services/settings.service';
 import { SoundService } from '../../../../services/sound.service';
 import { LoggerService } from '../../../../services/logger.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NomenclatureService } from '../../../../services/nomenclature.service';
 import { Task } from '../../../../shared/data/interfaces/task.model';
 import { Dropdown } from '../../../../shared/data/interfaces/dropdown.model';
@@ -24,7 +24,7 @@ const MARKETING_PLAN_PROJECT_ID = 'marketing-plan';
 @Component( {
   selector: 'app-marketing-plan-board',
   standalone: true,
-  imports: [CommonModule, ProjectViewComponent, ProjectStickyBoardComponent],
+  imports: [CommonModule, RouterLink, ProjectViewComponent, ProjectStickyBoardComponent],
   templateUrl: './marketing-plan-board.component.html',
   styleUrl: './marketing-plan-board.component.css'
 } )

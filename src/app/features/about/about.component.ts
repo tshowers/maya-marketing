@@ -1,76 +1,39 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
-import { SeoService } from '../../shared/seo.service';
 
-@Component({
+import { ProductPagesComponent } from '../../shared/product-pages/product-pages.component';
+
+/**
+ * About Maya: the shared About template, then how she works and what she
+ * believes (from MAYA-ORCHESTRATION-DESIGN.md). Static, for search engines.
+ */
+@Component( {
   selector: 'app-about',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink, ProductPagesComponent],
   templateUrl: './about.component.html',
-  styleUrl: './about.component.css',
-})
-export class AboutComponent implements OnInit, OnDestroy {
-  private schemaScript: HTMLScriptElement | null = null;
+} )
+export class AboutComponent {
+  readonly method = [
+    { step: '1', title: 'She judges', copy: 'What is this for? Does it fit your marketing plan? What will it cost in time, attention and allowance? She asks only when the answer changes the work.' },
+    { step: '2', title: 'She plans', copy: 'She turns the request into a job: the images, emails, social posts and documents it needs, in order, across the TODD tools.' },
+    { step: '3', title: 'She runs it', copy: 'She does the drafting herself and stops for your approval before anything is published, sent or paid for.' },
+  ];
 
-  constructor(
-    @Inject(DOCUMENT) private readonly document: Document,
-    private readonly renderer: Renderer2,
-    private readonly title: Title,
-    private readonly meta: Meta,
-    private readonly seo: SeoService,
-  ) {}
+  readonly principles = [
+    { title: 'Purpose before production', copy: 'She asks what a request is for only when the answer changes what she would do. Small, clear requests just get done.' },
+    { title: 'The plan is the referee', copy: 'When you have a marketing plan, every request is checked against it, and conflicts are explained by their consequences, not by rules.' },
+    { title: 'She pushes back; you decide', copy: 'If a request works against the plan she says so plainly and what it will cost. If you still want it, she does it and records the decision.' },
+    { title: 'Nothing leaves without a person', copy: 'Drafts and images are hers to do. Publishing, sending, spending and deleting need your approval.' },
+    { title: 'No invented facts', copy: 'No made-up metrics, prices, dates, quotes or links. Missing facts become questions or placeholders.' },
+    { title: 'She knows her lane', copy: 'Sales follow-ups go to Outreach, other work to TODD or Moves, research to Find.' },
+  ];
 
-  ngOnInit(): void {
-    const pageTitle = 'About Maya | Taliferro Tech';
-    const description = 'Maya is Taliferro Tech\'s on-call Marketing Director: candid advice on message clarity, campaigns, and audience focus, then Maya executes the plan and reports what got done.';
-    this.title.setTitle(pageTitle);
-    this.meta.updateTag({ name: 'description', content: description });
-    this.meta.updateTag({ property: 'og:title', content: pageTitle });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:url', content: 'https://maya.taliferro.tech/about' });
-    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
-    this.meta.updateTag({ name: 'twitter:description', content: description });
-    this.seo.setCanonical('https://maya.taliferro.tech/about');
-    this.addStructuredData();
-  }
-
-  ngOnDestroy(): void {
-    this.schemaScript?.remove();
-  }
-
-  // Same shared Organization @id as the other products' About pages —
-  // schema.org convention for "this is the same real-world entity".
-  private addStructuredData(): void {
-    this.schemaScript = this.renderer.createElement('script') as HTMLScriptElement;
-    this.schemaScript.type = 'application/ld+json';
-    this.schemaScript.id = 'about-structured-data';
-    this.schemaScript.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'Organization',
-          '@id': 'https://taliferro.com/#organization',
-          name: 'Taliferro Tech, LLC',
-          url: 'https://taliferro.com',
-          description: 'Taliferro Tech creates software products that help people find information, build momentum, and act on useful context.',
-        },
-        {
-          '@type': 'SoftwareApplication',
-          '@id': 'https://maya.taliferro.tech/#software',
-          name: 'Maya',
-          url: 'https://maya.taliferro.tech/',
-          description: 'Maya is an on-call Marketing Director: give her candid direction on message clarity, campaigns, and audience focus, and she executes the plan — with a daily status of what got done, what\'s open, and what she couldn\'t do.',
-          applicationCategory: 'BusinessApplication',
-          applicationSubCategory: 'Marketing automation',
-          operatingSystem: 'Web',
-          image: 'https://maya.taliferro.tech/assets/find/entities/maya/logo.png',
-          creator: { '@id': 'https://taliferro.com/#organization' },
-          publisher: { '@id': 'https://taliferro.com/#organization' },
-        },
-      ],
-    });
-    this.renderer.appendChild(this.document.head, this.schemaScript);
-  }
+  readonly tools = [
+    { name: 'Image Creator', url: 'https://images.taliferro.tech', copy: 'Images for posts, emails and slides, reused from your library first and saved to Docs.' },
+    { name: 'Email Creator', url: 'https://emails.taliferro.tech', copy: 'Emails designed from her brief, with your real details, saved to Docs.' },
+    { name: 'Social', url: 'https://social.taliferro.tech', copy: 'Posts drafted onto your social calendar on the days your cadence allows.' },
+    { name: 'Docs', url: 'https://docs.taliferro.tech', copy: 'Where her emails, images and documents are kept.' },
+  ];
 }
