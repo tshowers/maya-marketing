@@ -164,6 +164,10 @@ export interface EmployeeActionRecord {
   // notesLog's latest Maya entry states exactly what she needs.
   blocked?: boolean;
   notesLog?: EmployeeActionNoteEntry[];
+  // The plan step this action works on (todd-backend maya/planSteps.js),
+  // stamped by the daily planner. Step ids start with the plan id.
+  planStepId?: string | null;
+  planStepIndex?: number | null;
   lastWorkedAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;

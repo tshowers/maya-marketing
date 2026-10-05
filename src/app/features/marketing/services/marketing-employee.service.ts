@@ -37,7 +37,7 @@ import { TaskService } from '../../../services/task.service';
 import { Task } from '../../../shared/data/interfaces/task.model';
 import { environment } from '../../../../environments/environment';
 
-export interface MayaRunStepStatus { key: string; label: string; status: string; detail?: string; metadata?: Record<string, unknown>; }
+export interface MayaRunStepStatus { key: string; label: string; status: string; detail?: string; metadata?: Record<string, unknown>; startedAt?: string; completedAt?: string; }
 export interface MayaQueueHealth {
   blocked: boolean;
   taskBlocked: boolean;
@@ -228,6 +228,16 @@ export class MarketingEmployeeService {
     const actionsQuery = query( actionsRef, ...constraints );
 
     return collectionData( actionsQuery, { idField: 'id' } ).pipe(
+      map( records => records.map( record => this.toMarketingEmployeeActionRecord( record ) ) )
+    );
+  }
+
+  /** Every action the daily planner tied to one plan step, any day. */
+  watchStepActions ( tenantId: string, planStepId: string ): Observable<MarketingEmployeeActionRecord[]> {
+    const normalizedTenantId = this.normalizeRequiredValue( tenantId, 'tenantId' );
+    const normalizedStepId = this.normalizeRequiredValue( planStepId, 'planStepId' );
+    const actionsRef = collection( this.firestore, `tenants/${normalizedTenantId}/employee-actions` );
+    return collectionData( query( actionsRef, where( 'planStepId', '==', normalizedStepId ) ), { idField: 'id' } ).pipe(
       map( records => records.map( record => this.toMarketingEmployeeActionRecord( record ) ) )
     );
   }
@@ -1556,6 +1566,9 @@ export class MarketingEmployeeService {
       monitorLabel: this.normalizeNullableString( record?.monitorLabel ),
       progress: this.normalizeCount( record?.progress ),
       notesLog: Array.isArray( record?.notesLog ) ? record.notesLog : [],
+      blocked: record?.blocked === true,
+      planStepId: this.normalizeNullableString( record?.planStepId ),
+      planStepIndex: typeof record?.planStepIndex === 'number' ? record.planStepIndex : null,
       lastWorkedAt: this.toIsoString( record?.lastWorkedAt ),
       createdAt: this.toIsoString( record?.createdAt ),
       updatedAt: this.toIsoString( record?.updatedAt )
@@ -1574,6 +1587,10 @@ export class MarketingEmployeeService {
       status: String( record?.status || 'active' ).trim().toLowerCase() as MarketingPlanRecord['status'],
       sourceFileName: this.normalizeNullableString( record?.sourceFileName ) || undefined,
       sourceFileUrl: this.normalizeNullableString( record?.sourceFileUrl ) || undefined,
+      steps: Array.isArray( record?.steps ) ? record.steps : [],
+      goals: Array.isArray( record?.goals ) ? record.goals : [],
+      owners: record?.owners && typeof record.owners === 'object' ? record.owners : null,
+      datesConfirmed: record?.datesConfirmed === true,
       createdAt: this.toIsoString( record?.createdAt ),
       updatedAt: this.toIsoString( record?.updatedAt )
     };

@@ -1942,7 +1942,9 @@ nav.main-nav .todd-command-scroll>.nav-item:has(.nav-pin-label) {
   cursor: pointer;
 }
 
-.maya-pill:hover, .maya-pill.is-on { background: var(--surface2); }
+.maya-pill:hover { background: var(--surface2); }
+/* The page you are on (design_handoff_maya_plan_status). */
+.maya-pill.is-on { background: var(--t-green); color: var(--t-green-fg) !important; font-weight: 700; }
 .maya-pill:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
 .maya-pill svg {

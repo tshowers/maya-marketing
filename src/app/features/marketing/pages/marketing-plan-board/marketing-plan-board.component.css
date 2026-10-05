@@ -1,146 +1,175 @@
-/* Maya's Plan board. Find family tokens (tokens.css); they handle dark mode. */
-.marketing-plan-board {
-  min-height: 100vh;
-  padding: 1rem 40px 3rem;
-  color: var(--text);
-  background: var(--bg);
-  font-family: var(--font);
-}
+/* Maya's plan (design_handoff_maya_plan_status 18a). Find family tokens. */
+:host { display: block; background: var(--bg); color: var(--text); font-family: var(--font); }
+.mp-page { min-height: 100vh; padding-bottom: 56px; }
+.mp-page * { box-sizing: border-box; }
 
-.marketing-plan-board__login-required {
-  max-width: 32rem;
-  margin: 3rem auto;
-  padding: 1.5rem;
-  border-radius: 24px;
-  text-align: center;
-  background: var(--surface);
-}
+.mp-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.75; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
 
-.marketing-plan-board__login-required p { color: var(--muted); }
+/* View toggle: under the header, right-aligned. */
+.mp-toggle { display: flex; width: max-content; gap: 4px; margin: 4px 40px 0 auto; padding: 4px; border-radius: 999px; background: var(--surface); }
+.mp-toggle button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: 700 14px/1 var(--font); cursor: pointer; }
+.mp-toggle button.is-on { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(15, 17, 21, .12); }
 
-.marketing-plan-board__sign-in {
-  margin-top: 0.85rem;
-  border: 0;
-  border-radius: 999px;
-  padding: 0 1.4rem;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  color: #fff !important;
-  background: var(--blue);
-  font: 700 15px var(--font);
-  text-decoration: none;
-  cursor: pointer;
-}
+.mp-body { padding: 24px 40px 0; }
+.mp-list { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 48px; align-items: start; }
+.mp-col { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
 
-.marketing-plan-board__summary,
-.maya-plan-panel {
-  margin-bottom: 1rem;
-  padding: 1.5rem;
-  border-radius: 28px;
-  background: var(--surface);
-}
+.mp-kicker { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mp-head h1, .mp-thead h1, .mp-empty h1 { margin: 10px 0 14px; font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+.mp-maya { display: flex; gap: 12px; margin: 0; max-width: 720px; font-size: 17px; line-height: 1.55; }
+.mp-maya img { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; object-fit: cover; }
+.mp-muted { color: var(--muted); }
+.mp-small { font-size: 14px; }
+.mp-error { color: var(--t-pink-fg); font-weight: 600; }
 
-.marketing-plan-board__title {
-  margin: 0 0 0.75rem;
-  color: var(--text);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
+.mp-health { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+.mp-health .mp-icon { width: 14px; height: 14px; stroke-width: 2.5; }
+.mp-health[data-health='stuck'] { background: var(--t-pink); color: var(--t-pink-fg); }
+.mp-health[data-health='behind'] { background: var(--t-yellow); color: var(--t-yellow-fg); }
+.mp-health[data-health='on-track'], .mp-health[data-health='done'] { background: var(--t-green); color: var(--t-green-fg); }
 
-.marketing-plan-board__section {
-  margin-bottom: 0.25rem;
-  color: var(--muted);
-}
+/* Step progress bar. */
+.mp-segments { display: grid; gap: 6px; }
+.mp-segments span { height: 10px; border-radius: 999px; background: var(--surface2); }
+.mp-segments span[data-state='done'] { background: var(--green); }
+.mp-segments span[data-state='doing'] { background: var(--blue); }
+.mp-segments span[data-state='stuck'] { background: var(--pink); }
+.mp-progress__meta { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted); font-size: 13px; }
 
-.marketing-plan-board__empty {
-  margin: 0;
-  color: var(--muted);
-}
+.mp-h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.mp-badge { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: var(--pink); color: #fff; font-size: 13px; font-weight: 700; }
 
-/* Segmented tabs, as in the design system's segmented controls. */
-.maya-plan-tabs {
-  margin-bottom: 1rem;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--surface);
-}
+/* Needs. */
+.mp-needs { display: flex; flex-direction: column; gap: 12px; }
+.mp-need { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 20px; background: var(--surface); }
+.mp-need__icon { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%; background: var(--t-pink); color: var(--t-pink-fg); }
+.mp-need__body { flex: 1; min-width: 0; }
+.mp-need__body strong, .mp-need--pink strong { display: block; font-size: 16px; font-weight: 700; }
+.mp-need__body p, .mp-need--pink p { margin: 4px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.mp-need__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mp-need--pink { flex-direction: column; align-items: flex-start; gap: 0; margin-bottom: 12px; background: var(--t-pink); color: var(--t-pink-fg); }
+.mp-need--pink p { margin-bottom: 14px; color: var(--t-pink-fg); }
 
-.maya-plan-tabs button {
-  flex: 1;
-  min-height: 40px;
-  border: 0;
-  border-radius: 999px;
-  padding: 0 1rem;
-  color: var(--muted);
-  background: transparent;
-  font: 600 15px var(--font);
-  cursor: pointer;
-}
+.mp-btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--text); color: var(--bg) !important; font: 700 14px/1 var(--font); text-decoration: none; white-space: nowrap; cursor: pointer; }
+.mp-btn:hover { filter: brightness(1.25); }
+.mp-btn--ghost { background: var(--bg); color: var(--text) !important; }
+.mp-btn--ghost:hover { filter: none; background: var(--surface2); }
+.mp-btn--pink { height: 34px; background: var(--t-pink); color: var(--t-pink-fg) !important; }
+.mp-btn:disabled { opacity: .5; cursor: default; }
+.mp-btn:focus-visible, .mp-toggle button:focus-visible, .mp-link:focus-visible, .mp-read:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.mp-link { padding: 0; border: 0; background: none; color: var(--text); font: 700 14px/1.4 var(--font); cursor: pointer; }
+.mp-link:hover { text-decoration: underline; }
+.mp-link:disabled { opacity: .5; }
 
-.maya-plan-tabs button:hover { color: var(--text); }
+/* Stepper. */
+.mp-stepper { margin: 0; padding: 0; list-style: none; }
+.mp-step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; }
+.mp-step__rail { display: flex; flex-direction: column; align-items: center; }
+.mp-step__line { flex: 1; width: 3px; min-height: 16px; margin: 4px 0; border-radius: 2px; background: var(--surface2); }
+.mp-step__line.is-done { background: var(--green); }
+.mp-step__content { padding-bottom: 28px; min-width: 0; }
+.mp-step__content > p { margin: 4px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.mp-step__title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 40px; }
+.mp-step__title h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.mp-step[data-state='todo'] .mp-step__title h3 { color: var(--text); }
+.mp-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 700; }
+.mp-tag[data-state='done'] { background: var(--t-green); color: var(--t-green-fg); }
+.mp-tag[data-state='doing'] { background: var(--t-blue); color: var(--t-blue-fg); }
+.mp-tag[data-state='stuck'] { background: var(--t-pink); color: var(--t-pink-fg); }
+.mp-here { color: var(--t-blue-fg); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.mp-step .mp-link { margin-top: 12px; }
 
-.maya-plan-tab--active,
-.maya-plan-tabs button.maya-plan-tab--active:hover {
-  color: var(--text) !important;
-  background: var(--bg) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
-  font-weight: 700;
-}
+.mp-dot { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--surface2); color: var(--muted); font-size: 15px; font-weight: 700; }
+.mp-dot[data-state='done'] { background: var(--green); box-shadow: none; color: #fff; }
+.mp-dot[data-state='doing'] { background: var(--blue); box-shadow: 0 0 0 5px var(--t-blue); color: #fff; }
+.mp-dot[data-state='stuck'] { background: var(--pink); box-shadow: none; color: #fff; }
+.mp-dot[data-state='doing'] .mp-icon { animation: mp-spin 1.4s linear infinite; }
+.mp-dot b { font-size: 16px; }
+.mp-dot--sm { width: 26px; height: 26px; flex-basis: 26px; font-size: 12px; }
+.mp-dot--sm .mp-icon { width: 14px; height: 14px; }
+.mp-dot--sm[data-state='doing'] { box-shadow: 0 0 0 3px var(--t-blue); }
+@keyframes mp-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mp-dot .mp-icon { animation: none !important; } }
 
-.maya-plan-panel__eyebrow {
-  color: var(--t-green-fg);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+/* The current step's work. */
+.mp-panel { margin-top: 14px; padding: 8px; border-radius: 18px; background: var(--surface); }
+.mp-actions { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.mp-action { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
+.mp-timeline .mp-action { background: var(--surface); }
+.mp-action__body { flex: 1; min-width: 0; }
+.mp-action__body strong { display: block; font-size: 15px; font-weight: 700; }
+.mp-action__body span { display: block; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.mp-action[data-state='done'] .mp-action__body strong { color: var(--muted); text-decoration: line-through; }
 
-.maya-plan-panel h2 {
-  margin: 0.5rem 0 0;
-  color: var(--text);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
+/* Side column. */
+.mp-side { display: flex; flex-direction: column; gap: 16px; }
+.mp-card { padding: 22px; border-radius: 24px; background: var(--surface); }
+.mp-card .mp-kicker { margin-bottom: 14px; }
+.mp-goal { margin-top: 14px; }
+.mp-goal:first-of-type { margin-top: 0; }
+.mp-goal strong { display: block; font-size: 15px; font-weight: 700; line-height: 1.35; }
+.mp-goal span { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.mp-read { display: inline-flex; align-items: center; gap: 8px; width: max-content; padding: 0 4px; border: 0; background: none; color: var(--text); font: 700 15px/1.4 var(--font); cursor: pointer; }
+.mp-read:hover { text-decoration: underline; }
+.mp-written { max-height: 480px; margin: 0; padding: 18px; overflow: auto; border-radius: 18px; background: var(--surface); font: 13px/1.55 var(--font); white-space: pre-wrap; }
 
-.maya-plan-panel p {
-  max-width: 62ch;
-  color: var(--muted);
-  line-height: 1.6;
-}
+.mp-empty { max-width: 720px; padding: 40px 40px 0; }
+.mp-empty p { color: var(--muted); font-size: 17px; line-height: 1.55; }
 
-.maya-plan-proof { margin-top: 1.5rem; padding: 1.1rem 1.25rem; border-radius: 20px; background: var(--bg); }
-.maya-plan-proof__header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
-.maya-plan-proof h3 { margin: 0.35rem 0 0; color: inherit; font-size: 1.35rem; font-weight: 700; }
-.maya-plan-proof__status { display: inline-flex; padding: 0.4rem 0.75rem; border-radius: 999px; color: var(--t-yellow-fg); background: var(--t-yellow); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.maya-plan-proof__status--active { color: var(--t-green-fg); background: var(--t-green); }
-.maya-plan-proof__detail { margin-bottom: 0.5rem; }
-.maya-plan-proof__location { color: var(--muted); font-size: 13px; }
-.maya-plan-proof__document { max-height: 30rem; overflow: auto; margin: 1rem 0 0; padding: 1rem; border-radius: 14px; color: inherit; background: var(--surface); font: inherit; line-height: 1.6; white-space: pre-wrap; }
-.maya-plan-proof__extracted { margin-top: 1rem; }
-.maya-plan-proof__extracted p { margin: 0.45rem 0; }
+/* Timeline. */
+.mp-timeline { display: flex; flex-direction: column; gap: 28px; }
+.mp-thead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.mp-stats { display: flex; gap: 24px; text-align: right; }
+.mp-stats span { display: block; color: var(--muted); font-size: 13px; }
+.mp-stats strong { display: block; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
+.mp-stats strong.is-late { color: var(--t-pink-fg); }
 
-/* The project widgets inside the plan views. */
-.maya-plan-panel ::ng-deep .pv-toolbar .btn,
-.maya-plan-panel ::ng-deep .chip,
-.maya-plan-panel ::ng-deep .pill,
-.maya-plan-panel ::ng-deep .kpi,
-.maya-plan-panel ::ng-deep .tl-item,
-.maya-plan-panel ::ng-deep .lane {
-  color: var(--text);
-  background: var(--bg);
-  border-color: var(--surface2);
-}
+.mp-banner { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 18px; border-radius: 18px; background: var(--t-yellow); color: var(--t-yellow-fg); }
+.mp-banner p { flex: 1; margin: 0; font-size: 14px; line-height: 1.45; }
+.mp-banner .mp-btn--ghost { background: var(--bg); }
+.mp-edit-link { margin-top: -16px; text-align: right; }
+.mp-dates { display: flex; flex-direction: column; gap: 12px; }
+.mp-dates__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; }
+.mp-dates__row label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.mp-dates__row input { height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: var(--bg); color: var(--text); font: 14px var(--font); }
 
-.maya-plan-panel ::ng-deep .kpi .l,
-.maya-plan-panel ::ng-deep .tl-text .d,
-.maya-plan-panel ::ng-deep .lane-list li {
-  color: var(--muted);
-}
+.mp-gantt { padding: 20px 24px 24px; border-radius: 24px; background: var(--surface); }
+.mp-gantt__grid { position: relative; display: grid; grid-template-columns: 240px minmax(0, 1fr); --label: 240px; }
+.mp-gantt__weeks { display: grid; padding-bottom: 10px; color: var(--muted); font-size: 13px; }
+.mp-gantt__label { display: flex; flex-direction: column; justify-content: center; height: 62px; padding-right: 12px; }
+.mp-gantt__label strong { font-size: 15px; font-weight: 700; }
+.mp-gantt__label span { color: var(--muted); font-size: 13px; }
+.mp-gantt__label span.is-late { color: var(--t-pink-fg); font-weight: 700; }
+.mp-gantt__track { position: relative; height: 62px; background-image: linear-gradient(to right, var(--surface2) 1px, transparent 1px); background-size: calc(100% / var(--weeks)) 100%; }
+.mp-bar { position: absolute; top: 50%; transform: translateY(-50%); border-radius: 999px; }
+.mp-bar--planned { height: 32px; border: 2px dashed var(--muted); }
+.mp-bar--planned.is-faded { opacity: .55; }
+.mp-bar--actual { display: flex; align-items: center; height: 24px; padding: 0 10px; overflow: hidden; color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.mp-bar--actual[data-state='done'] { background: var(--green); }
+.mp-bar--actual[data-state='doing'] { background: var(--blue); }
+.mp-bar--overrun { height: 24px; background: repeating-linear-gradient(135deg, var(--pink) 0 6px, transparent 6px 12px); }
+.mp-gantt__today { position: absolute; top: 28px; bottom: 0; left: calc(var(--label) + (100% - var(--label)) * var(--today) / 100); width: 2px; background: var(--text); }
+.mp-legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 13px; }
+.mp-legend li { display: flex; align-items: center; gap: 6px; }
+.mp-legend i { display: inline-block; width: 22px; height: 10px; border-radius: 999px; }
+.mp-legend__planned { border: 2px dashed var(--muted); }
+.mp-legend__done { background: var(--green); }
+.mp-legend__doing { background: var(--blue); }
+.mp-legend__late { background: repeating-linear-gradient(135deg, var(--pink) 0 3px, transparent 3px 6px); }
+.mp-legend .mp-legend__today { width: 2px; height: 14px; border-radius: 0; background: var(--text); }
 
-@media (max-width: 760px) {
-  .marketing-plan-board { padding: 0.75rem 16px 2rem; }
-  .maya-plan-tabs button { padding-inline: 0.5rem; }
+.mp-two { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: start; }
+
+@media (max-width: 900px) {
+  .mp-toggle { margin-right: 16px; }
+  .mp-body, .mp-empty { padding-left: 16px; padding-right: 16px; }
+  .mp-list, .mp-two { grid-template-columns: 1fr; }
+  .mp-head h1, .mp-thead h1, .mp-empty h1 { font-size: 30px; }
+  .mp-need { flex-wrap: wrap; }
+  .mp-thead { flex-direction: column; align-items: flex-start; }
+  .mp-stats { text-align: left; }
+  .mp-banner { flex-wrap: wrap; }
+  .mp-gantt { padding: 16px; overflow-x: auto; }
+  .mp-gantt__grid { min-width: 640px; grid-template-columns: 150px minmax(0, 1fr); --label: 150px; }
+  .mp-dates__row { grid-template-columns: 1fr; }
 }

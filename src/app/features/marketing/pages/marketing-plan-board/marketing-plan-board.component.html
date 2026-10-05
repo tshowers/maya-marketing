@@ -1,73 +1,239 @@
-<div class="marketing-plan-board container-fluid tal-app mb-5" [class.marketing-plan-board--embedded]="isEmbedded">
-  <div class="marketing-plan-board__login-required" *ngIf="!isLoggedIn">
-    <h2>Sign in to view Maya's marketing plan</h2>
-    <p>You need to be logged in to see the plan, its linked work, and the board.</p>
-    <a class="marketing-plan-board__sign-in" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee/plan' }">Sign in</a>
+<!-- Maya's plan (design_handoff_maya_plan_status 18a): List | Timeline. -->
+<ng-template #icon let-name>
+  <svg class="mp-icon" viewBox="0 0 24 24" aria-hidden="true" [ngSwitch]="name">
+    <path *ngSwitchCase="'check'" d="M20 6 9 17l-5-5" />
+    <g *ngSwitchCase="'alert'"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></g>
+    <g *ngSwitchCase="'user'"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></g>
+    <g *ngSwitchCase="'inbox'"><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></g>
+    <g *ngSwitchCase="'calendar'"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></g>
+    <g *ngSwitchCase="'file'"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8" /></g>
+    <path *ngSwitchCase="'loader'" d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+</ng-template>
+
+<ng-template #needIcon let-need>
+  <ng-container *ngTemplateOutlet="icon; context: { $implicit: need.id === 'contacts' ? 'user' : need.id === 'review' ? 'inbox' : 'calendar' }"></ng-container>
+</ng-template>
+
+<ng-template #actionRows let-rows>
+  <ul class="mp-actions">
+    <li *ngFor="let row of rows; trackBy: trackById" class="mp-action" [attr.data-state]="row.state" data-cy="plan-action">
+      <span class="mp-dot mp-dot--sm" [attr.data-state]="row.state" aria-hidden="true">
+        <ng-container *ngIf="row.state === 'done'"><ng-container *ngTemplateOutlet="icon; context: { $implicit: 'check' }"></ng-container></ng-container>
+        <ng-container *ngIf="row.state === 'doing'"><ng-container *ngTemplateOutlet="icon; context: { $implicit: 'loader' }"></ng-container></ng-container>
+        <b *ngIf="row.state === 'stuck'">!</b>
+      </span>
+      <div class="mp-action__body">
+        <strong>{{ row.title }}</strong>
+        <span *ngIf="row.detail">{{ row.detail }}</span>
+      </div>
+      <a *ngIf="row.state === 'stuck' && row.href" class="mp-btn mp-btn--pink" [href]="row.href" target="_blank" rel="noopener">{{ row.needsContact ? 'Pick contact' : 'Answer Maya' }}</a>
+    </li>
+  </ul>
+</ng-template>
+
+<main class="mp-page">
+  <div class="mp-toggle" role="tablist" aria-label="Plan view">
+    <button type="button" role="tab" [class.is-on]="view === 'list'" [attr.aria-selected]="view === 'list'" (click)="setView( 'list' )" data-cy="plan-view-list">List</button>
+    <button type="button" role="tab" [class.is-on]="view === 'timeline'" [attr.aria-selected]="view === 'timeline'" (click)="setView( 'timeline' )" data-cy="plan-view-timeline">Timeline</button>
   </div>
 
-  <ng-container *ngIf="isLoggedIn">
-  <div class="marketing-plan-board__summary" *ngIf="!planLoading">
-    <ng-container *ngIf="activePlan; else noPlan">
-      <h2 class="marketing-plan-board__title">{{ activePlan.title || 'Marketing Plan' }}</h2>
-      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.goals?.length">
-        <strong>Goals:</strong> {{ activePlan.extracted!.goals!.join(', ') }}
-      </div>
-      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.audiences?.length">
-        <strong>Audiences:</strong> {{ activePlan.extracted!.audiences!.join(', ') }}
-      </div>
-      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.contentThemes?.length">
-        <strong>Content themes:</strong> {{ activePlan.extracted!.contentThemes!.join(', ') }}
-      </div>
-      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.kpis?.length">
-        <strong>KPIs:</strong> {{ activePlan.extracted!.kpis!.join(', ') }}
-      </div>
-      <div class="marketing-plan-board__section" *ngIf="activePlan.extracted?.timeline">
-        <strong>Timeline:</strong> {{ activePlan.extracted!.timeline }}
-      </div>
-    </ng-container>
-    <ng-template #noPlan>
-      <p class="marketing-plan-board__empty">Maya hasn't created an active marketing plan yet.</p>
-    </ng-template>
-  </div>
+  <section *ngIf="!loading && !isLoggedIn" class="mp-empty">
+    <h1>Sign in to see Maya’s plan</h1>
+    <p>Your plan, where Maya is in it, and what she needs from you.</p>
+    <a class="mp-btn" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee/plan' }">Sign in</a>
+  </section>
 
-  <nav class="maya-plan-tabs" aria-label="Maya marketing plan views">
-    <button type="button" [class.maya-plan-tab--active]="activeView === 'summary'" (click)="selectView('summary')">Summary</button>
-    <button type="button" [class.maya-plan-tab--active]="activeView === 'work'" (click)="selectView('work')">Work</button>
-    <button type="button" [class.maya-plan-tab--active]="activeView === 'board'" (click)="selectView('board')">Board</button>
-  </nav>
+  <p *ngIf="loading" class="mp-muted mp-body">Loading your plan…</p>
 
-  <section *ngIf="activeView === 'summary'" class="maya-plan-panel maya-plan-panel--summary">
-    <div class="maya-plan-panel__eyebrow">Maya's current direction</div>
-    <h2>One plan, one next decision.</h2>
-    <p>Use the tabs to move from the plan's intent to the work it created, then open the board when you need the full operational view.</p>
-    <div class="maya-plan-proof" *ngIf="activePlan">
-      <div class="maya-plan-proof__header">
-        <div>
-          <div class="maya-plan-panel__eyebrow">Written plan</div>
-          <h3>{{ activePlan.title }}</h3>
+  <section *ngIf="!loading && isLoggedIn && !plan" class="mp-empty">
+    <h1>Maya needs a plan</h1>
+    <p>Paste or write your marketing plan in the chat and Maya will turn it into steps she works through.</p>
+    <a class="mp-btn" routerLink="/">Create a plan with Maya</a>
+  </section>
+
+  <section *ngIf="plan && !steps.length" class="mp-empty">
+    <p class="mp-kicker">Marketing plan</p>
+    <h1>{{ plan.title || 'Marketing plan' }}</h1>
+    <p *ngIf="deriving">Maya is reading your plan and splitting it into steps…</p>
+    <p *ngIf="deriveError" class="mp-error" role="alert">{{ deriveError }}</p>
+  </section>
+
+  <p *ngIf="actionError" class="mp-error mp-body" role="alert">{{ actionError }}</p>
+
+  <!-- List -->
+  <div *ngIf="plan && steps.length && view === 'list'" class="mp-body mp-list">
+    <div class="mp-col">
+      <header class="mp-head">
+        <p class="mp-kicker">Marketing plan
+          <span class="mp-health" [attr.data-health]="health">
+            <ng-container *ngTemplateOutlet="icon; context: { $implicit: health === 'done' || health === 'on-track' ? 'check' : 'alert' }"></ng-container>{{ healthLabel }}
+          </span>
+        </p>
+        <h1>{{ plan.title || 'Marketing plan' }}</h1>
+        <p class="mp-maya"><img [src]="avatarUrl" alt="" />{{ sentence }}</p>
+      </header>
+
+      <div class="mp-progress">
+        <div class="mp-segments" [style.grid-template-columns]="'repeat(' + steps.length + ', 1fr)'">
+          <span *ngFor="let step of steps" [attr.data-state]="step.state" [attr.title]="step.title"></span>
         </div>
-        <span class="maya-plan-proof__status" [class.maya-plan-proof__status--active]="planLinkedWorkCount > 0">{{ planEvidenceLabel }}</span>
+        <div class="mp-progress__meta"><span>{{ doneCount }} of {{ steps.length }} steps done</span><span>{{ timelineLabel }}</span></div>
       </div>
-      <p class="maya-plan-proof__detail">{{ planEvidenceDetail }}</p>
-      <div class="maya-plan-proof__location">Plan location: TODD marketing plan record<span *ngIf="activePlan.sourceFileName"> · {{ activePlan.sourceFileName }}</span></div>
-      <pre class="maya-plan-proof__document" *ngIf="activePlan.rawText; else extractedPlan">{{ activePlan.rawText }}</pre>
-      <ng-template #extractedPlan>
-        <div class="maya-plan-proof__extracted">
-          <p *ngIf="activePlan.extracted.goals?.length"><strong>Goals:</strong> {{ activePlan.extracted.goals.join(' · ') }}</p>
-          <p *ngIf="activePlan.extracted.audiences?.length"><strong>Audiences:</strong> {{ activePlan.extracted.audiences.join(' · ') }}</p>
-          <p *ngIf="activePlan.extracted.kpis?.length"><strong>KPIs:</strong> {{ activePlan.extracted.kpis.join(' · ') }}</p>
-          <p *ngIf="activePlan.extracted.timeline"><strong>Timeline:</strong> {{ activePlan.extracted.timeline }}</p>
+
+      <section *ngIf="needs.length" aria-labelledby="mp-needs">
+        <h2 id="mp-needs" class="mp-h2">What I need from you <span class="mp-badge">{{ needs.length }}</span></h2>
+        <div class="mp-needs">
+          <article *ngFor="let need of needs" class="mp-need" data-cy="plan-need">
+            <span class="mp-need__icon"><ng-container *ngTemplateOutlet="needIcon; context: { $implicit: need }"></ng-container></span>
+            <div class="mp-need__body">
+              <strong>{{ need.title }}</strong>
+              <p>{{ need.detail }}</p>
+            </div>
+            <div class="mp-need__actions">
+              <a *ngIf="need.primaryHref" class="mp-btn" [href]="need.primaryHref" target="_blank" rel="noopener">{{ need.primaryLabel }}</a>
+              <button *ngIf="!need.primaryHref" type="button" class="mp-btn" (click)="onNeed( need )" [disabled]="saving">{{ need.primaryLabel }}</button>
+              <a *ngIf="need.secondaryLabel && need.secondaryHref" class="mp-btn mp-btn--ghost" [href]="need.secondaryHref" target="_blank" rel="noopener">{{ need.secondaryLabel }}</a>
+              <button *ngIf="need.secondaryLabel && !need.secondaryHref" type="button" class="mp-btn mp-btn--ghost" (click)="onNeed( need, true )" [disabled]="saving">{{ need.secondaryLabel }}</button>
+            </div>
+          </article>
         </div>
-      </ng-template>
+      </section>
+
+      <section aria-labelledby="mp-steps">
+        <h2 id="mp-steps" class="mp-h2">The plan, step by step</h2>
+        <ol class="mp-stepper">
+          <li *ngFor="let step of steps; let last = last; trackBy: trackById" class="mp-step" [attr.data-state]="step.state" data-cy="plan-step">
+            <div class="mp-step__rail">
+              <span class="mp-dot" [attr.data-state]="step.state" aria-hidden="true">
+                <ng-container *ngIf="step.state === 'done'"><ng-container *ngTemplateOutlet="icon; context: { $implicit: 'check' }"></ng-container></ng-container>
+                <ng-container *ngIf="step.state === 'doing'"><ng-container *ngTemplateOutlet="icon; context: { $implicit: 'loader' }"></ng-container></ng-container>
+                <b *ngIf="step.state === 'stuck'">!</b>
+                <span *ngIf="step.state === 'todo'">{{ step.number }}</span>
+              </span>
+              <span *ngIf="!last" class="mp-step__line" [class.is-done]="step.state === 'done'"></span>
+            </div>
+            <div class="mp-step__content">
+              <div class="mp-step__title">
+                <h3>{{ step.title }}</h3>
+                <span class="mp-tag" [attr.data-state]="step.state">{{ stepTag( step ) }}</span>
+                <span *ngIf="step.isCurrent" class="mp-here">You are here</span>
+              </div>
+              <p>{{ step.summary }}</p>
+              <ng-container *ngIf="step.isCurrent">
+                <div *ngIf="rows.length" class="mp-panel">
+                  <ng-container *ngTemplateOutlet="actionRows; context: { $implicit: rows }"></ng-container>
+                </div>
+                <p *ngIf="!rows.length" class="mp-muted mp-small">Maya’s daily planner adds this step’s work at 6 AM.</p>
+                <button type="button" class="mp-link" (click)="completeCurrentStep()" [disabled]="saving">This step is finished</button>
+              </ng-container>
+            </div>
+          </li>
+        </ol>
+      </section>
     </div>
-  </section>
 
-  <section *ngIf="activeView === 'work'" class="maya-plan-panel">
-    <app-project-view mode="page" [project]="projectDropdown" [tasks]="tasks"></app-project-view>
-  </section>
+    <aside class="mp-side">
+      <section *ngIf="plan.goals?.length" class="mp-card">
+        <p class="mp-kicker">Goals</p>
+        <div *ngFor="let goal of plan.goals" class="mp-goal">
+          <strong>{{ goal.goal }}</strong>
+          <span *ngIf="goalStepsLabel( goal.stepIds )">{{ goalStepsLabel( goal.stepIds ) }}</span>
+        </div>
+      </section>
+      <section *ngIf="plan.owners" class="mp-card">
+        <p class="mp-kicker">Who does what</p>
+        <div class="mp-goal"><strong>Maya</strong><span>{{ plan.owners.maya }}</span></div>
+        <div class="mp-goal"><strong>TODD</strong><span>{{ plan.owners.todd }}</span></div>
+        <div class="mp-goal"><strong>You</strong><span>{{ plan.owners.you }}</span></div>
+      </section>
+      <button type="button" class="mp-read" (click)="showWrittenPlan = !showWrittenPlan" [attr.aria-expanded]="showWrittenPlan">
+        <ng-container *ngTemplateOutlet="icon; context: { $implicit: 'file' }"></ng-container>{{ showWrittenPlan ? 'Hide the written plan' : 'Read the written plan' }}
+      </button>
+      <pre *ngIf="showWrittenPlan" class="mp-written">{{ plan.rawText || 'The written plan wasn’t saved with this plan.' }}</pre>
+    </aside>
+  </div>
 
-  <section *ngIf="activeView === 'board'" class="maya-plan-panel">
-    <app-project-sticky-board [projectId]="projectId" (tasksChange)="onTasksChange($event)"></app-project-sticky-board>
-  </section>
-  </ng-container>
-</div>
+  <!-- Timeline -->
+  <div *ngIf="plan && steps.length && view === 'timeline'" class="mp-body mp-timeline">
+    <header class="mp-thead">
+      <div>
+        <p class="mp-kicker">Marketing plan</p>
+        <h1>{{ plan.title || 'Marketing plan' }}</h1>
+        <p class="mp-maya"><img [src]="avatarUrl" alt="" />{{ sentence }}</p>
+      </div>
+      <div class="mp-stats">
+        <div><span>Steps done</span><strong>{{ doneCount }} of {{ steps.length }}</strong></div>
+        <div><span>Against plan</span><strong [class.is-late]="againstPlan !== 'On time'">{{ againstPlan }}</strong></div>
+      </div>
+    </header>
+
+    <div *ngIf="!plan.datesConfirmed && !editingDates" class="mp-banner">
+      <ng-container *ngTemplateOutlet="icon; context: { $implicit: 'calendar' }"></ng-container>
+      <p>Your plan doesn’t give dates for each step, so these dates are my proposal. Keep them and I’ll hold myself to them.</p>
+      <button type="button" class="mp-btn" (click)="keepDates()" [disabled]="saving">Keep these dates</button>
+      <button type="button" class="mp-btn mp-btn--ghost" (click)="startEditingDates()" [disabled]="saving">Edit dates</button>
+    </div>
+    <div *ngIf="plan.datesConfirmed && !editingDates" class="mp-edit-link">
+      <button type="button" class="mp-link" (click)="startEditingDates()">Edit dates</button>
+    </div>
+
+    <section *ngIf="editingDates" class="mp-card mp-dates" aria-label="Edit step dates">
+      <div *ngFor="let step of steps" class="mp-dates__row">
+        <strong>{{ step.number }}. {{ step.title }}</strong>
+        <label>Start <input type="date" [(ngModel)]="dateDrafts[step.id].plannedStart" [name]="'start-' + step.id" /></label>
+        <label>End <input type="date" [(ngModel)]="dateDrafts[step.id].plannedEnd" [name]="'end-' + step.id" /></label>
+      </div>
+      <div class="mp-need__actions">
+        <button type="button" class="mp-btn" (click)="saveDates()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save dates' }}</button>
+        <button type="button" class="mp-btn mp-btn--ghost" (click)="editingDates = false" [disabled]="saving">Cancel</button>
+      </div>
+    </section>
+
+    <section class="mp-gantt" aria-label="Plan timeline">
+      <div class="mp-gantt__grid">
+        <span></span>
+        <div class="mp-gantt__weeks" [style.grid-template-columns]="'repeat(' + weeks.length + ', 1fr)'">
+          <span *ngFor="let week of weeks">{{ week }}</span>
+        </div>
+        <ng-container *ngFor="let row of timeline">
+          <div class="mp-gantt__label">
+            <strong>{{ row.step.number }}. {{ row.step.title }}</strong>
+            <span [class.is-late]="row.step.late || (row.step.isCurrent && !!row.overrun)">{{ row.sub }}</span>
+          </div>
+          <div class="mp-gantt__track" [style.--weeks]="weeks.length">
+            <span *ngIf="row.planned" class="mp-bar mp-bar--planned" [class.is-faded]="!!row.actual" [style.left.%]="row.planned.left" [style.width.%]="row.planned.width"></span>
+            <span *ngIf="row.actual" class="mp-bar mp-bar--actual" [attr.data-state]="row.step.state === 'done' ? 'done' : 'doing'" [style.left.%]="row.actual.left" [style.width.%]="row.actual.width">{{ row.actualLabel }}</span>
+            <span *ngIf="row.overrun" class="mp-bar mp-bar--overrun" [style.left.%]="row.overrun.left" [style.width.%]="row.overrun.width"></span>
+          </div>
+        </ng-container>
+        <span *ngIf="todayLeft !== null" class="mp-gantt__today" [style.--today]="todayLeft"></span>
+      </div>
+      <ul class="mp-legend">
+        <li><i class="mp-legend__planned"></i>Planned</li>
+        <li><i class="mp-legend__done"></i>Done</li>
+        <li><i class="mp-legend__doing"></i>In progress</li>
+        <li><i class="mp-legend__late"></i>Running late</li>
+        <li><i class="mp-legend__today"></i>Today, {{ shortDate( today ) }}</li>
+      </ul>
+    </section>
+
+    <div class="mp-two">
+      <section *ngIf="current">
+        <h2 class="mp-h2">{{ current.title }} this week</h2>
+        <ng-container *ngIf="rows.length; else noRows">
+          <ng-container *ngTemplateOutlet="actionRows; context: { $implicit: rows }"></ng-container>
+        </ng-container>
+        <ng-template #noRows><p class="mp-muted">Maya’s daily planner adds this step’s work at 6 AM.</p></ng-template>
+      </section>
+      <section *ngIf="otherNeeds.length">
+        <h2 class="mp-h2">What I need from you <span class="mp-badge">{{ otherNeeds.length }}</span></h2>
+        <article *ngFor="let need of otherNeeds" class="mp-need mp-need--pink" data-cy="plan-need">
+          <strong>{{ need.title }}</strong>
+          <p>{{ need.detail }}</p>
+          <a class="mp-btn" [href]="need.primaryHref" target="_blank" rel="noopener">{{ need.primaryLabel }}</a>
+        </article>
+      </section>
+    </div>
+  </div>
+</main>

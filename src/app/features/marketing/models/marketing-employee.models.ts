@@ -116,6 +116,29 @@ export interface MarketingPlanExtractedPayload {
   timeline: string;
 }
 
+/** One step of the plan as Maya works through it (todd-backend maya/planSteps.js). */
+export interface MarketingPlanStep {
+  id: string;
+  title: string;
+  summary: string;
+  /** YYYY-MM-DD; Maya's proposal until the plan's datesConfirmed is true. */
+  plannedStart?: string | null;
+  plannedEnd?: string | null;
+  status: 'done' | 'doing' | 'todo';
+  completedAt?: string | null;
+}
+
+export interface MarketingPlanGoalSteps {
+  goal: string;
+  stepIds: string[];
+}
+
+export interface MarketingPlanOwners {
+  maya: string;
+  todd: string;
+  you: string;
+}
+
 export interface MarketingPlanRecord extends Omit<EmployeePlanRecord, 'employeeType' | 'planKind' | 'extracted' | 'status'> {
   id?: string;
   employeeId: string;
@@ -127,6 +150,12 @@ export interface MarketingPlanRecord extends Omit<EmployeePlanRecord, 'employeeT
   status: MarketingPlanStatus;
   sourceFileName?: string;
   sourceFileUrl?: string;
+  /** Empty until Maya has split the plan into steps. */
+  steps?: MarketingPlanStep[];
+  goals?: MarketingPlanGoalSteps[];
+  owners?: MarketingPlanOwners | null;
+  /** False while the step dates are Maya's proposal. */
+  datesConfirmed?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
 }

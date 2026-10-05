@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#d9dce3}
+a{color:#1f55e0;text-decoration:none}a:hover{color:#1f55e0}
+.fx{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;--bg:#fff;--surface:#f2f3f6;--surface2:#e4e7ed;--canvas:#d9dce3;--text:#0f1115;--muted:#5a6170;--blue:#2f6bff;--pink:#ff4fa8;--green:#22b35e;--yellow:#ffd92e;--t-blue:#e3ecff;--t-blue-fg:#1d4fd6;--t-pink:#ffe3f1;--t-pink-fg:#a8105a;--t-yellow:#fff4c2;--t-yellow-fg:#6e5700;--t-green:#e0f6e6;--t-green-fg:#17703a;--shadow:0 20px 50px rgba(15,17,21,.12)}
+.fx[data-theme=dark]{--bg:#0c0e13;--surface:#171a22;--surface2:#242936;--canvas:#05060a;--text:#f2f4f8;--muted:#9aa2b2;--blue:#3d7bff;--t-blue:#15254a;--t-blue-fg:#a3c1ff;--t-pink:#3a1029;--t-pink-fg:#ff92c9;--t-yellow:#2f2906;--t-yellow-fg:#ffe56a;--t-green:#0e2c19;--t-green-fg:#80e2a4;--shadow:0 20px 50px rgba(0,0,0,.55)}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<section class="fx" data-theme="{{ theme }}" style="padding:64px;display:flex;flex-direction:column;gap:80px;background:var(--canvas);color:var(--text);min-height:100vh">
+
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;max-width:900px"><div style="font-size:24px;font-weight:700;letter-spacing:-0.02em">Plan · list or timeline</div><div style="font-size:15px;line-height:1.5;color:var(--muted);text-wrap:pretty">The plan stops being a document and becomes a sequence. Every piece of work Maya does is attached to a plan step, so you can see where you are, what is stuck, and what she needs from you. One page, two views: List is a checklist you read top to bottom; Timeline puts the same steps on a calendar so you can see whether Maya is keeping to the dates. Use the toggle at the top right.</div></div>
+<div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+
+<div id="18a" style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:center"><span style="padding:4px 10px;border-radius:999px;background:var(--text);color:var(--bg);font-size:13px;font-weight:700">18a</span><span style="font-weight:600">Laptop · plan, with view toggle</span></div>
+<div style="width:1280px;background:var(--bg);color:var(--text);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:12px;padding:20px 40px"><img src="assets/maya-avatar.png" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:left center;flex:none"><span style="font-size:20px;font-weight:700;letter-spacing:-0.02em;flex:1">Maya <span style="font-weight:500;color:var(--muted)">Marketing advice</span></span><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--surface);color:var(--text);display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600"><span style="{{ I.bar }}"></span>Status</a><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--t-green);color:var(--t-green-fg);display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700"><span style="{{ I.file }}"></span>Plan</a><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700"><span style="{{ I.menu }}"></span>Menu</a></div>
+<div style="display:flex;justify-content:flex-end;padding:4px 40px 0"><div style="display:flex;gap:4px;background:var(--surface);border-radius:999px;padding:4px"><button type="button" onClick="{{ setPL }}" style="{{ segPL }}">List</button><button type="button" onClick="{{ setPT }}" style="{{ segPT }}">Timeline</button></div></div>
+<div style="{{ showPL }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:48px;padding:24px 40px 56px">
+<div style="display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Marketing plan</span><span style="height:26px;padding:0 10px;border-radius:999px;background:var(--t-pink);color:var(--t-pink-fg);display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700"><span style="{{ I.alert14 }}"></span>Stuck · needs you</span></div>
+<span style="font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.05">Taliferro Tech Marketing Plan</span>
+<div style="display:flex;gap:12px;align-items:flex-start;padding-top:4px"><img src="assets/maya-avatar.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:left center;flex:none"><span style="font-size:17px;line-height:1.55;text-wrap:pretty">We’re on step 4 of 6, lead generation. Two investor drafts are stuck because I can’t find the right person to write to. If you pick those contacts and clear the review queue, I can finish this step this week.</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px"><sc-for list="{{ steps }}" as="s" hint-placeholder-count="6"><span style="{{ s.seg }}"></span></sc-for></div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted)"><span>3 of 6 steps done</span><span>Timeline not set</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px;font-weight:700;letter-spacing:-0.01em">What I need from you</span><span style="min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;box-sizing:border-box">3</span></div>
+<sc-for list="{{ needs }}" as="n" hint-placeholder-count="3">
+<div style="background:var(--surface);border-radius:20px;padding:18px 20px;display:flex;gap:16px;align-items:center">
+<span style="width:40px;height:40px;border-radius:50%;background:var(--t-pink);color:var(--t-pink-fg);display:flex;align-items:center;justify-content:center;flex:none"><span style="{{ n.ico }}"></span></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:16px;font-weight:700">{{ n.t }}</span><span style="font-size:14px;line-height:1.5;color:var(--muted);text-wrap:pretty">{{ n.d }}</span></div>
+<div style="display:flex;gap:8px;flex:none"><a href="#" style="height:40px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;font-size:14px;font-weight:700">{{ n.a }}</a><sc-if value="{{ n.b }}" hint-placeholder-val="{{ true }}"><a href="#" style="height:40px;padding:0 16px;border-radius:999px;background:var(--bg);color:var(--text);display:flex;align-items:center;font-size:14px;font-weight:600">{{ n.b }}</a></sc-if></div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<span style="font-size:20px;font-weight:700;letter-spacing:-0.01em;padding-bottom:10px">The plan, step by step</span>
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:16px">
+<div style="display:flex;flex-direction:column;align-items:center"><span style="{{ s.dot }}"><span style="{{ s.ico }}"></span>{{ s.num }}</span><span style="{{ s.line }}"></span></div>
+<div style="{{ s.body }}">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:17px;font-weight:700">{{ s.t }}</span><span style="{{ s.tag }}">{{ s.tagL }}</span><sc-if value="{{ s.here }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t-blue-fg)">You are here</span></sc-if></div>
+<span style="font-size:14px;line-height:1.5;color:var(--muted);text-wrap:pretty">{{ s.d }}</span>
+<sc-if value="{{ s.hasKids }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:2px;background:var(--surface);border-radius:18px;padding:8px;margin-top:8px">
+<sc-for list="{{ kids }}" as="k" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--bg)">
+<span style="{{ k.dot }}"><span style="{{ k.ico }}"></span></span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="{{ k.title }}">{{ k.t }}</span><span style="font-size:13px;color:var(--muted)">{{ k.note }}</span></span>
+<sc-if value="{{ k.act }}" hint-placeholder-val="{{ false }}"><a href="#" style="height:34px;padding:0 14px;border-radius:999px;background:var(--t-pink);color:var(--t-pink-fg);display:flex;align-items:center;font-size:13px;font-weight:700;flex:none">{{ k.act }}</a></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--surface);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Goals</span>
+<sc-for list="{{ goals }}" as="g" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:700;line-height:1.35">{{ g.t }}</span><span style="font-size:13px;color:var(--muted)">{{ g.s }}</span></div></sc-for>
+</div>
+<div style="background:var(--surface);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Who does what</span>
+<sc-for list="{{ owners }}" as="o" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:15px;font-weight:700">{{ o.t }}</span><span style="font-size:13px;line-height:1.45;color:var(--muted)">{{ o.s }}</span></div></sc-for>
+</div>
+<a href="#" style="display:flex;align-items:center;gap:8px;padding:0 6px;font-size:15px;font-weight:600;color:var(--text)"><span style="{{ I.file }}"></span>Read the written plan</a>
+</div>
+</div>
+</div>
+<div style="{{ showPT }}">
+<div style="display:flex;flex-direction:column;gap:28px;padding:24px 40px 56px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px;max-width:720px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Marketing plan</span>
+<span style="font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.05">Taliferro Tech Marketing Plan</span>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/maya-avatar.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:left center;flex:none"><span style="font-size:17px;line-height:1.55;text-wrap:pretty">About a week behind. Lead generation was due Oct 5 and 2 of 6 drafts are done. If you pick the two missing contacts by Wednesday, I can finish it by Oct 12 and start channel strategy after that.</span></div>
+</div>
+<div style="display:flex;gap:16px;flex:none">
+<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:13px;color:var(--muted)">Steps done</span><span style="font-size:28px;font-weight:700;letter-spacing:-0.02em">3 of 6</span></div>
+<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span style="font-size:13px;color:var(--muted)">Against plan</span><span style="font-size:28px;font-weight:700;letter-spacing:-0.02em;color:var(--t-pink-fg)">+1 week</span></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:14px;background:var(--t-yellow);color:var(--t-yellow-fg);border-radius:18px;padding:12px 12px 12px 18px">
+<span style="{{ I.cal }}"></span><span style="flex:1;font-size:15px;line-height:1.45">Your plan’s timeline says “To be determined”, so these dates are my proposal. Keep them and I’ll hold myself to them.</span>
+<a href="#" style="height:38px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;font-size:14px;font-weight:700">Keep these dates</a><a href="#" style="height:38px;padding:0 16px;border-radius:999px;background:var(--bg);color:var(--text);display:flex;align-items:center;font-size:14px;font-weight:600">Edit dates</a>
+</div>
+<div style="background:var(--surface);border-radius:24px;padding:20px 24px 24px;display:flex;flex-direction:column;gap:6px">
+<div style="display:grid;grid-template-columns:240px minmax(0,1fr);align-items:end;padding-bottom:6px">
+<span></span>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));font-size:13px;color:var(--muted)"><sc-for list="{{ weeks }}" as="w" hint-placeholder-count="8"><span style="{{ w.s }}">{{ w.l }}</span></sc-for></div>
+</div>
+<sc-for list="{{ gantt }}" as="g" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:240px minmax(0,1fr);align-items:center;min-height:56px">
+<div style="display:flex;flex-direction:column;gap:2px;padding-right:16px"><span style="font-size:15px;font-weight:700">{{ g.n }}. {{ g.t }}</span><span style="{{ g.subS }}">{{ g.sub }}</span></div>
+<div style="position:relative;height:56px;background:repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 1px),var(--surface2) calc(12.5% - 1px) 12.5%)">
+<span style="{{ g.plan }}"></span>
+<span style="{{ g.bar }}">{{ g.barL }}</span>
+<sc-if value="{{ g.hasFc }}" hint-placeholder-val="{{ false }}"><span style="{{ g.fc }}"></span></sc-if>
+<span style="position:absolute;top:-6px;bottom:-6px;left:50%;width:2px;background:var(--text)"></span>
+</div>
+</div>
+</sc-for>
+<div style="display:grid;grid-template-columns:240px minmax(0,1fr);padding-top:8px">
+<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);grid-column:1 / 3;align-items:center">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:10px;border-radius:999px;border:2px dashed var(--muted);box-sizing:border-box"></span>Planned</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:10px;border-radius:999px;background:var(--green)"></span>Done</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:10px;border-radius:999px;background:var(--blue)"></span>In progress</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:10px;border-radius:999px;background:repeating-linear-gradient(135deg,var(--t-pink) 0 4px,var(--pink) 4px 7px)"></span>Running late</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:2px;height:14px;background:var(--text)"></span>Today, Oct 5</span>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font-size:20px;font-weight:700;letter-spacing:-0.01em">Lead generation this week</span>
+<sc-for list="{{ kids }}" as="k" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:var(--surface)">
+<span style="{{ k.dot }}"><span style="{{ k.ico }}"></span></span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="{{ k.title }}">{{ k.t }}</span><span style="font-size:13px;color:var(--muted)">{{ k.note }}</span></span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px;font-weight:700;letter-spacing:-0.01em">What I need from you</span><span style="min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;box-sizing:border-box">2</span></div>
+<sc-for list="{{ needs2 }}" as="n" hint-placeholder-count="2">
+<div style="background:var(--t-pink);color:var(--t-pink-fg);border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">{{ n.t }}</span><span style="font-size:14px;line-height:1.5;text-wrap:pretty">{{ n.d }}</span></div>
+<a href="#" style="align-self:flex-start;height:38px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;font-size:14px;font-weight:700">{{ n.a }}</a>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;max-width:900px"><div style="font-size:24px;font-weight:700;letter-spacing:-0.02em">Status · columns or timeline</div><div style="font-size:15px;line-height:1.5;color:var(--muted);text-wrap:pretty">Status answers three questions: what Maya has done, what she is doing, and what comes next. The stop notice turns into one clear ask with a button. Each item says which plan step it serves, so Status and Plan agree. One page, two views: Done, doing, next sorts the day into three columns; Today’s run keeps the 10-step daily run as a timeline with real times and plain names.</div></div>
+<div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+
+<div id="19a" style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:center"><span style="padding:4px 10px;border-radius:999px;background:var(--text);color:var(--bg);font-size:13px;font-weight:700">19a</span><span style="font-weight:600">Laptop · status, with view toggle</span></div>
+<div style="width:1280px;background:var(--bg);color:var(--text);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:12px;padding:20px 40px"><img src="assets/maya-avatar.png" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:left center;flex:none"><span style="font-size:20px;font-weight:700;letter-spacing:-0.02em;flex:1">Maya <span style="font-weight:500;color:var(--muted)">Marketing advice</span></span><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--t-green);color:var(--t-green-fg);display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700"><span style="{{ I.bar }}"></span>Status</a><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--surface);color:var(--text);display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600"><span style="{{ I.file }}"></span>Plan</a><a href="#" style="height:42px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700"><span style="{{ I.menu }}"></span>Menu</a></div>
+<div style="display:flex;justify-content:flex-end;padding:4px 40px 0"><div style="display:flex;gap:4px;background:var(--surface);border-radius:999px;padding:4px"><button type="button" onClick="{{ setSC }}" style="{{ segSC }}">Done, doing, next</button><button type="button" onClick="{{ setST }}" style="{{ segST }}">Today’s run</button></div></div>
+<div style="{{ showSC }}">
+<div style="display:flex;flex-direction:column;gap:28px;padding:24px 40px 56px">
+<div style="display:flex;flex-direction:column;gap:12px;max-width:760px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Status · Monday, October 5</span>
+<span style="font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.05">I’m paused until you review.</span>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="assets/maya-avatar.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:left center;flex:none"><span style="font-size:17px;line-height:1.55;text-wrap:pretty">I wrote two investor drafts this morning, then stopped. 56 tasks and 2,152 email drafts are waiting on you. Once the queue is clear I’ll pick up the rest of the investor batch.</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:16px;background:var(--t-pink);color:var(--t-pink-fg);border-radius:20px;padding:16px 16px 16px 20px">
+<span style="{{ I.pause }}"></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700">New work is on hold</span><span style="font-size:14px;line-height:1.45">Anything left unreviewed for 14 days expires. The oldest task expires Thursday.</span></div>
+<a href="#" style="height:42px;padding:0 18px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;font-size:15px;font-weight:700">Review 56 tasks</a><a href="#" style="height:42px;padding:0 18px;border-radius:999px;background:var(--bg);color:var(--text);display:flex;align-items:center;font-size:15px;font-weight:600">Open drafts</a>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start">
+<sc-for list="{{ cols }}" as="c" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 4px"><span style="{{ c.dot }}"></span><span style="font-size:18px;font-weight:700">{{ c.t }}</span><span style="font-size:14px;color:var(--muted)">{{ c.n }}</span></div>
+<sc-for list="{{ c.items }}" as="i" hint-placeholder-count="3">
+<div style="{{ i.card }}">
+<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)"><span style="{{ i.whenS }}">{{ i.when }}</span><span>{{ i.who }}</span></div>
+<span style="font-size:16px;font-weight:700;line-height:1.3">{{ i.t }}</span>
+<span style="font-size:14px;line-height:1.5;color:var(--muted);text-wrap:pretty">{{ i.d }}</span>
+<span style="align-self:flex-start;height:24px;padding:0 10px;border-radius:999px;background:var(--bg);color:var(--muted);display:flex;align-items:center;font-size:12px;font-weight:600">Plan · {{ i.plan }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<a href="#" style="align-self:flex-start;display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:999px;padding:10px 18px 10px 14px;color:var(--text);font-size:15px"><span style="{{ I.file }}"></span><span><b>Plan:</b> step 4 of 6, lead generation · about a week behind</span><span style="{{ I.arrow }}"></span></a>
+</div>
+</div>
+<div style="{{ showST }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:48px;padding:24px 40px 56px">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Today · Monday, October 5</span>
+<span style="font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.05">Step 4 of 10: stopped at drafts.</span>
+<div style="display:flex;gap:16px;align-items:center"><div style="flex:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px"><sc-for list="{{ run }}" as="r" hint-placeholder-count="10"><span style="{{ r.seg }}"></span></sc-for></div><span style="font-size:14px;color:var(--muted);flex:none">3 done · 1 stopped · 6 to go</span></div>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ run }}" as="r" hint-placeholder-count="10">
+<div style="display:grid;grid-template-columns:72px 36px minmax(0,1fr);column-gap:14px">
+<span style="{{ r.timeS }}">{{ r.time }}</span>
+<div style="display:flex;flex-direction:column;align-items:center"><span style="{{ r.dot }}"><span style="{{ r.ico }}"></span>{{ r.num }}</span><span style="{{ r.line }}"></span></div>
+<div style="{{ r.body }}">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="{{ r.titleS }}">{{ r.t }}</span><span style="{{ r.whoS }}">{{ r.who }}</span></div>
+<span style="font-size:14px;line-height:1.5;color:var(--muted);text-wrap:pretty">{{ r.d }}</span>
+<sc-if value="{{ r.act }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;padding-top:6px"><a href="#" style="height:38px;padding:0 16px;border-radius:999px;background:var(--text);color:var(--bg);display:flex;align-items:center;font-size:14px;font-weight:700">{{ r.act }}</a><a href="#" style="height:38px;padding:0 16px;border-radius:999px;background:var(--bg);color:var(--text);display:flex;align-items:center;font-size:14px;font-weight:600">Why the limit?</a></div></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--t-pink);color:var(--t-pink-fg);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Needs you</span>
+<sc-for list="{{ needs }}" as="n" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:15px;font-weight:700">{{ n.t }}</span><a href="#" style="font-size:14px;font-weight:600;color:var(--t-pink-fg);text-decoration:underline">{{ n.a }}</a></div></sc-for>
+</div>
+<div style="background:var(--surface);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Where today sits in the plan</span>
+<span style="font-size:17px;font-weight:700">Step 4 of 6 · Lead generation</span>
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px"><sc-for list="{{ steps }}" as="s" hint-placeholder-count="6"><span style="{{ s.seg }}"></span></sc-for></div>
+<span style="font-size:14px;line-height:1.5;color:var(--muted)">Today’s drafts are the investor outreach for this step. 2 of 6 done, about a week behind.</span>
+<a href="#" style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--text)">Open plan<span style="{{ I.arrow }}"></span></a>
+</div>
+<div style="background:var(--surface);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Tomorrow</span>
+<span style="font-size:14px;line-height:1.5;color:var(--muted);text-wrap:pretty">Finish Sapphire Ventures and Ascend VC drafts, then queue this week’s LinkedIn posts for the summer AI operations campaign.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</div>
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;planView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;timeline&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;'list'|'timeline'&quot;},&quot;statusView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;cols&quot;,&quot;timeline&quot;],&quot;default&quot;:&quot;cols&quot;,&quot;tsType&quot;:&quot;'cols'|'timeline'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const P = {
+      menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+      bar: '<path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/>',
+      file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"/>',
+      check: '<path d="M20 6 9 17l-5-5"/>',
+      alert: '<path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/>',
+      excl: '<path d="M12 5v9M12 19h.01"/>',
+      cal: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+      user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+      inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+      pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+      arrow: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+      loader: '<path d="M21 12a9 9 0 1 1-6.2-8.6"/>',
+      clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+    };
+    const ic = (k, s, w = 2.75) => { const u = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${P[k]}</svg>`)}")`; return { width: s, height: s, flex: 'none', display: 'inline-block', background: 'currentColor', WebkitMask: `${u} center/contain no-repeat`, mask: `${u} center/contain no-repeat` }; };
+    const I = { menu: ic('menu', 18), bar: ic('bar', 18), file: ic('file', 18), alert14: ic('alert', 14), cal: ic('cal', 20), pause: ic('pause', 22), arrow: ic('arrow', 16) };
+    const none = { display: 'none' };
+    const ST = {
+      done: { bg: 'var(--green)', fg: '#fff', tag: ['var(--t-green)', 'var(--t-green-fg)'], icon: 'check', seg: 'var(--green)' },
+      doing: { bg: 'var(--blue)', fg: '#fff', tag: ['var(--t-blue)', 'var(--t-blue-fg)'], icon: 'loader', seg: 'var(--blue)' },
+      stuck: { bg: 'var(--pink)', fg: '#fff', tag: ['var(--t-pink)', 'var(--t-pink-fg)'], icon: 'excl', seg: 'var(--pink)' },
+      todo: { bg: 'var(--bg)', fg: 'var(--muted)', tag: ['var(--surface)', 'var(--muted)'], icon: null, seg: 'var(--surface2)' }
+    };
+    const dot = (st, sz) => ({ width: sz, height: sz, borderRadius: '50%', flex: 'none', background: ST[st].bg, color: ST[st].fg, boxShadow: st === 'todo' ? 'inset 0 0 0 2px var(--surface2)' : st === 'doing' ? '0 0 0 5px var(--t-blue)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700 });
+    const icoFor = (st, sz) => ST[st].icon ? { ...ic(ST[st].icon, sz, 3), ...(st === 'doing' ? { animation: 'spin 1.4s linear infinite' } : {}) } : none;
+    const tag = (st) => ({ height: 24, padding: '0 10px', borderRadius: 999, background: ST[st].tag[0], color: ST[st].tag[1], display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 700 });
+    const stepsRaw = [
+      ['Positioning statement', 'How Taliferro Tech stands apart from other automation vendors.', 'done', 'Done'],
+      ['Target audience', 'Small business owners, operations leaders, and existing customers ready to expand.', 'done', 'Done'],
+      ['Messaging framework', 'Education-led messages tied to practical operations wins.', 'done', 'Done'],
+      ['Lead generation', 'Outreach to investors and consulting prospects, drafted by me and sent through TODD.', 'doing', '2 of 6 done · 2 stuck'],
+      ['Channel strategy', 'The email, LinkedIn and SEO mix for the summer AI operations campaign. Starts when lead generation is done.', 'todo', 'Up next'],
+      ['KPIs and metrics', 'The plan says “measure success and adjust”. I’ll need real targets from you before this step.', 'todo', 'Needs targets']
+    ];
+    const steps = stepsRaw.map(([t, d, st, tagL], i) => ({
+      t, d, tagL, num: st === 'todo' ? String(i + 1) : '', here: st === 'doing', hasKids: st === 'doing',
+      dot: dot(st, 40), ico: icoFor(st, 18), tag: tag(st),
+      line: i === stepsRaw.length - 1 ? none : { flex: 1, width: 3, minHeight: 16, borderRadius: 2, background: st === 'done' ? 'var(--green)' : 'var(--surface2)', margin: '4px 0' },
+      body: { display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 8, paddingBottom: 28 },
+      seg: { height: 10, borderRadius: 999, background: ST[st].seg }
+    }));
+    const kidsRaw = [
+      ['Flying Fish Partners · investor draft', 'done', 'Drafted · waiting to send since Aug 24', ''],
+      ['goba Sports Group · consulting draft', 'done', 'Drafted · waiting to send', ''],
+      ['Sapphire Ventures · investor draft', 'doing', 'Checking that Hayley Misetich is the right person', ''],
+      ['Voyager Capital · investor draft', 'stuck', 'No confident contact match. Needs a person from you.', 'Pick contact'],
+      ['StageDotO Ventures · investor draft', 'stuck', 'No confident contact match. Needs a person from you.', 'Pick contact'],
+      ['Ascend VC · investor draft', 'todo', 'Waiting on Lead Vault to finish the contact record', '']
+    ];
+    const kids = kidsRaw.map(([t, st, note, act]) => ({ t, note, act, dot: dot(st, 26), ico: icoFor(st, 13), title: { fontSize: 15, fontWeight: 600, color: st === 'done' ? 'var(--muted)' : 'var(--text)', textDecoration: st === 'done' ? 'line-through' : 'none' } }));
+    const needs = [
+      { t: 'Pick contacts for 2 investors', d: 'Voyager Capital and StageDotO Ventures have no confident Lead Vault match, so their drafts are on hold.', a: 'Choose contacts', b: 'Skip these two', ico: ic('user', 18) },
+      { t: 'Review 56 waiting tasks', d: 'I’ve stopped writing new drafts until the review queue clears. Anything unreviewed for 14 days expires.', a: 'Start review', b: '', ico: ic('inbox', 18) },
+      { t: 'Set dates for the plan', d: 'The timeline says “To be determined”, so I can’t tell you if we’re early or late. I can propose dates from the work so far.', a: 'Use Maya’s dates', b: 'Set my own', ico: ic('cal', 18) }
+    ];
+    const needs2 = [
+      { t: 'Pick contacts for Voyager Capital and StageDotO Ventures', d: 'These two drafts are what’s holding the step past its date.', a: 'Choose contacts' },
+      { t: 'Review 56 waiting tasks', d: 'I can’t write the remaining drafts until the queue clears.', a: 'Start review' }
+    ];
+    const goals = [
+      { t: 'Increase qualified pipeline from organic channels', s: 'Steps 4 and 5' },
+      { t: 'Strengthen customer trust with consistent education content', s: 'Steps 3 and 5' },
+      { t: 'Promote the summer AI operations campaign', s: 'Steps 2 and 5' }
+    ];
+    const owners = [
+      { t: 'Maya', s: 'Audience, positioning, messaging, drafts and daily planning.' },
+      { t: 'TODD', s: 'Queueing, sending, publishing, follow-ups and monitoring.' },
+      { t: 'You', s: 'Direction changes, overrides, and reviews when I ask.' }
+    ];
+    const wl = ['Sep 8', 'Sep 15', 'Sep 22', 'Sep 29', 'Oct 6', 'Oct 13', 'Oct 20', 'Oct 27'];
+    const weeks = wl.map((l) => ({ l, s: { paddingLeft: 6 } }));
+    const pos = (a, b) => ({ left: `${a}%`, width: `${b - a}%` });
+    const ganttRaw = [
+      ['Positioning statement', 'Done on time', 'done', [0, 12.5], [0, 11.5]],
+      ['Target audience', 'Done on time', 'done', [12.5, 25], [12.5, 24]],
+      ['Messaging framework', 'Done 2 days late', 'done', [18.75, 31.25], [18.75, 34]],
+      ['Lead generation', 'Due Oct 5 · 2 of 6 done', 'doing', [25, 50], [25, 50], [50, 62.5]],
+      ['Channel strategy', 'Starts after lead generation', 'todo', [50, 75]],
+      ['KPIs and metrics', 'Needs targets from you', 'todo', [75, 100]]
+    ];
+    const gantt = ganttRaw.map(([t, sub, st, plan, act, fc], i) => ({
+      n: i + 1, t, sub,
+      subS: { fontSize: 13, color: st === 'doing' ? 'var(--t-pink-fg)' : 'var(--muted)', fontWeight: st === 'doing' ? 600 : 400 },
+      plan: { position: 'absolute', top: 12, height: 32, borderRadius: 999, border: '2px dashed var(--muted)', boxSizing: 'border-box', opacity: act ? 0.55 : 1, ...pos(...plan) },
+      bar: act ? { position: 'absolute', top: 16, height: 24, borderRadius: 999, background: ST[st].bg, color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', padding: '0 10px', boxSizing: 'border-box', whiteSpace: 'nowrap', overflow: 'hidden', ...pos(...act) } : none,
+      barL: st === 'doing' ? '2 of 6' : '',
+      hasFc: !!fc,
+      fc: fc ? { position: 'absolute', top: 16, height: 24, borderRadius: '0 999px 999px 0', background: 'repeating-linear-gradient(135deg,var(--t-pink) 0 6px,var(--pink) 6px 10px)', ...pos(fc[0] + 0.3, fc[1]) } : none
+    }));
+    const card = (tone) => ({ background: tone === 'you' ? 'var(--t-pink)' : tone === 'now' ? 'var(--t-blue)' : 'var(--surface)', borderRadius: 18, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 });
+    const item = (when, who, t, d, plan, tone = '') => ({ when, who, t, d, plan, card: card(tone), whenS: tone === 'you' ? { color: 'var(--t-pink-fg)', fontWeight: 700 } : tone === 'now' ? { color: 'var(--t-blue-fg)', fontWeight: 700 } : {} });
+    const cdot = (c) => ({ width: 12, height: 12, borderRadius: '50%', background: c });
+    const cols = [
+      { t: 'Done', n: '4 today', dot: cdot('var(--green)'), items: [
+        item('7:00 AM', 'Maya', 'Started the day', 'Checked settings, sender and the plan. All good.', 'Daily run'),
+        item('7:20 AM', 'Maya', 'Queued 4 LinkedIn posts', 'This week’s posts for the summer AI operations campaign.', 'Messaging'),
+        item('8:05 AM', 'Maya', 'Picked today’s outreach batch', '6 investors from the VC list.', 'Lead generation'),
+        item('8:40 AM', 'Maya', 'Drafted 2 outreach emails', 'Flying Fish Partners and goba Sports Group.', 'Lead generation')
+      ] },
+      { t: 'Doing now', n: '2', dot: cdot('var(--blue)'), items: [
+        item('Now', 'Maya', 'Checking the Sapphire Ventures contact', 'Lead Vault says Hayley Misetich is a likely match. I’m confirming before I draft.', 'Lead generation', 'now'),
+        item('Stopped 9:10 AM', 'Maya', 'New drafts are paused', 'I hit the review limit. I’ll resume as soon as the queue is clear.', 'Lead generation', 'you')
+      ] },
+      { t: 'Up next', n: '3', dot: cdot('var(--surface2)'), items: [
+        item('Waiting on you', 'You', 'Review the outbox', 'Approve or reject the drafts and tasks I’ve sent you.', 'Lead generation', 'you'),
+        item('After approval', 'TODD', 'Send approved emails', 'TODD sends what you approve and records proof that it went out.', 'Lead generation'),
+        item('4:00 PM', 'Maya', 'Afternoon results review', 'I’ll check replies against the pipeline goal and adjust tomorrow’s plan.', 'KPIs')
+      ] }
+    ];
+    const whoS = (w) => ({ height: 22, padding: '0 9px', borderRadius: 999, background: w === 'You' ? 'var(--t-pink)' : 'var(--surface)', color: w === 'You' ? 'var(--t-pink-fg)' : 'var(--muted)', display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 700 });
+    const runRaw = [
+      ['7:00 AM', 'Start the day', 'Maya', 'done', 'Checked that I’m enabled, my sender is set, and the plan is loaded.'],
+      ['7:20 AM', 'Social queue pass', 'Maya', 'done', 'Queued 4 LinkedIn posts for this week.'],
+      ['8:05 AM', 'Choose the outreach batch', 'Maya', 'done', 'Picked 6 investors from the VC list.'],
+      ['8:40 AM', 'Write first-pass drafts', 'Maya', 'stuck', 'Wrote 2 of 6, then stopped. The review queue is full: 56 tasks and 2,152 drafts.', 'Review 56 tasks'],
+      ['10:00 AM', 'Outbox review', 'You', 'todo', 'You approve or reject what I’ve drafted.'],
+      ['11:00 AM', 'Auto-send eligible items', 'TODD', 'todo', 'Items you’ve allowed to go without review are sent.'],
+      ['', 'Hold approval-first items', 'TODD', 'todo', 'Anything that needs your OK waits for you or its scheduled time.'],
+      ['', 'Record proof of sending', 'TODD', 'todo', 'Each sent item is logged against the plan.'],
+      ['', 'Hand replies to TODD', 'TODD', 'todo', 'When someone replies or clicks, TODD takes over the follow-up.'],
+      ['4:00 PM', 'Afternoon results review', 'Maya', 'todo', 'I compare today’s results with the pipeline goal and set tomorrow.']
+    ];
+    const run = runRaw.map(([time, t, who, st, d, act], i) => ({
+      time, t, who, d, act: act || '', num: st === 'todo' ? String(i + 1) : '',
+      timeS: { fontSize: 13, fontWeight: 600, color: st === 'stuck' ? 'var(--t-pink-fg)' : 'var(--muted)', paddingTop: 9, textAlign: 'right' },
+      dot: dot(st, 36), ico: icoFor(st, 16), whoS: whoS(who),
+      titleS: { fontSize: 16, fontWeight: 700, color: st === 'todo' ? 'var(--muted)' : 'var(--text)' },
+      line: i === runRaw.length - 1 ? none : { flex: 1, width: 3, minHeight: 10, borderRadius: 2, background: st === 'done' ? 'var(--green)' : 'var(--surface2)', margin: '4px 0' },
+      body: st === 'stuck' ? { display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--t-pink)', borderRadius: 18, padding: '12px 16px 16px', marginBottom: 18 } : { display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 7, paddingBottom: 18 },
+      seg: { height: 8, borderRadius: 999, background: ST[st].seg }
+    }));
+    const pv = this.state?.pv ?? this.props.planView ?? 'list', sv = this.state?.sv ?? this.props.statusView ?? 'cols';
+    const sb = (on) => ({ height: 36, padding: '0 16px', border: 0, borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, background: on ? 'var(--bg)' : 'transparent', color: on ? 'var(--text)' : 'var(--muted)', boxShadow: on ? '0 1px 3px rgba(15,17,21,.12)' : 'none' });
+    const set = (k, v) => () => this.setState({ [k]: v });
+    const vis = (on) => (on ? {} : { display: 'none' });
+    return { showPL: vis(pv === 'list'), showPT: vis(pv === 'timeline'), showSC: vis(sv === 'cols'), showST: vis(sv === 'timeline'), planList: pv === 'list', planTime: pv === 'timeline', statCols: sv === 'cols', statTime: sv === 'timeline',
+      segPL: sb(pv === 'list'), segPT: sb(pv === 'timeline'), segSC: sb(sv === 'cols'), segST: sb(sv === 'timeline'),
+      setPL: set('pv', 'list'), setPT: set('pv', 'timeline'), setSC: set('sv', 'cols'), setST: set('sv', 'timeline'),
+      theme: this.props.theme ?? 'light', I, steps, kids, needs, needs2, goals, owners, weeks, gantt, cols, run };
+  }
+}
+</script>
+</body>
+</html>
