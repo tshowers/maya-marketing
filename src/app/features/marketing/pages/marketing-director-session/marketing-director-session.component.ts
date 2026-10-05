@@ -41,15 +41,7 @@ import { MayaStatusReportService } from '../../services/maya-status-report.servi
 import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/maya-deck-preview.component';
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
-import { DataService } from '../../../../services/data.service';
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
-import {
-  EmailDraftPayload,
-  HandoffDraft,
-  buildHandoffUrl,
-  getHandoffExpiry,
-  handoffCollectionPath,
-} from '@taliferro/ui/handoff/handoff.model';
+import { MayaJobsService } from '../../../../services/maya-jobs.service';
 
 interface ReportOperationalData {
   socialPosts?: SocialPost[];
@@ -83,6 +75,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   prompt = '';
   /** The header's New chat button resets this conversation. */
   private readonly chatState = inject( MayaChatStateService );
+  private readonly mayaJobs = inject( MayaJobsService );
   sending = false;
   errorMessage = '';
   showUpgradePanel = false;
@@ -154,7 +147,6 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     private readonly marketingDirectorCapabilitiesService: MarketingDirectorCapabilitiesService,
     private readonly mayaStatusReportService: MayaStatusReportService,
     private readonly outreachApiService: OutreachApiService,
-    private readonly dataService: DataService,
     private readonly http: HttpClient,
     private readonly route: ActivatedRoute
   ) { }
@@ -368,7 +360,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       this.persistSessionMemory();
       await this.appendWorkspaceMessage( 'employee', normalizedDirectorReply );
       const createdReceipt = await this.maybePersistMasterPlan( normalizedPrompt, response.reply );
-      const executedReceipt = await this.executeDirectorSystemActions( response.systemActions || [] );
+      const executedReceipt = await this.executeDirectorSystemActions( response.systemActions || [], normalizedPrompt );
       this.appendExecutionReceiptNotice( normalizedDirectorReply, createdReceipt || executedReceipt );
     } catch {
       this.errorMessage = 'She could not answer that right now. Please try again in a moment.';
@@ -1141,7 +1133,7 @@ Pick one and I will keep moving:
     void this.appendWorkspaceMessage( 'employee', receiptNote );
   }
 
-  private async executeDirectorSystemActions ( actions: PublicMarketingDirectorSystemAction[] ): Promise<boolean> {
+  private async executeDirectorSystemActions ( actions: PublicMarketingDirectorSystemAction[], userRequest: string ): Promise<boolean> {
     if ( !this.isLoggedInWorkspaceUser || !this.hasPaidWorkspaceAccess || !this.tenantId || !this.userId || !Array.isArray( actions ) || actions.length === 0 ) {
       return false;
     }
@@ -1164,7 +1156,7 @@ Pick one and I will keep moving:
             createdAnything = await this.executeCreateResponseFlowAction( action ) || createdAnything;
             break;
           case 'send_email':
-            createdAnything = await this.executeSendEmailAction( action ) || createdAnything;
+            createdAnything = await this.executeSendEmailAction( action, userRequest ) || createdAnything;
             break;
           default:
             break;
@@ -1305,51 +1297,41 @@ Pick one and I will keep moving:
   }
 
   /**
-   * Maya used to send this straight through EmailService the moment the
-   * AI proposed it - no review step between "AI decided to send" and the
-   * recipient's inbox. That's exactly the auto-send behavior the product
-   * has otherwise deliberately held off on (draft-only, approval-first).
-   * This now hands the concept to Catalyst instead: Catalyst can only
-   * queue an existing Network contact (never a bare email address) and
-   * always drafts the actual subject/body itself through its own AI
-   * call, so `text` becomes Catalyst's drafting brief, not literal
-   * outgoing copy - the closest fidelity the real handoff surface
-   * supports, and the same one Catalyst's own "blocked contact" handoff
-   * already uses.
+   * An email from the chat runs the same job as Maya's work page
+   * (MAYA-ORCHESTRATION-DESIGN.md, gap 8): Maya writes the brief, Email
+   * Creator designs it, and the work page offers Catalyst (many) or the
+   * Email Composer (one). Nothing is sent from here. The person's own words
+   * go first, so "all my contacts" reaches the planner as the audience
+   * rather than being treated as an address.
    */
-  private async executeSendEmailAction ( action: PublicMarketingDirectorSystemAction ): Promise<boolean> {
-    const to = String( action.to || '' ).trim();
+  private async executeSendEmailAction ( action: PublicMarketingDirectorSystemAction, userRequest: string ): Promise<boolean> {
     const subject = String( action.subject || action.title || '' ).trim();
     const text = String( action.text || action.body || action.description || '' ).trim();
-    if ( !to || !subject || !text || !this.tenantId ) return false;
+    const audience = String( action.to || '' ).trim();
+    if ( !subject && !text ) return false;
 
-    const contact = await firstValueFrom( this.dataService.getDocumentByField( 'CONTACTS', 'email', to, this.userId ) );
-    const contactId = String( contact?.id || '' ).trim();
-    if ( !contactId ) {
-      await this.appendReceiptTextMessage(
-        `Execution receipt: I drafted an email for ${to}, but Catalyst needs an existing Network contact for that address before it can pick it up - add ${to} as a contact first, then ask me again.`
-      );
+    const request = [
+      userRequest.trim(),
+      'Email brief from my chat with Maya:',
+      subject ? `Subject idea: ${subject}` : '',
+      audience ? `Audience: ${audience}` : '',
+      text,
+    ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
+
+    let jobId: string;
+    try {
+      jobId = ( await this.mayaJobs.start( request ) ).id;
+    } catch ( error: any ) {
+      const reason = error?.error?.message || error?.message || 'TODD could not start it.';
+      await this.appendReceiptTextMessage( `Execution receipt: I couldn't start the email${subject ? ` "${subject}"` : ''}. ${reason}` );
       return false;
     }
 
-    const draftId = crypto.randomUUID();
-    const draft: HandoffDraft<'email-draft'> = {
-      id: draftId,
-      tenantId: this.tenantId,
-      kind: 'email-draft',
-      producedBy: 'maya',
-      status: 'pending',
-      payload: { contactIds: [contactId], reasonLabel: subject, reasonDetail: text } satisfies EmailDraftPayload,
-      sourceContext: { contactId },
-      createdAt: Date.now(),
-      expiresAt: getHandoffExpiry(),
-    };
-
-    await setDoc( doc( getFirestore(), handoffCollectionPath( this.tenantId ), draftId ), draft );
-
-    const catalystUrl = buildHandoffUrl( 'email-draft', draftId );
-    await this.appendArtifactReceiptMessage( 'Ready in Catalyst', subject, catalystUrl );
-    await this.recordCompletedExecutionTask( subject, catalystUrl, action, `Email concept for ${to} handed off to Catalyst for review and send.` );
+    await this.appendArtifactReceiptMessage(
+      'Started on Maya\'s work page - Email Creator is designing it, then you choose Catalyst (many) or the Email Composer (one)',
+      subject || 'Your email',
+      `/work?job=${encodeURIComponent( jobId )}`
+    );
     return true;
   }
 
@@ -1890,7 +1872,7 @@ Pick one and I will keep moving:
       case 'create_response_flow':
         return 'a response flow';
       case 'send_email':
-        return 'an email send';
+        return 'an email';
       default:
         return 'an artifact';
     }

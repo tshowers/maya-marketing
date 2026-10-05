@@ -58,6 +58,15 @@ export interface MayaJob {
   updatedAt: string;
 }
 
+/** Where a finished email goes: Catalyst (many contacts) or the Email Composer (one). */
+export type EmailSendTarget = 'catalyst' | 'composer';
+
+/** Something TODD wasn't told that the user must fill in before sending. */
+export interface EmailFillIn {
+  token: string;
+  label: string;
+}
+
 /**
  * Maya's jobs (todd-backend/functions/maya/jobs.routes.js): ask her to do
  * something, follow it, answer her questions, and approve or reject what's
@@ -96,6 +105,22 @@ export class MayaJobsService {
     const response = await firstValueFrom( this.http.get<{ email: { id: string; subject: string; preheader: string; html: string; } }>(
       `${environment.backendURL}/maya/emails/${encodeURIComponent( documentId )}`, { headers: await this.headers() } ) );
     return response.email;
+  }
+
+  /**
+   * Email Creator's send check (todd-backend/functions/emailCreatorRoutes.js):
+   * whether the workspace can send with Outreach, and what's left to fill in per destination.
+   */
+  async sendCheck ( subject: string, html: string ): Promise<{ canSendWithOutreach: boolean; fillIns: Record<EmailSendTarget, EmailFillIn[]>; }> {
+    return firstValueFrom( this.http.post<{ canSendWithOutreach: boolean; fillIns: Record<EmailSendTarget, EmailFillIn[]>; }>(
+      `${environment.backendURL}/email-creator/handoff/check`, { subject, html }, { headers: await this.headers() } ) );
+  }
+
+  /** Hands a finished email to Catalyst or the Email Composer, the same way Email Creator does. Returns the page to open. */
+  async handOffEmail ( request: { target: EmailSendTarget; subject: string; preheader: string; html: string; fills: Record<string, string>; } ): Promise<string> {
+    const response = await firstValueFrom( this.http.post<{ id: string; url: string }>(
+      `${environment.backendURL}/email-creator/handoff`, request, { headers: await this.headers() } ) );
+    return response.url;
   }
 
   /** The user's answer when Maya pushed back. */

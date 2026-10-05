@@ -45,7 +45,7 @@ Tools Maya can use today: `image.obtain`, `social.draftPost`, `social.approvePos
 | Gap 11: post engagement collection (LinkedIn, Bluesky first) | 3 | |
 | Gap 12: numeric plan targets and starting benchmarks | 3 | Organization size, the input it needs, is done. |
 | Gap 13: learnings and the 6 AM review | 3 | |
-| Gap 8: Maya's chat starts jobs instead of routing | 4 | Until then, jobs start from Maya's work page; the chat still answers "This is email-composer work". |
+| Gap 8: Maya's chat starts jobs instead of routing | 4 | Email part built (2026-10-05): a `send_email` action in the chat starts an `email.create` job and links to it on the work page, which offers Catalyst (many) or the Email Composer (one) through Email Creator's `/email-creator/handoff`. Other requests still route ("This is email-composer work"). |
 | Daily duty on jobs | 4 | Her 6 AM planner and social runner still run the old way. |
 | Other apps' sign-up wizards ask for organization size | — | Not decided; they default to 2. |
 

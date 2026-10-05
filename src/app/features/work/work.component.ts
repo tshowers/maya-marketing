@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
-import { MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
+import { EmailFillIn, EmailSendTarget, MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
 
 /** One thing waiting on the user, from any job. */
 interface ApprovalItem {
@@ -21,6 +21,20 @@ interface EmailResult {
   subject: string;
   preheader: string;
   fillIns: string[];
+}
+
+/** Sending a finished email, the same two choices Email Creator offers. */
+interface SendPanel {
+  documentId: string;
+  target: EmailSendTarget;
+  /** null while checking; false when the workspace has no Outreach subscription. */
+  canSend: boolean | null;
+  fillIns: EmailFillIn[];
+  values: Record<string, string>;
+  working: boolean;
+  error: string;
+  /** Set once the handoff is ready; the user opens it in a new tab. */
+  openUrl: string;
 }
 
 const ACTIVE_STATUSES = new Set( ['queued', 'running'] );
@@ -69,6 +83,8 @@ export class WorkComponent implements OnInit, OnDestroy {
   socialAutopilot = false;
   previews: Record<string, SafeHtml> = {};
   previewOpen: Record<string, boolean> = {};
+  sendPanel: SendPanel | null = null;
+  readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
   private emailHtml: Record<string, string> = {};
 
   private authSubscription?: Subscription;
@@ -81,10 +97,14 @@ export class WorkComponent implements OnInit, OnDestroy {
     private readonly title: Title,
     private readonly sanitizer: DomSanitizer,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
   ) { }
 
   ngOnInit (): void {
     this.title.setTitle( "Maya's work — Maya | Taliferro Tech" );
+    // Maya's chat links here with ?job=<id> after starting a job.
+    const linkedJob = this.route.snapshot.queryParamMap.get( 'job' );
+    if ( linkedJob ) this.expanded[linkedJob] = true;
     this.authSubscription = this.authService.isLoggedIn().subscribe( ( signedIn ) => {
       const wasSignedIn = this.isSignedIn;
       this.isSignedIn = signedIn;
@@ -248,17 +268,53 @@ export class WorkComponent implements OnInit, OnDestroy {
   }
 
   async downloadHtml ( email: EmailResult ): Promise<void> {
-    let html = this.emailHtml[email.documentId];
-    if ( html === undefined ) {
-      html = ( await this.api.email( email.documentId ) ).html;
-      this.emailHtml[email.documentId] = html;
-    }
+    const html = await this.loadHtml( email );
     const url = URL.createObjectURL( new Blob( [html], { type: 'text/html' } ) );
     const link = document.createElement( 'a' );
     link.href = url;
     link.download = `${email.subject.replace( /[^a-z0-9_ -]/gi, '' ).trim().replace( /\s+/g, '-' ) || 'email'}.html`;
     link.click();
     setTimeout( () => URL.revokeObjectURL( url ), 1000 );
+  }
+
+  /**
+   * Starts sending: checks the Outreach subscription and what's left to fill
+   * in. With nothing to fill in, prepares the handoff straight away.
+   */
+  async openSend ( email: EmailResult, target: EmailSendTarget ): Promise<void> {
+    const panel: SendPanel = { documentId: email.documentId, target, canSend: null, fillIns: [], values: {}, working: true, error: '', openUrl: '' };
+    this.sendPanel = panel;
+    try {
+      const html = await this.loadHtml( email );
+      const check = await this.api.sendCheck( email.subject, html );
+      Object.assign( panel, { canSend: check.canSendWithOutreach, fillIns: check.fillIns[target] || [], working: false } );
+      if ( panel.canSend && panel.fillIns.length === 0 ) await this.prepareSend( email );
+    } catch ( error: any ) {
+      Object.assign( panel, { working: false, error: error?.error?.message || error?.message || 'Something went wrong.' } );
+    }
+  }
+
+  fillsComplete ( panel: SendPanel ): boolean {
+    return panel.fillIns.every( ( item ) => ( panel.values[item.token] || '' ).trim().length > 0 );
+  }
+
+  async prepareSend ( email: EmailResult ): Promise<void> {
+    const panel = this.sendPanel;
+    if ( !panel || panel.documentId !== email.documentId || !this.fillsComplete( panel ) ) return;
+    Object.assign( panel, { working: true, error: '' } );
+    try {
+      panel.openUrl = await this.api.handOffEmail( {
+        target: panel.target, subject: email.subject, preheader: email.preheader, html: await this.loadHtml( email ), fills: panel.values,
+      } );
+    } catch ( error: any ) {
+      panel.error = error?.error?.message || error?.message || 'Something went wrong.';
+    } finally {
+      panel.working = false;
+    }
+  }
+
+  closeSend (): void {
+    this.sendPanel = null;
   }
 
   approvalCount ( job: MayaJob ): number {
@@ -388,6 +444,13 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   trackApproval ( _index: number, item: ApprovalItem ): string {
     return `${item.job.id}/${item.step.id}`;
+  }
+
+  private async loadHtml ( email: EmailResult ): Promise<string> {
+    if ( this.emailHtml[email.documentId] === undefined ) {
+      this.emailHtml[email.documentId] = ( await this.api.email( email.documentId ) ).html;
+    }
+    return this.emailHtml[email.documentId];
   }
 
   private async loadSettings (): Promise<void> {

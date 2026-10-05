@@ -77,6 +77,19 @@
 .wk-email__subject { margin: 0 0 4px; font-weight: 800; }
 .wk-email__fill { margin: 0 0 10px; color: var(--wk-attention); font-size: .88rem; font-weight: 700; }
 .wk-email .wk-actions { margin-top: 8px; }
+/* Sending: the same two choices as Email Creator. */
+.wk-send { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--todd-panel-border); }
+.wk-send__title { margin: 0 0 8px; font-weight: 800; }
+.wk-send__choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.wk-send__choice { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid var(--todd-panel-border); border-radius: 14px; background: var(--todd-card-bg); color: var(--todd-text); font: inherit; text-align: left; cursor: pointer; }
+.wk-send__choice span { color: var(--todd-subtext); font-size: .86rem; line-height: 1.4; }
+.wk-send__choice:hover:not(:disabled) { border-color: var(--wk-accent); }
+.wk-send__choice:disabled { opacity: .5; cursor: default; }
+.wk-send__panel { margin-top: 12px; }
+.wk-send__panel p { margin: 0 0 10px; line-height: 1.5; }
+.wk-send__fill { display: block; margin-bottom: 10px; }
+.wk-send__fill span { display: block; margin-bottom: 4px; font-size: .88rem; font-weight: 700; }
+a.wk-button { display: inline-flex; align-items: center; text-decoration: none; }
 .wk-email__frame { display: block; width: 100%; height: 640px; margin-top: 12px; border: 1px solid var(--todd-panel-border); border-radius: 12px; background: #fff; }
 
 .wk-verdict { margin: 0 0 6px; color: var(--wk-attention); font-weight: 800; }

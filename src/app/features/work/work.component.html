@@ -119,6 +119,45 @@
                 {{ previewOpen[email.documentId] ? 'Hide preview' : 'Preview' }}</button>
               <button type="button" class="wk-button wk-button--ghost" (click)="downloadHtml( email )" data-cy="work-email-download">Download HTML</button>
             </div>
+            <div class="wk-send" aria-label="Send with Outreach">
+              <p class="wk-send__title">Send it with Outreach</p>
+              <div class="wk-send__choices">
+                <button type="button" class="wk-send__choice" (click)="openSend( email, 'catalyst' )" [disabled]="sendPanel?.working" data-cy="work-email-catalyst">
+                  <strong>Send to many - Catalyst</strong>
+                  <span>Personalized for each contact, paced and tracked.</span>
+                </button>
+                <button type="button" class="wk-send__choice" (click)="openSend( email, 'composer' )" [disabled]="sendPanel?.working" data-cy="work-email-composer">
+                  <strong>Send to one - Email Composer</strong>
+                  <span>One recipient, reviewed before it goes.</span>
+                </button>
+              </div>
+              <div *ngIf="sendPanel?.documentId === email.documentId && sendPanel as panel" class="wk-send__panel" data-cy="work-send-panel">
+                <p *ngIf="panel.canSend === null && panel.working" class="wk-note">Checking…</p>
+                <ng-container *ngIf="panel.canSend === false">
+                  <p>Sending needs the Outreach app subscription. Downloading stays free.</p>
+                  <a class="wk-button" routerLink="/pricing">See plans</a>
+                </ng-container>
+                <ng-container *ngIf="panel.canSend && panel.openUrl">
+                  <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                  <a class="wk-button" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()" data-cy="work-send-open">Open {{ targetNames[panel.target] }}</a>
+                </ng-container>
+                <ng-container *ngIf="panel.canSend && !panel.openUrl">
+                  <ng-container *ngIf="panel.fillIns.length">
+                    <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
+                    <label *ngFor="let item of panel.fillIns" class="wk-send__fill">
+                      <span>{{ item.label }}</span>
+                      <input class="wk-input" type="text" [name]="'fill-' + item.token" [(ngModel)]="panel.values[item.token]" />
+                    </label>
+                  </ng-container>
+                  <div class="wk-actions">
+                    <button type="button" class="wk-button" (click)="prepareSend( email )" [disabled]="panel.working || !fillsComplete( panel )" data-cy="work-send-continue">
+                      {{ panel.working ? 'Preparing…' : 'Continue to ' + targetNames[panel.target] }}</button>
+                    <button type="button" class="wk-button wk-button--ghost" (click)="closeSend()" [disabled]="panel.working">Cancel</button>
+                  </div>
+                </ng-container>
+                <p *ngIf="panel.error" class="wk-error" role="alert">{{ panel.error }}</p>
+              </div>
+            </div>
             <iframe *ngIf="previewOpen[email.documentId]" class="wk-email__frame" sandbox="" [srcdoc]="previews[email.documentId]"
                     [title]="'Preview of ' + email.subject"></iframe>
           </div>
