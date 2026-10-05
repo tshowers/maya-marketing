@@ -2,7 +2,19 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const pkg = require('../package.json');
+const packageJsonPath = path.join(__dirname, '../package.json');
+const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+// Builds pass --bump: the version becomes <year>.<month>.<day>-build.<n>,
+// counting up within a day, the same scheme as the other web products.
+// `npm start` doesn't bump, so local serves leave package.json alone.
+if (process.argv.includes('--bump')) {
+  const now = new Date();
+  const today = `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}`;
+  const match = String(pkg.version).match(/^(\d+\.\d+\.\d+)-build\.(\d+)$/);
+  pkg.version = `${today}-build.${match && match[1] === today ? Number(match[2]) + 1 : 1}`;
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
+}
 
 let gitSha = 'unknown';
 try {

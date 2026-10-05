@@ -51,6 +51,9 @@ interface ReportOperationalData {
   engineState?: any;
 }
 
+const MAYA_SITE_URL = 'https://maya.taliferro.tech';
+const MOVES_SITE_URL = 'https://moves.taliferro.tech';
+
 @Component( {
   selector: 'app-marketing-director-session',
   standalone: true,
@@ -104,7 +107,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     { label: 'Pulse', route: 'https://pulse.taliferro.tech', image: 'assets/find/entities/pulse/logo-bw-icon.png', external: true },
     { label: 'Network', route: 'https://network.taliferro.tech', image: 'assets/find/entities/network/logo-bw-icon.png', external: true },
     { label: 'Outreach', route: 'https://outreach.taliferro.tech', image: 'assets/find/entities/outreach/logo-bw-icon.png', external: true },
-    { label: 'Moves', route: 'https://moves.taliferro.tech', image: 'assets/find/entities/moves/logo-bw-icon.png', external: true },
+    { label: 'Moves', route: MOVES_SITE_URL, image: 'assets/find/entities/moves/logo-bw-icon.png', external: true },
     { label: 'Social', route: 'https://social.taliferro.tech', image: 'assets/find/entities/social/logo-bw-icon.png', external: true },
     { label: 'Docs', route: 'https://docs.taliferro.tech', image: 'assets/find/entities/docs/logo-bw-icon.png', external: true }
   ];
@@ -1147,7 +1150,7 @@ Pick one and I will keep moving:
             createdAnything = await this.executeCreateDocumentAction( action ) || createdAnything;
             break;
           case 'create_move':
-            createdAnything = await this.executeCreateMoveAction( action ) || createdAnything;
+            createdAnything = await this.executeCreateMoveAction( action, userRequest ) || createdAnything;
             break;
           case 'create_survey':
             createdAnything = await this.executeCreateSurveyAction( action ) || createdAnything;
@@ -1205,29 +1208,64 @@ Pick one and I will keep moving:
     return true;
   }
 
-  private async executeCreateMoveAction ( action: PublicMarketingDirectorSystemAction ): Promise<boolean> {
+  /**
+   * Who does the work decides where it goes (Ty, 2026-10-05). Work Maya can
+   * do herself (ownerLabel "Maya": emails, posts, images) starts a job on her
+   * work page, so it doesn't depend on Moves. Moves subscribers also get the
+   * move, linked to that job; Moves shows "See Maya's progress" for it.
+   * The person's own work only becomes a move when they have Moves.
+   */
+  private async executeCreateMoveAction ( action: PublicMarketingDirectorSystemAction, userRequest: string ): Promise<boolean> {
     const title = String( action.title || '' ).trim();
     if ( !title ) return false;
 
-    const task: Task = {
-      title,
-      description: this.composeOwnedDescription( action ),
-      dueDate: this.resolveTaskDueDate( action.dueDate ),
-      progress: 0,
-      priority: String( action.priority || 'medium' ).trim() || 'medium',
-      status: 'not-started',
-      ownerId: this.resolveTaskOwnerId( action ),
-      source: 'maya-created-move',
-      createdByTodd: true
-    };
+    const mayaDoesIt = /maya/i.test( String( action.ownerLabel || '' ) );
+    const hasMoves = await firstValueFrom( this.writeAccess.state( 'moves' ).pipe(
+      take( 1 ),
+      map( state => state === 'canWrite' ),
+      catchError( () => of( false ) )
+    ) );
 
-    const saved = await this.taskService.addTask( task, this.userId );
-    const taskId = String( saved?.id || '' ).trim();
-    const taskRoute = taskId
-      ? `/move?id=${encodeURIComponent( taskId )}`
-      : '/moves-view';
+    let jobRoute = '';
+    if ( mayaDoesIt ) {
+      const request = [
+        userRequest.trim(),
+        `From my chat with Maya: ${title}`,
+        String( action.description || action.summary || '' ).trim(),
+      ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
+      try {
+        jobRoute = `/work?job=${encodeURIComponent( ( await this.mayaJobs.start( request ) ).id )}`;
+      } catch ( error: any ) {
+        const reason = error?.error?.message || error?.message || 'TODD could not start it.';
+        await this.appendReceiptTextMessage( `Execution receipt: I couldn't start "${title}". ${reason}` );
+      }
+    }
 
-    await this.appendArtifactReceiptMessage( 'Created move', title, taskRoute );
+    let moveUrl = '';
+    if ( hasMoves ) {
+      const task: Task = {
+        title,
+        description: this.composeOwnedDescription( action ),
+        dueDate: this.resolveTaskDueDate( action.dueDate ),
+        progress: 0,
+        priority: String( action.priority || 'medium' ).trim() || 'medium',
+        status: 'not-started',
+        ownerId: this.resolveTaskOwnerId( action ),
+        source: 'maya-created-move',
+        createdByTodd: true,
+        url: jobRoute ? `${MAYA_SITE_URL}${jobRoute}` : ''
+      };
+      const saved = await this.taskService.addTask( task, this.userId );
+      const taskId = String( saved?.id || '' ).trim();
+      moveUrl = taskId ? `${MOVES_SITE_URL}/move/${encodeURIComponent( taskId )}` : `${MOVES_SITE_URL}/moves`;
+    }
+
+    if ( jobRoute ) await this.appendArtifactReceiptMessage( 'Started on Maya\'s work page', title, jobRoute );
+    if ( moveUrl ) await this.appendArtifactReceiptMessage( jobRoute ? 'Also in Moves' : 'Created move', title, moveUrl );
+    if ( !jobRoute && !moveUrl && !mayaDoesIt ) {
+      await this.appendReceiptTextMessage( `Execution receipt: this one is yours - "${title}". I didn't add it to Moves because this workspace doesn't have the Moves app.` );
+    }
+    // Every path above posted a receipt, so the generic "nothing was created" notice isn't needed.
     return true;
   }
 
@@ -1339,7 +1377,9 @@ Pick one and I will keep moving:
     const safeLabel = this.escapeHtml( label );
     const safeTitle = this.escapeHtml( title );
     const safeRoute = this.escapeHtml( route );
-    const receiptHtml = `${safeLabel}: <a href="${safeRoute}">${safeTitle}</a>`;
+    // Other apps (Moves) open in a new tab so the chat stays put.
+    const target = /^https?:/i.test( route ) ? ' target="_blank" rel="noopener"' : '';
+    const receiptHtml = `${safeLabel}: <a href="${safeRoute}"${target}>${safeTitle}</a>`;
     const receiptText = `${label}: ${title} (${route})`;
     this.messages = [
       ...this.messages,
