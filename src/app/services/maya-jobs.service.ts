@@ -88,6 +88,12 @@ export class MayaJobsService {
     return response.jobs || [];
   }
 
+  async get ( jobId: string ): Promise<MayaJob> {
+    const response = await firstValueFrom( this.http.get<{ job: MayaJob }>(
+      `${environment.backendURL}/maya/jobs/${encodeURIComponent( jobId )}`, { headers: await this.headers() } ) );
+    return response.job;
+  }
+
   async answer ( jobId: string, answer: string ): Promise<MayaJob> {
     const response = await firstValueFrom( this.http.post<{ job: MayaJob }>(
       `${environment.backendURL}/maya/jobs/${encodeURIComponent( jobId )}/answers`, { answer }, { headers: await this.headers() } ) );

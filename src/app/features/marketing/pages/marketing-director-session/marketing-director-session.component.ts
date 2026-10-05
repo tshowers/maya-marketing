@@ -41,7 +41,7 @@ import { MayaStatusReportService } from '../../services/maya-status-report.servi
 import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/maya-deck-preview.component';
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
-import { MayaJobsService } from '../../../../services/maya-jobs.service';
+import { MayaJob, MayaJobsService } from '../../../../services/maya-jobs.service';
 
 interface ReportOperationalData {
   socialPosts?: SocialPost[];
@@ -52,6 +52,15 @@ interface ReportOperationalData {
 }
 
 const MAYA_SITE_URL = 'https://maya.taliferro.tech';
+
+/** What happened to a chat request: a new job, an answer to an open one, or one Maya is still planning. */
+type JobOutcome = 'started' | 'answered' | 'planning';
+
+const JOB_OUTCOME_LABELS: Record<JobOutcome, string> = {
+  started: 'Started on Maya\'s work page',
+  answered: 'Added your answer to the job Maya already has',
+  planning: 'Maya is still planning this one',
+};
 const MOVES_SITE_URL = 'https://moves.taliferro.tech';
 
 @Component( {
@@ -1233,12 +1242,13 @@ Pick one and I will keep moving:
         `From my chat with Maya: ${title}`,
         String( action.description || action.summary || '' ).trim(),
       ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
-      try {
-        jobRoute = `/work?job=${encodeURIComponent( ( await this.mayaJobs.start( request ) ).id )}`;
-      } catch ( error: any ) {
-        const reason = error?.error?.message || error?.message || 'TODD could not start it.';
-        await this.appendReceiptTextMessage( `Execution receipt: I couldn't start "${title}". ${reason}` );
+      const job = await this.startOrContinueJob( request, userRequest, `"${title}"` );
+      if ( job && job.outcome !== 'started' ) {
+        // A follow-up to work Maya already has: no second job, no second move.
+        await this.appendArtifactReceiptMessage( JOB_OUTCOME_LABELS[job.outcome], job.title, job.route );
+        return true;
       }
+      jobRoute = job?.route || '';
     }
 
     let moveUrl = '';
@@ -1260,7 +1270,7 @@ Pick one and I will keep moving:
       moveUrl = taskId ? `${MOVES_SITE_URL}/move/${encodeURIComponent( taskId )}` : `${MOVES_SITE_URL}/moves`;
     }
 
-    if ( jobRoute ) await this.appendArtifactReceiptMessage( 'Started on Maya\'s work page', title, jobRoute );
+    if ( jobRoute ) await this.appendArtifactReceiptMessage( JOB_OUTCOME_LABELS.started, title, jobRoute );
     if ( moveUrl ) await this.appendArtifactReceiptMessage( jobRoute ? 'Also in Moves' : 'Created move', title, moveUrl );
     if ( !jobRoute && !moveUrl && !mayaDoesIt ) {
       await this.appendReceiptTextMessage( `Execution receipt: this one is yours - "${title}". I didn't add it to Moves because this workspace doesn't have the Moves app.` );
@@ -1356,21 +1366,65 @@ Pick one and I will keep moving:
       text,
     ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
 
-    let jobId: string;
-    try {
-      jobId = ( await this.mayaJobs.start( request ) ).id;
-    } catch ( error: any ) {
-      const reason = error?.error?.message || error?.message || 'TODD could not start it.';
-      await this.appendReceiptTextMessage( `Execution receipt: I couldn't start the email${subject ? ` "${subject}"` : ''}. ${reason}` );
-      return false;
-    }
-
+    const job = await this.startOrContinueJob( request, userRequest, subject ? `the email "${subject}"` : 'the email' );
+    if ( !job ) return false;
     await this.appendArtifactReceiptMessage(
-      'Started on Maya\'s work page - Email Creator is designing it, then you choose Catalyst (many) or the Email Composer (one)',
-      subject || 'Your email',
-      `/work?job=${encodeURIComponent( jobId )}`
+      job.outcome === 'started' ?
+        'Started on Maya\'s work page - Email Creator is designing it, then you choose Catalyst (many) or the Email Composer (one)' :
+        JOB_OUTCOME_LABELS[job.outcome],
+      job.outcome === 'started' ? subject || 'Your email' : job.title,
+      job.route
     );
     return true;
+  }
+
+  /**
+   * One job per piece of work: when this chat already has a job Maya is
+   * still planning, a follow-up message goes to that job instead of
+   * starting another. A job waiting on Maya's questions gets the message as
+   * the answer; one still planning is left alone. Anything further along
+   * (drafting, waiting for approval, finished) means this is new work.
+   * Returns null after posting a failure receipt.
+   */
+  private async startOrContinueJob (
+    request: string,
+    userRequest: string,
+    what: string
+  ): Promise<{ outcome: JobOutcome; route: string; title: string; } | null> {
+    try {
+      const openJob = await this.findOpenChatJob();
+      if ( openJob?.status === 'awaiting_user' ) {
+        await this.mayaJobs.answer( openJob.id, ( userRequest.trim() || request ).slice( 0, 4000 ) );
+        return { outcome: 'answered', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+      }
+      if ( openJob ) {
+        return { outcome: 'planning', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+      }
+      const started = await this.mayaJobs.start( request );
+      return { outcome: 'started', route: this.jobRoute( started.id ), title: started.request.slice( 0, 120 ) };
+    } catch ( error: any ) {
+      const reason = error?.error?.message || error?.message || 'TODD could not start it.';
+      await this.appendReceiptTextMessage( `Execution receipt: I couldn't start ${what}. ${reason}` );
+      return null;
+    }
+  }
+
+  /** The latest job this chat linked to, if Maya is still planning it. */
+  private async findOpenChatJob (): Promise<MayaJob | null> {
+    const jobIds = this.messages
+      .filter( message => message.role === 'director' )
+      .map( message => /\/work\?job=([A-Za-z0-9_-]+)/.exec( message.content )?.[1] )
+      .filter( ( id ): id is string => !!id );
+    const latest = jobIds[jobIds.length - 1];
+    if ( !latest ) return null;
+    const job = await this.mayaJobs.get( latest ).catch( () => null );
+    const stillPlanning = job && ( job.status === 'awaiting_user' ||
+      ( ( job.status === 'queued' || job.status === 'running' ) && !job.steps.length ) );
+    return stillPlanning ? job : null;
+  }
+
+  private jobRoute ( jobId: string ): string {
+    return `/work?job=${encodeURIComponent( jobId )}`;
   }
 
   private async appendArtifactReceiptMessage ( label: string, title: string, route: string ): Promise<void> {
@@ -1812,6 +1866,10 @@ Pick one and I will keep moving:
     return linkedRoutes.replace(
       /(Created (?:document|move|survey|response flow):\s*)([^<(]+?)\s*\((\/[A-Za-z0-9\-._~!$&'()*+,;=:@?/%#]+)\)/g,
       ( _match, prefix, title, route ) => `${prefix}<a href="${route}">${title.trim()}</a>`
+    ).replace(
+      // Receipts for other TODD apps (Moves) carry a full link; open it in a new tab.
+      /\((https:\/\/[a-z0-9-]+\.taliferro\.tech\/[A-Za-z0-9\-._~!$&*+,;=:@?/%#]*)\)/g,
+      ( _match, url ) => `(<a href="${url}" target="_blank" rel="noopener">${url}</a>)`
     );
   }
 
