@@ -14,10 +14,12 @@ import { routes } from './app.routes';
 import { tenantInterceptor } from './core/interceptors/tenant.interceptor';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { idTokenInterceptor } from './core/interceptors/id-token.interceptor';
+import { provideCanonicalUrl } from './shared/canonical-url';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ anchorScrolling: 'enabled' })),
+    provideCanonicalUrl(),
     provideHttpClient(withFetch(), withInterceptors([idTokenInterceptor, tenantInterceptor])),
     provideAnimationsAsync(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
