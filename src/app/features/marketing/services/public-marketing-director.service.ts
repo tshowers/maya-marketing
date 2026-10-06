@@ -58,7 +58,8 @@ export type PublicMarketingDirectorSystemActionType =
   | 'create_move'
   | 'create_survey'
   | 'create_response_flow'
-  | 'send_email';
+  | 'send_email'
+  | 'resolve_blocker';
 
 export interface PublicMarketingDirectorSystemAction {
   type: PublicMarketingDirectorSystemActionType;
@@ -73,6 +74,8 @@ export interface PublicMarketingDirectorSystemAction {
   response?: string;
   category?: string;
   to?: string;
+  /** resolve_blocker: the blocked item being settled. */
+  actionId?: string;
   subject?: string;
   text?: string;
   html?: string;
@@ -92,6 +95,8 @@ interface PublicMarketingDirectorResponse {
 // when nothing was actually recorded, so the backend prompt can tell Maya to
 // say so plainly instead of inventing a reason or a deliverable.
 export interface MarketingDirectorMoveContextItem {
+  /** The employee-action id, so Maya can settle a blocked item (resolve_blocker). */
+  actionId?: string;
   title: string;
   status?: string;
   progress?: number;

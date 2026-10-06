@@ -129,6 +129,27 @@ export class MayaJobsService {
     return response.url;
   }
 
+  /**
+   * The user's answer to something Maya is stuck on, saved on the task's
+   * notes thread; her next check-in picks the work back up.
+   */
+  async answerBlockedAction ( actionId: string, text: string ): Promise<{ moveId: string | null; }> {
+    const response = await firstValueFrom( this.http.post<{ moveId: string | null }>(
+      `${environment.backendURL}/maya/actions/${encodeURIComponent( actionId )}/answer`, { text }, { headers: await this.headers() } ) );
+    return { moveId: response.moveId || null };
+  }
+
+  /**
+   * Saves a record Maya made in its app (Docs, Moves, Pulse) for this
+   * workspace. Backend services may create any record; people without
+   * that app see it read-only (Ty, 2026-10-05).
+   */
+  async createRecord ( kind: 'document' | 'move' | 'survey' | 'response-flow', payload: object ): Promise<{ id: string; }> {
+    const response = await firstValueFrom( this.http.post<{ record: { id: string } }>(
+      `${environment.backendURL}/maya/records/${kind}`, payload, { headers: await this.headers() } ) );
+    return { id: String( response.record?.id || '' ) };
+  }
+
   /** The user's answer when Maya pushed back. */
   async decidePlan ( jobId: string, choice: 'recommended' | 'as_asked' | 'cancel' ): Promise<MayaJob> {
     const response = await firstValueFrom( this.http.post<{ job: MayaJob }>(

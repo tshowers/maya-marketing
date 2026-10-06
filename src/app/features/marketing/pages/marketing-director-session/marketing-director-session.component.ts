@@ -27,10 +27,6 @@ import { UserService } from '../../../../services/user.service';
 import { environment } from '../../../../../environments/environment';
 import { Contact } from '../../../../shared/data/interfaces/contact.model';
 import { EmployeePlanService } from '../../../employees/services/employee-plan.service';
-import { DocService } from '../../../document/doc.service';
-import { TaskService } from '../../../../services/task.service';
-import { SurveyApiService } from '../../../survey/services/survey-api.service';
-import { ResponseFlowService } from '../../../knowledge/response-flow.service';
 import { Task } from '../../../../shared/data/interfaces/task.model';
 import { Survey } from '../../../survey/models/survey.model';
 import { AssistantBoxUtilityService } from '../../../../services/assistant-box-utility.service';
@@ -62,6 +58,24 @@ const JOB_OUTCOME_LABELS: Record<JobOutcome, string> = {
   planning: 'Maya is still planning this one',
 };
 const MOVES_SITE_URL = 'https://moves.taliferro.tech';
+const DOCS_SITE_URL = 'https://docs.taliferro.tech';
+const PULSE_SITE_URL = 'https://pulse.taliferro.tech';
+
+/** Maya has no editor of her own; documents open in the Docs app. */
+function docsEditorUrl ( documentId: string ): string {
+  return `${DOCS_SITE_URL}/docs/editor/${encodeURIComponent( documentId )}`;
+}
+
+/**
+ * Receipts saved before Maya linked into the other apps point at TODD
+ * monorepo paths Maya doesn't have; send them to the right app.
+ */
+const LEGACY_RECEIPT_ROUTES: Array<[RegExp, ( id: string ) => string]> = [
+  [/^\/document-editor\/([^/?#]+)/, id => `${DOCS_SITE_URL}/docs/editor/${id}`],
+  [/^\/survey-view\/([^/?#]+)/, id => `${PULSE_SITE_URL}/survey/${id}`],
+  [/^\/response-flow\?id=([^&#]+)/, id => `${DOCS_SITE_URL}/knowledge/response-flow/${id}`],
+  [/^\/move\?id=([^&#]+)/, id => `${MOVES_SITE_URL}/move/${id}`],
+];
 
 @Component( {
   selector: 'app-marketing-director-session',
@@ -151,10 +165,6 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     private readonly userService: UserService,
     private readonly employeePlanService: EmployeePlanService,
     private readonly notificationService: NotificationService,
-    private readonly docService: DocService,
-    private readonly taskService: TaskService,
-    private readonly surveyApiService: SurveyApiService,
-    private readonly responseFlowService: ResponseFlowService,
     private readonly assistantBoxUtilityService: AssistantBoxUtilityService,
     private readonly marketingDirectorCapabilitiesService: MarketingDirectorCapabilitiesService,
     private readonly mayaStatusReportService: MayaStatusReportService,
@@ -781,7 +791,7 @@ Pick one and I will keep moving:
         }
       );
       const documentTitle = preview.title || 'Maya Master Marketing Plan';
-      const createdDocument = await firstValueFrom( this.docService.createDocument( {
+      const createdDocument = await this.mayaJobs.createRecord( 'document', {
         title: documentTitle,
         name: documentTitle,
         type: 'document',
@@ -791,9 +801,9 @@ Pick one and I will keep moving:
         summary: 'Master marketing plan created by Maya inside TODD.',
         description: 'This document is the saved source of truth Maya should use for daily planning.',
         htmlContent: this.toHtmlDocument( documentTitle, preview.rawText )
-      }, this.userId ) );
+      } );
       const documentId = String( createdDocument?.id || '' ).trim();
-      const documentRoute = documentId ? `/document-editor/${encodeURIComponent( documentId )}` : '';
+      const documentRoute = documentId ? docsEditorUrl( documentId ) : '';
       const planId = await this.marketingEmployeeService.createMarketingPlan(
         this.tenantId,
         {
@@ -1170,6 +1180,9 @@ Pick one and I will keep moving:
           case 'send_email':
             createdAnything = await this.executeSendEmailAction( action, userRequest ) || createdAnything;
             break;
+          case 'resolve_blocker':
+            createdAnything = await this.executeResolveBlockerAction( action ) || createdAnything;
+            break;
           default:
             break;
         }
@@ -1193,7 +1206,7 @@ Pick one and I will keep moving:
     const title = String( action.title || '' ).trim();
     if ( !title ) return false;
 
-    const created = await firstValueFrom( this.docService.createDocument( {
+    const created = await this.mayaJobs.createRecord( 'document', {
       title,
       name: title,
       type: 'draft',
@@ -1203,17 +1216,17 @@ Pick one and I will keep moving:
       summary: String( action.summary || '' ).trim(),
       description: String( action.description || '' ).trim(),
       htmlContent: this.toHtmlDocument( title, String( action.body || action.description || action.summary || '' ).trim() )
-    }, this.userId ) );
+    } );
 
     const documentId = String( created?.id || '' ).trim();
     if ( !documentId ) return false;
 
     await this.appendArtifactReceiptMessage(
-      'Created document',
+      `Created document${await this.viewOnlyNote( 'docs', 'Docs' )}`,
       title,
-      `/document-editor/${encodeURIComponent( documentId )}`
+      docsEditorUrl( documentId )
     );
-    await this.recordCompletedExecutionTask( title, `/document-editor/${encodeURIComponent( documentId )}`, action, 'Document created and saved by Maya.' );
+    await this.recordCompletedExecutionTask( title, docsEditorUrl( documentId ), action, 'Document created and saved by Maya.' );
     return true;
   }
 
@@ -1229,12 +1242,6 @@ Pick one and I will keep moving:
     if ( !title ) return false;
 
     const mayaDoesIt = /maya/i.test( String( action.ownerLabel || '' ) );
-    const hasMoves = await firstValueFrom( this.writeAccess.state( 'moves' ).pipe(
-      take( 1 ),
-      map( state => state === 'canWrite' ),
-      catchError( () => of( false ) )
-    ) );
-
     let jobRoute = '';
     if ( mayaDoesIt ) {
       const request = [
@@ -1251,9 +1258,7 @@ Pick one and I will keep moving:
       jobRoute = job?.route || '';
     }
 
-    let moveUrl = '';
-    if ( hasMoves ) {
-      const task: Task = {
+    const task: Task = {
         title,
         description: this.composeOwnedDescription( action ),
         dueDate: this.resolveTaskDueDate( action.dueDate ),
@@ -1263,19 +1268,14 @@ Pick one and I will keep moving:
         ownerId: this.resolveTaskOwnerId( action ),
         source: 'maya-created-move',
         createdByTodd: true,
-        url: jobRoute ? `${MAYA_SITE_URL}${jobRoute}` : ''
-      };
-      const saved = await this.taskService.addTask( task, this.userId );
-      const taskId = String( saved?.id || '' ).trim();
-      moveUrl = taskId ? `${MOVES_SITE_URL}/move/${encodeURIComponent( taskId )}` : `${MOVES_SITE_URL}/moves`;
-    }
+      url: jobRoute ? `${MAYA_SITE_URL}${jobRoute}` : ''
+    };
+    const saved = await this.mayaJobs.createRecord( 'move', task );
+    const moveUrl = saved.id ? `${MOVES_SITE_URL}/move/${encodeURIComponent( saved.id )}` : `${MOVES_SITE_URL}/moves`;
+    const viewOnly = await this.viewOnlyNote( 'moves', 'Moves' );
 
     if ( jobRoute ) await this.appendArtifactReceiptMessage( JOB_OUTCOME_LABELS.started, title, jobRoute );
-    if ( moveUrl ) await this.appendArtifactReceiptMessage( jobRoute ? 'Also in Moves' : 'Created move', title, moveUrl );
-    if ( !jobRoute && !moveUrl && !mayaDoesIt ) {
-      await this.appendReceiptTextMessage( `Execution receipt: this one is yours - "${title}". I didn't add it to Moves because this workspace doesn't have the Moves app.` );
-    }
-    // Every path above posted a receipt, so the generic "nothing was created" notice isn't needed.
+    await this.appendArtifactReceiptMessage( `${jobRoute ? 'Also in Moves' : 'Created move'}${viewOnly}`, title, moveUrl );
     return true;
   }
 
@@ -1301,12 +1301,12 @@ Pick one and I will keep moving:
       } ) )
     };
 
-    const created = await firstValueFrom( this.surveyApiService.createSurvey( survey ) );
+    const created = await this.mayaJobs.createRecord( 'survey', survey );
     const surveyId = String( created?.id || '' ).trim();
     if ( !surveyId ) return false;
 
-    await this.appendArtifactReceiptMessage( 'Created survey', title, `/survey-view/${encodeURIComponent( surveyId )}` );
-    await this.recordCompletedExecutionTask( title, `/survey-view/${encodeURIComponent( surveyId )}`, action, 'Survey created and saved by Maya.' );
+    await this.appendArtifactReceiptMessage( `Created survey${await this.viewOnlyNote( 'pulse', 'Pulse' )}`, title, `${PULSE_SITE_URL}/survey/${encodeURIComponent( surveyId )}` );
+    await this.recordCompletedExecutionTask( title, `${PULSE_SITE_URL}/survey/${encodeURIComponent( surveyId )}`, action, 'Survey created and saved by Maya.' );
     return true;
   }
 
@@ -1316,7 +1316,7 @@ Pick one and I will keep moving:
     const response = String( action.response || action.body || '' ).trim();
     if ( !title || !question || !response ) return false;
 
-    const created = await firstValueFrom( this.responseFlowService.createResponseFlow( {
+    const created = await this.mayaJobs.createRecord( 'response-flow', {
       name: title,
       title,
       question,
@@ -1330,17 +1330,17 @@ Pick one and I will keep moving:
       recommendations: [],
       resources: [],
       relatedDocumentIds: []
-    } ) );
+    } );
 
     const responseFlowId = String( created?.id || '' ).trim();
     if ( !responseFlowId ) return false;
 
     await this.appendArtifactReceiptMessage(
-      'Created response flow',
+      `Created response flow${await this.viewOnlyNote( 'docs', 'Docs' )}`,
       title,
-      `/response-flow?id=${encodeURIComponent( responseFlowId )}`
+      `${DOCS_SITE_URL}/knowledge/response-flow/${encodeURIComponent( responseFlowId )}`
     );
-    await this.recordCompletedExecutionTask( title, `/response-flow?id=${encodeURIComponent( responseFlowId )}`, action, 'Knowledge response flow created by Maya.' );
+    await this.recordCompletedExecutionTask( title, `${DOCS_SITE_URL}/knowledge/response-flow/${encodeURIComponent( responseFlowId )}`, action, 'Knowledge response flow created by Maya.' );
     return true;
   }
 
@@ -1427,6 +1427,42 @@ Pick one and I will keep moving:
     return `/work?job=${encodeURIComponent( jobId )}`;
   }
 
+  /**
+   * Working through what's stuck, in the chat: when the user settles a
+   * blocked item, their decision goes on that task's notes thread - the same
+   * thread Moves' "Reply to Maya" writes - and the task is unblocked. Maya's
+   * next check-in reads it and picks the work back up.
+   */
+  private async executeResolveBlockerAction ( action: PublicMarketingDirectorSystemAction ): Promise<boolean> {
+    const actionId = String( action.actionId || '' ).trim();
+    const text = String( action.text || action.description || '' ).trim();
+    if ( !actionId || !text ) return false;
+    const item = [...this.currentWorkItems, ...this.pendingApprovalItems].find( entry => entry.actionId === actionId );
+    const title = String( item?.title || action.title || 'the task' ).replace( /^Marketing Plan:\s*/i, '' ).trim();
+
+    try {
+      const { moveId } = await this.mayaJobs.answerBlockedAction( actionId, text );
+      // Unblocked here too, so the next turn doesn't bring the same item back up.
+      this.currentWorkItems = this.currentWorkItems.map( entry => entry.actionId === actionId ? { ...entry, blocked: false, blockerNote: undefined } : entry );
+      this.pendingApprovalItems = this.pendingApprovalItems.map( entry => entry.actionId === actionId ? { ...entry, blocked: false, blockerNote: undefined } : entry );
+      const label = `Unstuck - I saved your answer on the task and I'll pick it back up at my next check-in`;
+      if ( moveId ) {
+        await this.appendArtifactReceiptMessage( label, title, `${MOVES_SITE_URL}/move/${encodeURIComponent( moveId )}` );
+      } else {
+        await this.appendReceiptTextMessage( `${label}: ${title}.` );
+      }
+    } catch ( error: any ) {
+      const reason = error?.error?.message || error?.message || 'TODD could not save it.';
+      await this.appendReceiptTextMessage( `Execution receipt: I couldn't save your answer on "${title}". ${reason}` );
+    }
+    return true;
+  }
+
+  /** Whether anything Maya is working on is blocked - offers "Work through what's stuck". */
+  get hasStuckWork (): boolean {
+    return [...this.currentWorkItems, ...this.pendingApprovalItems].some( item => item.blocked );
+  }
+
   private async appendArtifactReceiptMessage ( label: string, title: string, route: string ): Promise<void> {
     const safeLabel = this.escapeHtml( label );
     const safeTitle = this.escapeHtml( title );
@@ -1483,7 +1519,16 @@ Pick one and I will keep moving:
       url: route
     };
 
-    await this.taskService.addTask( completedTask, this.userId );
+    await this.mayaJobs.createRecord( 'move', completedTask );
+  }
+
+  /**
+   * Maya's records land in their app either way; without that app the
+   * person can view them but not change them (Ty, 2026-10-05).
+   */
+  private async viewOnlyNote ( product: 'docs' | 'moves' | 'pulse', appName: string ): Promise<string> {
+    const state = await firstValueFrom( this.writeAccess.state( product ).pipe( take( 1 ), catchError( () => of( 'canWrite' as const ) ) ) );
+    return state === 'canWrite' ? '' : ` (view only - get ${appName} to change it)`;
   }
 
   private buildDirectorWorkspaceContext (): PublicMarketingDirectorWorkspaceContext | null {
@@ -1546,7 +1591,8 @@ Pick one and I will keep moving:
   }
 
   private extractActionSummariesForToday ( actions: MarketingEmployeeActionRecord[] ): MarketingDirectorMoveContextItem[] {
-    const today = new Date().toISOString().slice( 0, 10 );
+    // Pacific, like the planner's plannedForDate.
+    const today = new Intl.DateTimeFormat( 'en-CA', { timeZone: 'America/Los_Angeles' } ).format( new Date() );
     const dailyPlanActions = ( actions || [] )
       .filter( action => String( action?.origin || '' ).trim().toLowerCase() === 'daily_plan' )
       .filter( action => String( action?.plannedForDate || '' ).trim() === today );
@@ -1581,6 +1627,7 @@ Pick one and I will keep moving:
       : null;
 
     return {
+      actionId: String( action?.id || '' ).trim() || undefined,
       title,
       status: String( action?.status || '' ).trim() || undefined,
       progress: typeof action?.progress === 'number' ? action.progress : undefined,
@@ -1849,7 +1896,14 @@ Pick one and I will keep moving:
   }
 
   renderMessageContent ( content: string ): string {
-    const escaped = String( content || '' )
+    const relinked = String( content || '' ).replace( /\((\/[^\s)]+)\)/g, ( match, route: string ) => {
+      for ( const [pattern, toUrl] of LEGACY_RECEIPT_ROUTES ) {
+        const hit = pattern.exec( route );
+        if ( hit ) return `(${toUrl( hit[1] )})`;
+      }
+      return match;
+    } );
+    const escaped = relinked
       .replace( /&/g, '&amp;' )
       .replace( /</g, '&lt;' )
       .replace( />/g, '&gt;' );
@@ -1971,6 +2025,8 @@ Pick one and I will keep moving:
         return 'a response flow';
       case 'send_email':
         return 'an email';
+      case 'resolve_blocker':
+        return 'your answer on the task';
       default:
         return 'an artifact';
     }

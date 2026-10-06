@@ -22,6 +22,7 @@
           </div>
         </div>
         <div class="maya-chips" aria-label="Maya prompts">
+          <button type="button" *ngIf="hasStuckWork" (click)="sendMessage('Let\'s work through what you\'re stuck on, one task at a time.')">Work through what’s stuck</button>
           <button type="button" *ngFor="let item of ['Sharpen my message', 'Create a presentation', 'Clarify my offer']" (click)="sendMessage(item === 'Create a presentation' ? 'I want to create a presentation with Maya.' : item)">{{ item }}</button>
         </div>
         <p class="tt-made-by tt-made-by--center"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-mark-128.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a href="https://find.taliferro.tech" target="_blank" rel="noopener">Also from us <span class="um-logo" data-app="find" aria-hidden="true"></span><strong>Find</strong></a></p>
