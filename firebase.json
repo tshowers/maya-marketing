@@ -2,6 +2,7 @@
   "hosting": {
     "target": "maya-marketing",
     "public": "dist/maya/browser",
+    "trailingSlash": false,
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
