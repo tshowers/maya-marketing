@@ -174,7 +174,22 @@ export type PublicMarketingDirectorAccessMode =
   providedIn: 'root'
 } )
 export class PublicMarketingDirectorService {
+  // Questions asked in this tab, kept across reloads. The backend answers the
+  // first ones with its stronger model and later ones with the cheaper one.
+  private static readonly TURN_KEY = 'maya-advice-turns';
+  private turns = 0;
+
   constructor ( private readonly http: HttpClient ) {}
+
+  private nextTurn (): number {
+    try {
+      const turn = Number( sessionStorage.getItem( PublicMarketingDirectorService.TURN_KEY ) || 0 ) + 1;
+      sessionStorage.setItem( PublicMarketingDirectorService.TURN_KEY, String( turn ) );
+      return turn;
+    } catch {
+      return ++this.turns;
+    }
+  }
 
   async askDirector (
     message: string,
@@ -189,6 +204,7 @@ export class PublicMarketingDirectorService {
       {
         message: String( message || '' ).trim(),
         includeWhy: true,
+        turn: this.nextTurn(),
         accessMode,
         workspaceContext: workspaceContext || null,
         history: ( history || [] ).slice( -10 ).map( item => ( {

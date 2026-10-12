@@ -1,13 +1,12 @@
 {
   "name": "maya",
-  "version": "2026.10.6-build.3",
+  "version": "2026.10.12-build.1",
   "private": true,
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-version.js && ng serve",
-    "build": "node scripts/generate-version.js --bump && ng build && npm run postbuild",
-    "build:production": "node scripts/generate-version.js --bump && ng build --configuration production && npm run postbuild",
-    "postbuild": "cp dist/maya/browser/index.csr.html dist/maya/browser/index.html",
+    "build": "node scripts/generate-version.js --bump && ng build",
+    "build:production": "node scripts/generate-version.js --bump && ng build --configuration production",
     "deploy:hosting": "./deploy.sh",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
