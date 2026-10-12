@@ -1966,3 +1966,6 @@ nav.main-nav .todd-command-scroll>.nav-item:has(.nav-pin-label) {
   .maya-pill span { display: none; }
   .maya-head__actions { gap: 6px; }
 }
+
+/* On the home page: a full-height column, so its footer sits at the bottom. */
+:host:has(> app-marketing-director-session) { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }

@@ -28,6 +28,7 @@ import { environment } from '../../../../../environments/environment';
 import { Contact } from '../../../../shared/data/interfaces/contact.model';
 import { EmployeePlanService } from '../../../employees/services/employee-plan.service';
 import { Task } from '../../../../shared/data/interfaces/task.model';
+import { SiteFooterComponent } from '../../../../shared/site-footer/site-footer.component';
 import { Survey } from '../../../survey/models/survey.model';
 import { AssistantBoxUtilityService } from '../../../../services/assistant-box-utility.service';
 import { MarketingDirectorCapabilitiesService } from '../../services/marketing-director-capabilities.service';
@@ -38,6 +39,7 @@ import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/may
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
 import { MayaJob, MayaJobsService } from '../../../../services/maya-jobs.service';
+import { AlsoFromUsComponent } from '../../../../shared/also-from-us/also-from-us.component';
 
 interface ReportOperationalData {
   socialPosts?: SocialPost[];
@@ -80,7 +82,7 @@ const LEGACY_RECEIPT_ROUTES: Array<[RegExp, ( id: string ) => string]> = [
 @Component( {
   selector: 'app-marketing-director-session',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MayaDeckPreviewComponent],
+  imports: [ AlsoFromUsComponent, SiteFooterComponent, CommonModule, FormsModule, RouterModule, MayaDeckPreviewComponent],
   templateUrl: './marketing-director-session.component.html',
   styleUrls: ['./marketing-director-session.component.css']
 } )

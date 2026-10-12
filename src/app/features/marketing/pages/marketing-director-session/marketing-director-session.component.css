@@ -1,6 +1,11 @@
 /* Maya home (design 11a) and conversation (11b). Find family tokens
    (@taliferro/ui/styles/tokens.css); they handle dark mode. Maya is green. */
-:host { display: block; }
+/* A column filling the app's full-height shell; on the home (no conversation
+   yet) the welcome takes the room above the footer, so it sits at the bottom. */
+:host { display: flex; flex-direction: column; flex: 1 0 auto; }
+.maya-screen:not(.maya-screen--chat) { display: flex; flex-direction: column; flex: 1 0 auto; min-height: 0; }
+.maya-screen:not(.maya-screen--chat) .maya-main { display: flex; flex-direction: column; flex: 1 0 auto; }
+.maya-screen:not(.maya-screen--chat) .maya-conversation { flex: 1 0 auto; min-height: 0; }
 
 .maya-screen {
   position: relative;
