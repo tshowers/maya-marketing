@@ -86,7 +86,7 @@ npm test               # Karma + headless Chrome, marketing specs only
 npm run build
 ```
 
-`npm run build` **bumps the version** in `package.json` (`<year>.<month>.<day>-build.<n>`) and writes `src/app/version.ts`, which is gitignored. The app shows the version on its startup screen. `npm start` doesn't bump the version. To build without bumping it, run `node scripts/generate-version.js && npx ng build`.
+`npm run build` **bumps the version** in `package.json` (`<year>.<month>.<day>-build.<n>`) and writes `src/app/version.ts` and `src/assets/version.json`, both gitignored. The app shows the version on its startup screen. Open tabs check `version.json` every minute and reload onto a new deploy when nothing would be lost; mid-conversation they wait for the next page change (`src/app/services/app-update.service.ts`). `npm start` doesn't bump the version. To build without bumping it, run `node scripts/generate-version.js && npx ng build`.
 
 ## SEO
 

@@ -7,6 +7,7 @@ import { AuthService } from './services/auth.service';
 import { NotificationComponent } from './shared/page/notification/notification.component';
 import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.component';
 import { MayaChatStateService } from './services/maya-chat-state.service';
+import { AppUpdateService } from './services/app-update.service';
 
 @Component({
   selector: 'maya-root',
@@ -45,6 +46,10 @@ export class AppComponent {
   readonly isAdmin$ = this.authService.getUser().pipe( map( user => user?.uid === environment.taliferroTenantId ) );
   readonly userName$ = this.authService.getUser().pipe( map( user => user?.displayName || '' ) );
   readonly userEmail$ = this.authService.getUser().pipe( map( user => user?.email || '' ) );
+
+  constructor () {
+    inject( AppUpdateService ).start();
+  }
 
   private get path (): string {
     return this.router.url.split( '?' )[0].split( '#' )[0];

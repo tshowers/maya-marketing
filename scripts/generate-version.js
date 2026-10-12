@@ -32,4 +32,6 @@ export const BUILD_VERSION = {
 `;
 
 fs.writeFileSync(path.join(__dirname, '../src/app/version.ts'), content);
+// Open tabs poll this to notice a new deploy (src/app/services/app-update.service.ts).
+fs.writeFileSync(path.join(__dirname, '../src/assets/version.json'), `${JSON.stringify({version: pkg.version})}\n`);
 console.log(`Generated src/app/version.ts (v${pkg.version} @ ${gitSha})`);

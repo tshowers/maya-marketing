@@ -23,3 +23,4 @@ src/environments/*
 
 # Generated at build time (scripts/generate-version.js)
 src/app/version.ts
+src/assets/version.json
