@@ -129,8 +129,7 @@ export class EmployeePlanService {
       sourceFileUrl?: string;
     }
   ): Promise<EmployeePlanPreview | null> {
-    const apiKey = environment.apiKey;
-    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const headers = new HttpHeaders();
     const response = await this.http.post<{ response: EmployeePlanExtractionResponse; }>(
       `${environment.backendURL}/employee/extract-plan`,
       {

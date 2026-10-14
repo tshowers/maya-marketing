@@ -247,7 +247,6 @@ export interface OutboxSenderConfigurationStatus {
     settingsRoute?: string;
     outreachSendingMode?: string;
     autoOutreachEnabled?: boolean;
-    autoSendCcRequired?: boolean;
     autoSendCcConfigured?: boolean;
     autoSendCcEmail?: string;
     missingReason?: string;

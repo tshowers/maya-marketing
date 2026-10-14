@@ -197,8 +197,7 @@ export class PublicMarketingDirectorService {
     accessMode: PublicMarketingDirectorAccessMode = 'free',
     workspaceContext?: PublicMarketingDirectorWorkspaceContext | null
   ): Promise<PublicMarketingDirectorResponse> {
-    const apiKey = environment.apiKey;
-    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const headers = new HttpHeaders();
     const response = await this.http.post<{ response: PublicMarketingDirectorResponse; }>(
       `${environment.backendURL}/marketing-director/advice`,
       {
@@ -223,8 +222,7 @@ export class PublicMarketingDirectorService {
   }
 
   async analyzeStatusReport (workspaceContext: PublicMarketingDirectorWorkspaceContext, reportingPeriod: MayaStatusReport['reportingPeriod']): Promise<Partial<MayaStatusReport>> {
-    const apiKey = environment.apiKey;
-    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const headers = new HttpHeaders();
     const response = await this.http.post<{ report?: Partial<MayaStatusReport>; }>(
       `${environment.backendURL}/marketing-director/status-report`,
       { workspaceContext, reportingPeriod },
@@ -234,8 +232,7 @@ export class PublicMarketingDirectorService {
   }
 
   async runPresentationTurn (message: string, history: PublicMarketingDirectorMessage[], requirements: MayaPresentationRequirements): Promise<MayaPresentationTurn> {
-    const apiKey = environment.apiKey;
-    const headers = new HttpHeaders().set( 'Authorization', `Bearer ${apiKey}` );
+    const headers = new HttpHeaders();
     const response = await this.http.post<{ response?: MayaPresentationTurn; }>(
       `${environment.backendURL}/marketing-director/presentation`,
       { message, history, requirements },
@@ -255,9 +252,7 @@ export class PublicMarketingDirectorService {
     if ( !safeEmailId || !safeTenantId ) return null;
 
     try {
-      const apiKey = environment.apiKey;
       const headers = new HttpHeaders()
-        .set( 'Authorization', `Bearer ${apiKey}` )
         .set( 'x-tenant-id', safeTenantId );
       const response = await this.http.get<{ success: boolean; data?: any; }>(
         `${environment.backendURL}/outreach/emails/${encodeURIComponent( safeEmailId )}`,
