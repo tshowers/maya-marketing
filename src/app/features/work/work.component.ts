@@ -7,6 +7,15 @@ import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
 import { EmailFillIn, EmailSendTarget, MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
 
+/**
+ * Opens an email Maya designed in Email Creator to revise it there. Email
+ * Creator loads it from Docs, with its images (web-products/email-creator,
+ * ?mayaEmail=, backend GET /email-creator/maya-email/:documentId).
+ */
+export function emailCreatorEditUrl ( documentId: string ): string {
+  return `https://emails.taliferro.tech/?mayaEmail=${encodeURIComponent( documentId )}`;
+}
+
 /** One thing waiting on the user, from any job. */
 interface ApprovalItem {
   job: MayaJob;
@@ -85,6 +94,7 @@ export class WorkComponent implements OnInit, OnDestroy {
   previewOpen: Record<string, boolean> = {};
   sendPanel: SendPanel | null = null;
   readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
+  readonly editUrl = emailCreatorEditUrl;
   private emailHtml: Record<string, string> = {};
 
   private authSubscription?: Subscription;

@@ -118,6 +118,8 @@
               <button type="button" class="wk-button wk-button--ghost" (click)="togglePreview( email )" [disabled]="busy[email.documentId]" data-cy="work-email-preview">
                 {{ previewOpen[email.documentId] ? 'Hide preview' : 'Preview' }}</button>
               <button type="button" class="wk-button wk-button--ghost" (click)="downloadHtml( email )" data-cy="work-email-download">Download HTML</button>
+              <a class="wk-button wk-button--ghost wk-button--link" [href]="editUrl( email.documentId )" target="_blank" rel="noopener"
+                 data-cy="work-email-edit">Edit in Email Creator</a>
             </div>
             <div class="wk-send" aria-label="Send with Outreach">
               <p class="wk-send__title">Send it with Outreach</p>

@@ -48,6 +48,7 @@
 
 .wk-button { min-height: 42px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--wk-accent); color: var(--wk-accent-ink); font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .wk-button--ghost { background: transparent; color: var(--todd-text); border: 1px solid var(--todd-panel-border); }
+.wk-button--link { display: inline-flex; align-items: center; text-decoration: none; }
 .wk-button:disabled, .wk-chip:disabled { opacity: .5; cursor: default; }
 .wk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 
