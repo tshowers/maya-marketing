@@ -10,7 +10,9 @@
     "deploy:hosting": "./deploy.sh",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
-    "serve:ssr:maya": "node dist/maya/server/server.mjs"
+    "serve:ssr:maya": "node dist/maya/server/server.mjs",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@angular/animations": "^19.2.4",
@@ -47,6 +49,7 @@
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.7",
     "@types/node": "^18.18.0",
+    "cypress": "^13.17.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",

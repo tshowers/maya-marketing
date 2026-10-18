@@ -28,6 +28,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/work/work.component').then((m) => m.WorkComponent),
   },
   {
+    // Work that needs more than marketing: a Mission with an owner on every
+    // step (design_handoff_todd_missions 1e).
+    path: 'missions',
+    title: 'Plan it with Maya',
+    loadComponent: () => import('./features/missions/missions-pages.component').then((m) => m.MayaMissionsPageComponent),
+  },
+  {
     // In-app profile (shared fields/API with the iOS apps' TODDProfileKit).
     path: 'profile',
     loadComponent: () => import('./features/profile/profile.component').then((m) => m.ProfileComponent),
