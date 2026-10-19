@@ -12,7 +12,8 @@
     "test": "ng test --watch=false --browsers=ChromeHeadless",
     "serve:ssr:maya": "node dist/maya/server/server.mjs",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "e2e": "bash scripts/e2e.sh"
   },
   "dependencies": {
     "@angular/animations": "^19.2.4",

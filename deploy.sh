@@ -19,6 +19,9 @@ npm test
 echo "Running TypeScript validation..."
 npm run typecheck
 
+echo "Running end-to-end tests (Cypress)..."
+npm run e2e
+
 if [ -n "$(git status --porcelain)" ]; then
   echo "Build and checks passed - committing changes before deploy..."
   VERSION="$(node -p "require('./package.json').version")"
