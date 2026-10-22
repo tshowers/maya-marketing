@@ -7,12 +7,13 @@ import { AuthService } from './services/auth.service';
 import { NotificationComponent } from './shared/page/notification/notification.component';
 import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.component';
 import { MayaChatStateService } from './services/maya-chat-state.service';
+import { WriteAccessPromptComponent } from './shared/write-access/write-access-prompt.component';
 import { AppUpdateService } from './services/app-update.service';
 
 @Component({
   selector: 'maya-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, NotificationComponent, PlatformMenuComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AsyncPipe, NotificationComponent, PlatformMenuComponent, WriteAccessPromptComponent],
   template: `
     <!-- Maya header (design 11a/11b). Help and About draw their own. -->
     <header class="maya-head" *ngIf="showHeader">
@@ -35,6 +36,7 @@ import { AppUpdateService } from './services/app-update.service';
     </header>
     <app-notification />
     <router-outlet />
+    <app-write-access-prompt />
   `,
   styleUrl: './app.component.css'
 })

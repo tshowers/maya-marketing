@@ -30,6 +30,20 @@ describe( 'Missions from Maya (1e)', () => {
     cy.get( '[data-cy="plan-start"]' ).should( 'be.visible' );
   } );
 
+  it( 'emailing an industry about a new product is the segment plan, with Maya writing it', () => {
+    cy.fixture( 'missions/segment-proposed.json' ).then( ( m ) => {
+      cy.intercept( 'POST', MISSIONS, { statusCode: 202, body: { success: true, mode: 'mission', mission: { ...m, status: 'queued', steps: [] } } } ).as( 'ask' );
+      cy.intercept( 'GET', `${MISSIONS}/pitch-segment`, { success: true, mission: m } );
+    } );
+    cy.visitWithCypressAuth( '/missions', ME );
+    cy.get( '[data-cy="ask-input"]' ).type( 'Email the companies in the fashion industry about our new product.' );
+    cy.get( '[data-cy="ask-send"]' ).click();
+    cy.wait( '@ask' ).its( 'request.body.origin' ).should( 'eq', 'maya' );
+    cy.get( '[data-cy="plan-title"]' ).should( 'contain.text', 'Email an industry segment' );
+    cy.get( '[data-cy="plan-split"]' ).should( 'contain.text', 'by Maya' ).and( 'contain.text', 'by TODD' ).and( 'contain.text', 'by you' );
+    cy.get( '[data-cy="fact-approvals"]' ).should( 'have.text', '1 approval from you' );
+  } );
+
   it( 'a simple question is answered without a Mission', () => {
     cy.fixture( 'missions/direct.json' ).then( ( body ) => cy.intercept( 'POST', MISSIONS, body ) );
     cy.visitWithCypressAuth( '/missions', ME );
