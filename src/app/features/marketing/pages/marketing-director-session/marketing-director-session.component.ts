@@ -51,14 +51,22 @@ interface ReportOperationalData {
 
 const MAYA_SITE_URL = 'https://maya.taliferro.tech';
 
-/** What happened to a chat request: a new job, an answer to an open one, or one Maya is still planning. */
-type JobOutcome = 'started' | 'answered' | 'planning';
+/**
+ * What happened to a chat request: a new job, an answer to an open one, one
+ * Maya is still planning, or one waiting on the person's call about the plan.
+ */
+type JobOutcome = 'started' | 'answered' | 'planning' | 'deciding';
 
 const JOB_OUTCOME_LABELS: Record<JobOutcome, string> = {
-  started: 'Started on Maya\'s work page',
-  answered: 'Added your answer to the job Maya already has',
+  started: 'Started on Maya\'s work page - I\'ll tell you here when it needs you',
+  answered: 'Added your answer to the job Maya already has - I\'ll tell you here when it needs you',
   planning: 'Maya is still planning this one',
+  deciding: 'Your turn: this job is waiting on your call before Maya goes on. Open it and pick one of her options - what you just said isn\'t added until you do',
 };
+
+/** How long the chat follows a job it linked to, waiting for it to need the person. */
+const JOB_FOLLOW_POLL_MS = 5000;
+const JOB_FOLLOW_LIMIT_MS = 3 * 60 * 1000;
 const MOVES_SITE_URL = 'https://moves.taliferro.tech';
 const DOCS_SITE_URL = 'https://docs.taliferro.tech';
 const PULSE_SITE_URL = 'https://pulse.taliferro.tech';
@@ -137,6 +145,8 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     { label: 'Docs', route: 'https://docs.taliferro.tech', image: 'assets/find/entities/docs/logo-bw-icon.png', external: true }
   ];
   private authContextSubscription?: Subscription;
+  /** Jobs this chat is following until they need the person (see followJob). */
+  private readonly jobFollowTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly revisitStoragePrefix = 'maya-session-plan-reminder';
   private readonly sessionStoragePrefix = 'maya-session-memory';
   private tenantId = '';
@@ -305,6 +315,8 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy (): void {
+    this.jobFollowTimers.forEach( timer => clearTimeout( timer ) );
+    this.jobFollowTimers.clear();
     this.chatState.unregister();
     this.authContextSubscription?.unsubscribe();
     this.workspaceConversationMessagesSubscription?.unsubscribe();
@@ -1372,7 +1384,7 @@ Pick one and I will keep moving:
     if ( !job ) return false;
     await this.appendArtifactReceiptMessage(
       job.outcome === 'started' ?
-        'Started on Maya\'s work page - Email Creator is designing it, then you choose Catalyst (many) or the Email Composer (one)' :
+        'Maya is planning the email now - I\'ll tell you here when it needs you. Nothing is sent until you choose how' :
         JOB_OUTCOME_LABELS[job.outcome],
       job.outcome === 'started' ? subject || 'Your email' : job.title,
       job.route
@@ -1384,8 +1396,10 @@ Pick one and I will keep moving:
    * One job per piece of work: when this chat already has a job Maya is
    * still planning, a follow-up message goes to that job instead of
    * starting another. A job waiting on Maya's questions gets the message as
-   * the answer; one still planning is left alone. Anything further along
-   * (drafting, waiting for approval, finished) means this is new work.
+   * the answer; one still planning, or waiting on the person's call about the
+   * plan, is left alone. Anything further along (drafting, waiting for
+   * approval, finished) means this is new work. Started and answered jobs are
+   * followed so the chat says when they need the person.
    * Returns null after posting a failure receipt.
    */
   private async startOrContinueJob (
@@ -1397,12 +1411,17 @@ Pick one and I will keep moving:
       const openJob = await this.findOpenChatJob();
       if ( openJob?.status === 'awaiting_user' ) {
         await this.mayaJobs.answer( openJob.id, ( userRequest.trim() || request ).slice( 0, 4000 ) );
+        this.followJob( openJob.id );
         return { outcome: 'answered', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+      }
+      if ( openJob?.status === 'awaiting_decision' ) {
+        return { outcome: 'deciding', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
       }
       if ( openJob ) {
         return { outcome: 'planning', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
       }
       const started = await this.mayaJobs.start( request );
+      this.followJob( started.id );
       return { outcome: 'started', route: this.jobRoute( started.id ), title: started.request.slice( 0, 120 ) };
     } catch ( error: any ) {
       const reason = error?.error?.message || error?.message || 'TODD could not start it.';
@@ -1411,7 +1430,7 @@ Pick one and I will keep moving:
     }
   }
 
-  /** The latest job this chat linked to, if Maya is still planning it. */
+  /** The latest job this chat linked to, if Maya is still planning it or waiting on the person's call. */
   private async findOpenChatJob (): Promise<MayaJob | null> {
     const jobIds = this.messages
       .filter( message => message.role === 'director' )
@@ -1420,9 +1439,69 @@ Pick one and I will keep moving:
     const latest = jobIds[jobIds.length - 1];
     if ( !latest ) return null;
     const job = await this.mayaJobs.get( latest ).catch( () => null );
-    const stillPlanning = job && ( job.status === 'awaiting_user' ||
+    const stillPlanning = job && ( job.status === 'awaiting_user' || job.status === 'awaiting_decision' ||
       ( ( job.status === 'queued' || job.status === 'running' ) && !job.steps.length ) );
     return stillPlanning ? job : null;
+  }
+
+  /**
+   * Watches a job the chat just linked to and, once it needs the person (a
+   * concern, a question, an approval, a finished email) or fails, says in the
+   * chat exactly what to do next, so the link isn't the only clue. Gives up
+   * quietly after a few minutes; the work page still has it.
+   */
+  private followJob ( jobId: string ): void {
+    const giveUpAt = Date.now() + JOB_FOLLOW_LIMIT_MS;
+    const check = async () => {
+      this.jobFollowTimers.delete( jobId );
+      const job = await this.mayaJobs.get( jobId ).catch( () => null );
+      const next = job ? this.jobNextStep( job ) : null;
+      if ( next ) {
+        await this.appendArtifactReceiptMessage( next.label, next.link, this.jobRoute( jobId ) );
+        return;
+      }
+      if ( Date.now() < giveUpAt ) this.jobFollowTimers.set( jobId, setTimeout( check, JOB_FOLLOW_POLL_MS ) );
+    };
+    clearTimeout( this.jobFollowTimers.get( jobId ) );
+    this.jobFollowTimers.set( jobId, setTimeout( check, JOB_FOLLOW_POLL_MS ) );
+  }
+
+  /** What the person does next on a job, or null while Maya is still working. */
+  private jobNextStep ( job: MayaJob ): { label: string; link: string; } | null {
+    switch ( job.status ) {
+      case 'awaiting_decision': {
+        const concern = String( job.planFit?.reasoning || '' ).trim();
+        return {
+          label: `Your turn: Maya paused before starting because this works against your marketing plan${concern ? ` - ${concern}` : '.'} ` +
+            'Open the job and choose: do it her way, go ahead as you asked, or cancel. Nothing happens until you choose',
+          link: 'Open the job and decide',
+        };
+      }
+      case 'awaiting_user': {
+        const questions = ( job.questions || [] ).filter( Boolean ).join( ' ' );
+        return {
+          label: `Your turn: Maya has a question before she goes on${questions ? ` - ${questions}` : '.'} Answer here in the chat or on the job`,
+          link: 'Answer on the job',
+        };
+      }
+      case 'awaiting_approval':
+        return { label: 'Your turn: Maya\'s drafts are ready. Approve or turn down each one under "Waiting for you"', link: 'Review the drafts' };
+      case 'done': {
+        const email = job.steps.find( step => step.tool === 'email.create' && step.status === 'done' && step.output?.['documentId'] );
+        if ( email ) {
+          return {
+            label: 'Your turn: the email is designed. Open the job, check the preview, then pick "Send to many - Catalyst" or "Send to one - Email Composer". Nothing is sent until you do',
+            link: String( email.output?.['subject'] || 'Open the email' ),
+          };
+        }
+        return { label: 'Done', link: job.summary || 'See what Maya did' };
+      }
+      case 'failed':
+      case 'stopped':
+        return { label: `Maya couldn't finish this one${job.statusDetail ? ` - ${job.statusDetail}` : ''}`, link: 'See the job' };
+      default:
+        return null;
+    }
   }
 
   private jobRoute ( jobId: string ): string {

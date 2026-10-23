@@ -47,6 +47,11 @@ interface SendPanel {
 }
 
 const ACTIVE_STATUSES = new Set( ['queued', 'running'] );
+const CLOSED_STATUSES = new Set( ['done', 'failed', 'cancelled'] );
+/** A closed job stays under "Now" this long, so a finished email is still at hand to send. */
+const RECENT_MS = 24 * 60 * 60 * 1000;
+/** Where a chat request's own words end and the brief Maya's chat added begins. */
+const CHAT_BRIEF_MARKER = /\s*(Email brief from my chat with Maya:|From my chat with Maya:)[\s\S]*$/;
 const FAST_POLL_MS = 5000;
 const SLOW_POLL_MS = 30000;
 
@@ -93,6 +98,14 @@ export class WorkComponent implements OnInit, OnDestroy {
   previews: Record<string, SafeHtml> = {};
   previewOpen: Record<string, boolean> = {};
   sendPanel: SendPanel | null = null;
+  /** The job Maya's chat linked to (?job=), highlighted and scrolled to once loaded. */
+  linkedJobId = '';
+  /** Decision cards whose full request is showing. */
+  requestOpen: Record<string, boolean> = {};
+  /** Jobs list tab: what's going on now, or finished work. */
+  tab: 'now' | 'past' = 'now';
+  /** The job just started from this page, confirmed under the ask box. */
+  startedJobId = '';
   readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
   readonly editUrl = emailCreatorEditUrl;
   private emailHtml: Record<string, string> = {};
@@ -114,7 +127,10 @@ export class WorkComponent implements OnInit, OnDestroy {
     this.title.setTitle( "Maya's work — Maya | Taliferro Tech" );
     // Maya's chat links here with ?job=<id> after starting a job.
     const linkedJob = this.route.snapshot.queryParamMap.get( 'job' );
-    if ( linkedJob ) this.expanded[linkedJob] = true;
+    if ( linkedJob ) {
+      this.expanded[linkedJob] = true;
+      this.linkedJobId = linkedJob;
+    }
     this.authSubscription = this.authService.isLoggedIn().subscribe( ( signedIn ) => {
       const wasSignedIn = this.isSignedIn;
       this.isSignedIn = signedIn;
@@ -199,6 +215,41 @@ export class WorkComponent implements OnInit, OnDestroy {
     return this.jobs.filter( ( job ) => job.status === 'awaiting_user' );
   }
 
+  /** An idea fills the box to edit or send, so one click doesn't start a job. */
+  useIdea ( idea: string, input: HTMLTextAreaElement ): void {
+    this.request = idea;
+    this.startedJobId = '';
+    input.focus();
+  }
+
+  /** In progress, waiting on the person, or closed within the last day. */
+  isCurrent ( job: MayaJob ): boolean {
+    if ( !CLOSED_STATUSES.has( job.status ) ) return true;
+    return Date.now() - new Date( job.updatedAt ).getTime() < RECENT_MS;
+  }
+
+  get currentJobs (): MayaJob[] {
+    return this.jobs.filter( ( job ) => this.isCurrent( job ) );
+  }
+
+  get pastJobs (): MayaJob[] {
+    return this.jobs.filter( ( job ) => !this.isCurrent( job ) );
+  }
+
+  get shownJobs (): MayaJob[] {
+    return this.tab === 'now' ? this.currentJobs : this.pastJobs;
+  }
+
+  /** What the person asked, without the brief the chat appended. */
+  jobTitle ( job: MayaJob ): string {
+    return job.request.replace( CHAT_BRIEF_MARKER, '' ).trim() || job.request;
+  }
+
+  /** Whether the request carries more than its title shows. */
+  hasMoreRequest ( job: MayaJob ): boolean {
+    return this.jobTitle( job ) !== job.request.trim();
+  }
+
   async start ( text?: string ): Promise<void> {
     const request = ( text ?? this.request ).trim();
     if ( !request || this.isStarting ) return;
@@ -210,6 +261,8 @@ export class WorkComponent implements OnInit, OnDestroy {
       this.jobs = [job, ...this.jobs];
       this.expanded[job.id] = true;
       this.request = '';
+      this.tab = 'now';
+      this.startedJobId = job.id;
       this.schedulePoll( FAST_POLL_MS );
     } catch ( error: any ) {
       this.needsPurchase = error?.error?.error === 'APP_PURCHASE_REQUIRED';
@@ -480,11 +533,35 @@ export class WorkComponent implements OnInit, OnDestroy {
   private async refresh (): Promise<void> {
     try {
       this.jobs = await this.api.list();
+      if ( !this.loaded ) {
+        const linked = this.jobs.find( ( job ) => job.id === this.linkedJobId );
+        if ( linked && !this.isCurrent( linked ) ) this.tab = 'past';
+        setTimeout( () => this.scrollToLinkedJob() );
+      }
       this.loaded = true;
     } catch ( error: any ) {
       this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load Maya’s work.';
     }
     this.schedulePoll( this.jobs.some( ( job ) => this.isActive( job ) ) ? FAST_POLL_MS : SLOW_POLL_MS );
+  }
+
+  scrollToJob ( jobId: string ): void {
+    document.getElementById( `wk-job-${jobId}` )?.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+  }
+
+  /**
+   * emails() builds new objects on every pass; keyed by document, the email
+   * blocks (and their Catalyst / Composer buttons) aren't rebuilt mid-click.
+   */
+  trackEmail ( _index: number, email: EmailResult ): string {
+    return email.documentId;
+  }
+
+  /** Brings the job from the chat into view: its "your call" or question card if it has one, else its row. */
+  private scrollToLinkedJob (): void {
+    if ( !this.linkedJobId || typeof document === 'undefined' ) return;
+    const target = document.getElementById( `wk-attn-${this.linkedJobId}` ) || document.getElementById( `wk-job-${this.linkedJobId}` );
+    target?.scrollIntoView( { behavior: 'smooth', block: 'start' } );
   }
 
   /** Polls quickly while Maya is working, slowly otherwise, and not while the tab is hidden. */

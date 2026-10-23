@@ -16,17 +16,20 @@
       <section class="wk-card wk-ask" data-cy="work-ask">
         <form (ngSubmit)="start()">
           <label class="wk-ask__label" for="wk-request">What should Maya do?</label>
-          <textarea id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
+          <textarea #requestInput id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
                     placeholder="e.g. Build a LinkedIn calendar for the rest of October"
                     [(ngModel)]="request" data-cy="work-request"></textarea>
           <div class="wk-ask__row">
             <div class="wk-chips" aria-label="Ideas">
-              <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="start( idea )" [disabled]="isStarting">{{ idea }}</button>
+              <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="useIdea( idea, requestInput )" [disabled]="isStarting">{{ idea }}</button>
             </div>
             <button type="submit" class="wk-button" [disabled]="!request.trim() || isStarting" data-cy="work-start">
               {{ isStarting ? 'Starting…' : 'Give it to Maya' }}</button>
           </div>
         </form>
+        <p *ngIf="startedJobId" class="wk-started" role="status" data-cy="work-started">
+          Maya's on it. <a [href]="'#wk-job-' + startedJobId" (click)="$event.preventDefault(); scrollToJob( startedJobId )">See it at the top of Now</a>.
+          If she has a question or a concern, it shows up right here.</p>
       </section>
 
       <p *ngIf="errorMessage" class="wk-error" role="alert" data-cy="work-error">
@@ -34,9 +37,14 @@
         <a *ngIf="needsPurchase" routerLink="/pricing">See plans</a>
       </p>
 
-      <section *ngFor="let job of decisionJobs; trackBy: trackById" class="wk-card wk-card--attention" data-cy="work-decision">
+      <section *ngFor="let job of decisionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
+               [class.is-linked]="job.id === linkedJobId" data-cy="work-decision">
+        <p class="wk-your-turn">Your call</p>
         <h2>Maya has concerns</h2>
-        <p class="wk-quote">“{{ job.request }}”</p>
+        <p class="wk-lead">She paused this job before starting. Read why below, then pick one of the buttons at the bottom. Nothing happens until you choose.</p>
+        <p class="wk-quote" [class.is-clamped]="!requestOpen[job.id]">“{{ job.request }}”</p>
+        <button *ngIf="job.request.length > 240" type="button" class="wk-link-button" (click)="requestOpen[job.id] = !requestOpen[job.id]">
+          {{ requestOpen[job.id] ? 'Show less' : 'Show your full request' }}</button>
         <p class="wk-verdict">{{ verdictLabel( job.planFit ) }}<span *ngIf="job.planFit?.planReference"> · {{ job.planFit?.planReference }}</span></p>
         <p>{{ job.planFit?.reasoning }}</p>
         <ul *ngIf="job.planFit?.ramifications?.length" class="wk-ramifications">
@@ -50,8 +58,11 @@
         </div>
       </section>
 
-      <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" data-cy="work-question">
+      <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
+               [class.is-linked]="job.id === linkedJobId" data-cy="work-question">
+        <p class="wk-your-turn">Your turn</p>
         <h2>Maya has a question</h2>
+        <p class="wk-lead">Answer below and she picks the job back up.</p>
         <p class="wk-quote">“{{ job.request }}”</p>
         <ul class="wk-questions"><li *ngFor="let question of job.questions">{{ question }}</li></ul>
         <form class="wk-answer" (ngSubmit)="sendAnswer( job )">
@@ -87,16 +98,30 @@
 
       <section class="wk-section" data-cy="work-jobs">
         <div class="wk-section__head"><h2>Jobs</h2></div>
+        <div class="wk-tabs" role="tablist" aria-label="Jobs">
+          <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'now'" [attr.aria-selected]="tab === 'now'"
+                  (click)="tab = 'now'" data-cy="work-tab-now">Now <span class="wk-tab__count">{{ currentJobs.length }}</span></button>
+          <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'past'" [attr.aria-selected]="tab === 'past'"
+                  (click)="tab = 'past'" data-cy="work-tab-past">Past <span class="wk-tab__count">{{ pastJobs.length }}</span></button>
+        </div>
+        <p class="wk-note">{{ tab === 'now' ? 'What Maya is working on, what’s waiting on you, and anything she finished in the last day.' : 'Everything older. Open a job to see what she made.' }}</p>
         <p *ngIf="!loaded" class="wk-note">Loading…</p>
         <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. Ask Maya for something above.</p>
+        <p *ngIf="loaded && jobs.length && !shownJobs.length" class="wk-note">
+          {{ tab === 'now' ? 'Nothing going on right now. Finished jobs are under Past.' : 'Nothing older than a day yet.' }}</p>
 
-        <article *ngFor="let job of jobs; trackBy: trackById" class="wk-card wk-job" data-cy="work-job">
+        <article *ngFor="let job of shownJobs; trackBy: trackById" class="wk-card wk-job" [id]="'wk-job-' + job.id"
+                 [class.is-linked]="job.id === linkedJobId" data-cy="work-job">
           <button type="button" class="wk-job__head" (click)="expanded[job.id] = !expanded[job.id]" [attr.aria-expanded]="!!expanded[job.id]">
-            <span class="wk-job__title">{{ job.request }}</span>
+            <span class="wk-job__heading">
+              <span class="wk-job__title">{{ jobTitle( job ) }}</span>
+              <span class="wk-meta">Asked {{ shortDateTime( job.createdAt ) }}</span>
+            </span>
             <span class="wk-status" [attr.data-tone]="statusTone( job )">
               <span *ngIf="isActive( job )" class="wk-spinner" aria-hidden="true"></span>{{ statusLabel( job ) }}</span>
           </button>
           <p *ngIf="job.summary" class="wk-note">{{ job.summary }}</p>
+          <ng-container *ngIf="tab === 'now' || expanded[job.id]">
           <p *ngIf="job.decision?.acknowledgement" class="wk-acknowledgement">{{ job.decision?.acknowledgement }}</p>
           <p *ngIf="!job.decision && job.planFit?.action === 'proceed' && (job.planFit?.verdict === 'conflicts' || job.planFit?.verdict === 'adjacent')" class="wk-acknowledgement">
             {{ verdictLabel( job.planFit ) }}: {{ job.planFit?.reasoning }}
@@ -111,7 +136,7 @@
           </p>
           <p *ngIf="job.status === 'failed' || job.status === 'waiting' || job.status === 'stopped'" class="wk-note">{{ job.statusDetail }}</p>
 
-          <div *ngFor="let email of emails( job )" class="wk-email" data-cy="work-email">
+          <div *ngFor="let email of emails( job ); trackBy: trackEmail" class="wk-email" data-cy="work-email">
             <p class="wk-email__subject">{{ email.subject }}</p>
             <p *ngIf="email.preheader" class="wk-meta">{{ email.preheader }}</p>
             <p *ngIf="email.fillIns.length" class="wk-email__fill">Fill in before sending: {{ email.fillIns.join( ', ' ) }}</p>
@@ -164,8 +189,10 @@
             <iframe *ngIf="previewOpen[email.documentId]" class="wk-email__frame" sandbox="" [srcdoc]="previews[email.documentId]"
                     [title]="'Preview of ' + email.subject"></iframe>
           </div>
+          </ng-container>
 
           <div *ngIf="expanded[job.id]" class="wk-job__detail">
+            <p *ngIf="hasMoreRequest( job )" class="wk-quote">“{{ job.request }}”</p>
             <ol class="wk-steps" *ngIf="job.steps.length">
               <li *ngFor="let step of job.steps" [attr.data-status]="step.status">
                 <span>{{ stepLabel( step ) }}</span>
