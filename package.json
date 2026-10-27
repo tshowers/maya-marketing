@@ -1,6 +1,6 @@
 {
   "name": "maya",
-  "version": "2026.10.24-build.2",
+  "version": "2026.10.26-build.1",
   "private": true,
   "scripts": {
     "ng": "ng",

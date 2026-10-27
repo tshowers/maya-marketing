@@ -10,6 +10,8 @@ import { MarketingEmployeeActionRecord, MarketingPlanRecord, MarketingPlanStep }
 /** Other TODD apps the pages send people to. */
 export const MOVES_URL = 'https://moves.taliferro.tech';
 export const OUTREACH_URL = 'https://outreach.taliferro.tech';
+/** Maya's review tasks in Moves; from=maya sends a signed-out visitor to sign in instead of the sample team. */
+export const MAYA_TASKS_URL = `${MOVES_URL}/app/maya?from=maya`;
 
 export type StepState = 'done' | 'doing' | 'stuck' | 'todo';
 export type PlanHealth = 'stuck' | 'behind' | 'on-track' | 'done';
@@ -227,7 +229,7 @@ export function buildNeeds ( input: {
       title: `Review ${what}`,
       detail: `I’ve stopped writing new drafts until the review queue clears. Anything unreviewed for ${health.expiryDays || 14} days expires.`,
       primaryLabel: 'Start review',
-      primaryHref: tasks ? `${MOVES_URL}/moves` : `${OUTREACH_URL}/signal-engine?tab=drafts`,
+      primaryHref: tasks ? MAYA_TASKS_URL : `${OUTREACH_URL}/signal-engine?tab=drafts`,
       secondaryLabel: tasks && drafts ? 'Open drafts' : undefined,
       secondaryHref: tasks && drafts ? `${OUTREACH_URL}/signal-engine?tab=drafts` : null,
     } );

@@ -7,7 +7,7 @@ import { AuthService } from '../../../../services/auth.service';
 import { DEFAULT_MARKETING_EMPLOYEE_ID, MarketingEmployeeActionRecord, MarketingPlanRecord } from '../../models/marketing-employee.models';
 import {
   ActionRow,
-  MOVES_URL,
+  MAYA_TASKS_URL,
   MayaNeed,
   OUTREACH_URL,
   StepView,
@@ -82,7 +82,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
   readonly avatarUrl = 'assets/find/entities/maya/logo-icon.png';
   readonly today = todayKey();
   readonly dateLabel = longDate().toUpperCase();
-  readonly movesUrl = `${MOVES_URL}/moves`;
+  readonly movesUrl = MAYA_TASKS_URL;
   readonly draftsUrl = `${OUTREACH_URL}/signal-engine?tab=drafts`;
 
   view: StatusView = 'cols';
