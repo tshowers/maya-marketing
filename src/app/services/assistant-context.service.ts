@@ -25,12 +25,12 @@ export class AssistantContextService {
         const roleParts = [u.profession, u.status].filter( Boolean ) as string[];
         if ( roleParts.length ) lines.push( `User role: ${roleParts.join( ' - ' )}` );
 
-        if ( u.jobDescriptionForTODD ) lines.push( `User job for TODD: ${u.jobDescriptionForTODD}` );
+        if ( u.jobDescriptionForTODD ) lines.push( `User job for 16Ahead: ${u.jobDescriptionForTODD}` );
 
         const company: any = u.company || {};
         if ( company.name ) lines.push( `Company name: ${company.name}` );
         if ( company.companyDescriptionForTODD ) lines.push( `Company description: ${company.companyDescriptionForTODD}` );
-        if ( company.companyGoalForTODD ) lines.push( `Company goal with TODD: ${company.companyGoalForTODD}` );
+        if ( company.companyGoalForTODD ) lines.push( `Company goal with 16Ahead: ${company.companyGoalForTODD}` );
         if ( company.companyValuePropForTODD ) lines.push( `Company value proposition: ${company.companyValuePropForTODD}` );
         if ( company.companyKeyFeaturesForTODD ) lines.push( `Key products or services: ${company.companyKeyFeaturesForTODD}` );
 
@@ -63,8 +63,8 @@ export class AssistantContextService {
     buildUiHint ( route: string | null | undefined, isLoggedIn: boolean, hasMusic: boolean ): string {
         const activeRoute = route || '/';
         const iconLine = isLoggedIn
-            ? 'navbar has a single TODD logo icon that opens a dropdown'
-            : 'navbar shows a single TODD logo icon linking to /';
+            ? 'navbar has a single 16Ahead logo icon that opens a dropdown'
+            : 'navbar shows a single 16Ahead logo icon linking to /';
 
         const baseMenu = ['Home', 'Network', 'Outreach', 'Docs', 'Moves', 'Pulse', 'SayIt'];
         const visibleMenu = hasMusic ? baseMenu.concat( 'Music' ) : baseMenu;

@@ -36,8 +36,8 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
     when: ( { summary, activation } ) => Number( summary['totalContacts'] || activation.facts.contactCount || 0 ) <= 0,
     build: () => ( {
       title: 'Start with the people who make the work matter.',
-      message: 'Network is ready, but it has no relationship inventory yet. Import a list or add one important contact so TODD can begin seeing patterns instead of guessing.',
-      whyItMatters: 'TODD needs real relationships before it can diagnose risk, recommend outreach, or create momentum.',
+      message: 'Network is ready, but it has no relationship inventory yet. Import a list or add one important contact so 16Ahead can begin seeing patterns instead of guessing.',
+      whyItMatters: '16Ahead needs real relationships before it can diagnose risk, recommend outreach, or create momentum.',
       primaryAction: { label: 'Import Contacts', route: '/contact-import' },
       secondaryAction: { label: 'Add a Contact', route: '/contact-edit' },
       teachingPoints: [ 'Import when you have a list; add manually when you know the first person to work with.', 'Network is the source for validation, enrichment, and reachability.', 'Pipeline comes after there is something real to prioritize.' ],
@@ -52,8 +52,8 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       const total = Number( summary['totalContacts'] || activation.facts.contactCount || 0 );
       return {
         title: 'The relationship graph is ready for its next layer.',
-        message: `TODD sees ${total.toLocaleString( 'en-US' )} contacts. Review the health signals, keep enrichment moving, and open Pipeline when you are ready to turn relationships into decisions.`,
-        whyItMatters: 'Network tells TODD who exists and how trustworthy the record is; Pipeline tells TODD what should happen next.',
+        message: `16Ahead sees ${total.toLocaleString( 'en-US' )} contacts. Review the health signals, keep enrichment moving, and open Pipeline when you are ready to turn relationships into decisions.`,
+        whyItMatters: 'Network tells 16Ahead who exists and how trustworthy the record is; Pipeline tells 16Ahead what should happen next.',
         primaryAction: { label: 'Review Contact List', route: '/contact-list' },
         secondaryAction: { label: 'Open Pipeline', route: '/contact-deal-flow' },
         teachingPoints: [ 'Watch valid email, enriched, and reconfigured counts to see whether records are becoming actionable.', 'Use Load More to keep enrichment moving through the network.', 'Export Contacts and Ideal Customer Persona are available when you need to take the network elsewhere.' ],
@@ -68,8 +68,8 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
     when: ( { activation } ) => activation.facts.contactCount > 0,
     build: ( { activation } ) => ( {
       title: 'Your relationship layer is alive. Now give it a next move.',
-      message: `TODD sees ${activation.facts.contactCount.toLocaleString( 'en-US' )} contact${activation.facts.contactCount === 1 ? '' : 's'}. Validation and enrichment continue automatically in the backend. Review Network when convenient, then activate Pipeline to decide who needs attention.`,
-      whyItMatters: 'Better relationship data gives TODD better judgment about who is warm, who is cooling, and what deserves a follow-up.',
+      message: `16Ahead sees ${activation.facts.contactCount.toLocaleString( 'en-US' )} contact${activation.facts.contactCount === 1 ? '' : 's'}. Validation and enrichment continue automatically in the backend. Review Network when convenient, then activate Pipeline to decide who needs attention.`,
+      whyItMatters: 'Better relationship data gives 16Ahead better judgment about who is warm, who is cooling, and what deserves a follow-up.',
       primaryAction: { label: 'Open Pipeline', route: '/contact-deal-flow' },
       secondaryAction: { label: 'Find More Contacts', route: '/lead-vault' },
       teachingPoints: [ 'Load More brings additional records into the enrichment process.', 'Export Contacts and Ideal Customer Persona are supporting tools in Network.', 'Daily Momentum will turn these relationship signals into today’s highest-impact action.' ],
@@ -82,11 +82,11 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
     page: 'contact-list',
     build: () => ( {
       title: 'A network starts with one reachable person.',
-      message: 'TODD does not need a perfect database. Add one contact or import a small list, then let the backend validate and enrich it automatically.',
-      whyItMatters: 'Without relationship inventory, TODD has no signal to rank, protect, or turn into momentum.',
+      message: '16Ahead does not need a perfect database. Add one contact or import a small list, then let the backend validate and enrich it automatically.',
+      whyItMatters: 'Without relationship inventory, 16Ahead has no signal to rank, protect, or turn into momentum.',
       primaryAction: { label: 'Import Contacts', route: '/contact-import' },
       secondaryAction: { label: 'Add a Contact', route: '/contact-edit' },
-      teachingPoints: [ 'Import a CSV when you already have a list; add a contact manually when you want to start with one important relationship.', 'After the first record arrives, Network becomes the place where TODD validates and enriches it.', 'Lead Vault is the optional path for finding additional relationships later.' ],
+      teachingPoints: [ 'Import a CSV when you already have a list; add a contact manually when you want to start with one important relationship.', 'After the first record arrives, Network becomes the place where 16Ahead validates and enriches it.', 'Lead Vault is the optional path for finding additional relationships later.' ],
       currentStage: 'Relationship inventory',
       nextStage: 'Enrichment and reachability'
     } )
@@ -99,7 +99,7 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       && ( audience !== 'single_module_paid' || activation.facts.entitlements?.outreach === true ),
     build: ( { summary } ) => ( {
       title: 'The pipeline has movement Signal Engine is waiting on.',
-      message: `TODD sees ${summary['outreachNeedsYouCount']} thread${Number( summary['outreachNeedsYouCount'] ) === 1 ? '' : 's'} in Signal Engine that need your judgment on contacts already in this pipeline. Review those first — the pipeline board will still be here.`,
+      message: `16Ahead sees ${summary['outreachNeedsYouCount']} thread${Number( summary['outreachNeedsYouCount'] ) === 1 ? '' : 's'} in Signal Engine that need your judgment on contacts already in this pipeline. Review those first — the pipeline board will still be here.`,
       whyItMatters: 'A pipeline stage is a snapshot; Signal Engine is where the next real conversation with these same contacts is waiting on you.',
       primaryAction: { label: 'Open Signal Engine', route: '/signal-engine' },
       secondaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
@@ -120,7 +120,7 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       const pipelineContacts = Number( summary['pipelineContacts'] || summary['extra']?.[ 'pipelineContacts' ] || 0 );
       return {
         title: 'The pipeline is where relationships become decisions.',
-        message: `TODD sees ${pipelineContacts.toLocaleString( 'en-US' )} contact${pipelineContacts === 1 ? '' : 's'} in the pipeline. Review the stages, choose who needs a next move, and let Daily Momentum keep the work from going quiet.`,
+        message: `16Ahead sees ${pipelineContacts.toLocaleString( 'en-US' )} contact${pipelineContacts === 1 ? '' : 's'} in the pipeline. Review the stages, choose who needs a next move, and let Daily Momentum keep the work from going quiet.`,
         whyItMatters: 'A contact becomes useful when there is a current decision attached to the relationship—not merely a record sitting in Network.',
         primaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
         secondaryAction: { label: 'Open Outreach', route: '/outreach/app' },
@@ -136,7 +136,7 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
     build: () => ( {
       title: 'Your contacts are here. Now give the pipeline a shape.',
       message: 'The pipeline is empty or has no contacts in view. Start by returning to Network, enrich a few reachable records, and then bring the relationships that deserve attention into Pipeline.',
-      whyItMatters: 'A pipeline is not a second contact list; it is the decision layer where TODD can see movement, drift, and the next intervention.',
+      whyItMatters: 'A pipeline is not a second contact list; it is the decision layer where 16Ahead can see movement, drift, and the next intervention.',
       primaryAction: { label: 'Open Network', route: '/contact-list' },
       secondaryAction: { label: 'Find More Contacts', route: '/lead-vault' },
       teachingPoints: [ 'Use Network to improve missing names, companies, email paths, and business context.', 'Use Lead Vault when the issue is not data quality but finding more right-fit relationships.', 'Return here when a contact is ready for a real next step.' ],
@@ -152,14 +152,14 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       const needsYou = Number( summary['needsYouCount'] || summary['needsHuman'] || 0 );
       return {
         title: 'Outreach is waiting for human judgment.',
-        message: `TODD has ${needsYou.toLocaleString( 'en-US' )} thread${needsYou === 1 ? '' : 's'} that need your judgment. Review the draft, approve or revise it, and let TODD carry the live thread after the send.`,
-        whyItMatters: 'Outreach is where a prioritized relationship becomes a real conversation. TODD prepares the work; you keep control of judgment, consent, and tone.',
+        message: `16Ahead has ${needsYou.toLocaleString( 'en-US' )} thread${needsYou === 1 ? '' : 's'} that need your judgment. Review the draft, approve or revise it, and let 16Ahead carry the live thread after the send.`,
+        whyItMatters: 'Outreach is where a prioritized relationship becomes a real conversation. 16Ahead prepares the work; you keep control of judgment, consent, and tone.',
         primaryAction: { label: 'Review Threads', route: '/signal-engine' },
         secondaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
         teachingPoints: [
           'Signal Engine is the approval lane for drafts and replies that need a human decision.',
           'Outbox proves what was approved, queued, sent, or blocked; it is the evidence layer after drafting.',
-          'When a thread is sent, TODD watches for the next signal instead of treating send as the finish line.'
+          'When a thread is sent, 16Ahead watches for the next signal instead of treating send as the finish line.'
         ],
         currentStage: 'Live outreach',
         nextStage: 'Daily Momentum and reply signals'
@@ -174,13 +174,13 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       return {
         title: 'Outreach turns a relationship signal into a live thread.',
         message: `Outreach is ${drafts > 0 ? `holding ${drafts.toLocaleString( 'en-US' )} draft${drafts === 1 ? '' : 's'} for review` : 'ready for the next qualified relationship signal'}. The job here is not to send more—it is to create the right next conversation.`,
-        whyItMatters: 'Outreach is where a prioritized relationship becomes a real conversation. TODD prepares the work; you keep control of judgment, consent, and tone.',
+        whyItMatters: 'Outreach is where a prioritized relationship becomes a real conversation. 16Ahead prepares the work; you keep control of judgment, consent, and tone.',
         primaryAction: { label: 'Open Signal Engine', route: '/signal-engine' },
         secondaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
         teachingPoints: [
           'Signal Engine is the approval lane for drafts and replies that need a human decision.',
           'Outbox proves what was approved, queued, sent, or blocked; it is the evidence layer after drafting.',
-          'When a thread is sent, TODD watches for the next signal instead of treating send as the finish line.'
+          'When a thread is sent, 16Ahead watches for the next signal instead of treating send as the finish line.'
         ],
         currentStage: 'Live outreach',
         nextStage: 'Daily Momentum and reply signals'
@@ -200,13 +200,13 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
       const status = String( summary['status'] || '' ).trim();
       return {
         title: 'This is where the suite becomes one next move.',
-        message: `TODD found ${attentionCount || blockerCount || 1} item${( attentionCount || blockerCount || 1 ) === 1 ? '' : 's'} that deserve attention${status ? `, and the current status is ${status.toLowerCase()}` : ''}. Start with the first card, complete or approve it, and let the next signal surface after that.`,
+        message: `16Ahead found ${attentionCount || blockerCount || 1} item${( attentionCount || blockerCount || 1 ) === 1 ? '' : 's'} that deserve attention${status ? `, and the current status is ${status.toLowerCase()}` : ''}. Start with the first card, complete or approve it, and let the next signal surface after that.`,
         whyItMatters: 'Daily Momentum prevents every application from becoming another place you have to remember to check. It gathers the strongest signals and gives the work an order.',
         primaryAction: { label: 'Work the Top Move', route: '/daily-momentum' },
         secondaryAction: { label: 'Refresh Momentum', route: '/daily-momentum' },
         teachingPoints: [
           'Start with the highest-priority card instead of opening every module at once.',
-          'TODD prepares work; you approve or complete the moments that require human judgment.',
+          '16Ahead prepares work; you approve or complete the moments that require human judgment.',
           'When the move is complete, the next signal should replace it—momentum is a loop, not a checklist.'
         ],
         currentStage: 'Daily operating rhythm',
@@ -219,14 +219,14 @@ export const TODD_NEXT_STEP_REGISTRY: ToddNextStepRule[] = [
     page: 'daily-momentum',
     build: () => ( {
       title: 'Daily Momentum is your one place to decide what is next.',
-      message: 'TODD is watching the relationship, outreach, proof, and execution signals together. There is no urgent item right now, so use this page as the daily starting point and return when a signal changes.',
+      message: '16Ahead is watching the relationship, outreach, proof, and execution signals together. There is no urgent item right now, so use this page as the daily starting point and return when a signal changes.',
       whyItMatters: 'The suite creates value when its signals converge into action. Daily Momentum is where you see that convergence without manually checking every application.',
       primaryAction: { label: 'Refresh Today’s Signal', route: '/daily-momentum' },
       secondaryAction: { label: 'Review Network', route: '/contact-list' },
       teachingPoints: [
         'Open Daily Momentum at the start of the workday to see the strongest available move.',
-        'Use the source module only when TODD points you there for context or approval.',
-        'A quiet board is useful information: it means TODD did not invent work just to keep the screen busy.'
+        'Use the source module only when 16Ahead points you there for context or approval.',
+        'A quiet board is useful information: it means 16Ahead did not invent work just to keep the screen busy.'
       ],
       currentStage: 'Daily operating rhythm',
       nextStage: 'Respond to the next signal'

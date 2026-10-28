@@ -224,7 +224,7 @@ export const DEFAULT_MARKETING_EMPLOYEE_AUTHORITY: MarketingEmployeeAuthority = 
   executionModes: ['draft'],
   emailOperatingMode: 'draft_only',
   senderIdentityMode: 'tenant_user',
-  brandedSenderName: 'Maya',
+  brandedSenderName: 'Marketing Assistant',
   brandedSenderEmail: null,
   brandedReplyToEmail: null
 };

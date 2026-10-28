@@ -26,7 +26,7 @@
     </div>
   </div>
   <div *ngIf="emailSentAssistantContext && emails.length > 0" class="email-sent-insight-panel mb-3">
-    <div class="fw-semibold mb-2">TODD Snapshot</div>
+    <div class="fw-semibold mb-2">16Ahead Snapshot</div>
     <div *ngIf="emailSentAssistantContext.followUpNow.length > 0" class="mb-2">
       <strong>Follow up now:</strong>
       {{ emailSentAssistantContext.followUpNow[0].to }}
@@ -62,7 +62,7 @@
       class="email-sent-filter-toggle"
       [class.email-sent-filter-toggle--active]="mayaOnlyFilter"
       (click)="toggleMayaOnlyFilter()">
-      {{ mayaOnlyFilter ? 'Showing Maya only' : 'Filter Maya only' }}
+      {{ mayaOnlyFilter ? 'Showing the Marketing Assistant only' : 'Filter the Marketing Assistant only' }}
     </button>
   </div>
   <!-- Empty state when there are no sent emails -->
@@ -73,12 +73,12 @@
       </div>
       <div class="email-empty-state-eyebrow">Outreach</div>
       <ng-container *ngIf="mayaOnlyFilter; else noSentEmailsState">
-        <h2 class="email-empty-state-title">No Maya sends match this filter yet</h2>
-        <p class="email-empty-state-text"> Maya-tagged outreach will appear here once a send is delegated through her composer or campaign flow. </p>
+        <h2 class="email-empty-state-title">No Marketing Assistant sends match this filter yet</h2>
+        <p class="email-empty-state-text"> Outreach from the Marketing Assistant will appear here once a send is delegated through its composer or campaign flow. </p>
       </ng-container>
       <ng-template #noSentEmailsState>
-        <h2 class="email-empty-state-title">No emails sent from TODD yet</h2>
-        <p class="email-empty-state-text"> Use Compose Email in Outreach to send your first message. Once you send from TODD, your emails will appear here with opens and clicks. </p>
+        <h2 class="email-empty-state-title">No emails sent from 16Ahead yet</h2>
+        <p class="email-empty-state-text"> Use Compose Email in Outreach to send your first message. Once you send from 16Ahead, your emails will appear here with opens and clicks. </p>
         <ul class="email-empty-state-list text-start">
           <li>Go to Outreach &gt; Compose Email to draft a message.</li>
           <li>Send at least one email to start tracking your metrics.</li>

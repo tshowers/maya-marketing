@@ -87,7 +87,7 @@ export class ToddActivationStateService {
           queryParams: {}
         },
         title: 'Sign in to continue setup',
-        message: 'TODD needs a signed-in workspace before it can decide the next activation move.',
+        message: '16Ahead needs a signed-in workspace before it can decide the next activation move.',
         facts: {
           profileComplete: false,
           profileReadiness: this.profileReadinessService.evaluate( null ),
@@ -150,7 +150,7 @@ export class ToddActivationStateService {
           }
         },
         title: 'Finish your profile first',
-        message: 'TODD still needs your profile context before it can guide activation intelligently.',
+        message: '16Ahead still needs your profile context before it can guide activation intelligently.',
         facts
       };
     }
@@ -164,7 +164,7 @@ export class ToddActivationStateService {
           stage: 'sender_pending_admin',
           recommendedRoute: this.buildTodayActivationRoute( 'sender-provisioning', 'sender_pending_admin' ),
           title: 'Sender request is pending approval',
-          message: 'The master tenant still needs to provision your sending address, so TODD should hold the user in the outreach activation lane until that is complete.',
+          message: 'The master tenant still needs to provision your sending address, so 16Ahead should hold the user in the outreach activation lane until that is complete.',
           facts
         };
       }
@@ -174,7 +174,7 @@ export class ToddActivationStateService {
           stage: 'sender_provisioning_required',
           recommendedRoute: this.buildTodayActivationRoute( 'sender-provisioning', 'sender_provisioning_required' ),
           title: 'Provision the sending address next',
-          message: 'Outreach is part of this workspace, so the next operational dependency is getting the sender approved before TODD can run email.',
+          message: 'Outreach is part of this workspace, so the next operational dependency is getting the sender approved before 16Ahead can run email.',
           facts
         };
       }
@@ -188,7 +188,7 @@ export class ToddActivationStateService {
         stage: 'contacts_missing',
         recommendedRoute: this.buildTodayActivationRoute( 'import', 'contacts_missing' ),
         title: 'Add or import contacts next',
-        message: 'Your profile is ready, but Network still needs contacts. Add them one at a time or import them so TODD has people and relationships to work with.',
+        message: 'Your profile is ready, but Network still needs contacts. Add them one at a time or import them so 16Ahead has people and relationships to work with.',
         facts
       };
     }
@@ -207,7 +207,7 @@ export class ToddActivationStateService {
           }
         },
         title: 'Your network is ready for its next move',
-        message: `TODD sees ${contactCount.toLocaleString( 'en-US' )} contacts. Validation and enrichment now continue automatically in the backend. Review Network when convenient, then activate Pipeline to decide who needs attention first.`,
+        message: `16Ahead sees ${contactCount.toLocaleString( 'en-US' )} contacts. Validation and enrichment now continue automatically in the backend. Review Network when convenient, then activate Pipeline to decide who needs attention first.`,
         facts
       };
     }
@@ -217,7 +217,7 @@ export class ToddActivationStateService {
         stage: 'operator_controls_pending',
         recommendedRoute: this.buildTodayActivationRoute( 'operator-setup', 'operator_controls_pending' ),
         title: 'Tune the operator controls next',
-        message: 'The sender is ready, so TODD should move the user into operator setup before asking for real outreach execution.',
+        message: 'The sender is ready, so 16Ahead should move the user into operator setup before asking for real outreach execution.',
         facts
       };
     }
@@ -229,7 +229,7 @@ export class ToddActivationStateService {
           stage: 'contacts_missing',
           recommendedRoute: goalRoute,
           title: 'Build the people layer first',
-          message: 'The selected first win is more leads, so TODD should start by creating relationship inventory through import or lead capture before asking for outreach or analysis.',
+          message: 'The selected first win is more leads, so 16Ahead should start by creating relationship inventory through import or lead capture before asking for outreach or analysis.',
           facts
         };
       }
@@ -254,7 +254,7 @@ export class ToddActivationStateService {
           }
         },
         title: 'Start in Pulse',
-        message: 'This user paid for Pulse, so TODD should begin in the survey workflow instead of pushing import or outreach.',
+        message: 'This user paid for Pulse, so 16Ahead should begin in the survey workflow instead of pushing import or outreach.',
         facts
       };
     }
@@ -270,7 +270,7 @@ export class ToddActivationStateService {
           }
         },
         title: 'Start in Moves',
-        message: 'This user paid for Moves, so TODD should begin in the task workflow instead of generic onboarding.',
+        message: 'This user paid for Moves, so 16Ahead should begin in the task workflow instead of generic onboarding.',
         facts
       };
     }
@@ -280,7 +280,7 @@ export class ToddActivationStateService {
         stage: 'contacts_missing',
         recommendedRoute: this.buildTodayActivationRoute( 'import', 'contacts_missing' ),
         title: 'Import contacts next',
-        message: 'TODD still needs contacts before it can build momentum from real people and real work.',
+        message: '16Ahead still needs contacts before it can build momentum from real people and real work.',
         facts
       };
     }
@@ -289,7 +289,7 @@ export class ToddActivationStateService {
       stage: 'contacts_ready',
       recommendedRoute: this.buildTodayActivationRoute( 'next-move', 'contacts_ready' ),
       title: 'Your network is ready',
-      message: 'The profile and contact base are in place, so TODD can now move the user into live work instead of raw setup.',
+      message: 'The profile and contact base are in place, so 16Ahead can now move the user into live work instead of raw setup.',
       facts
     };
   }
@@ -442,7 +442,7 @@ export class ToddActivationStateService {
       organize_work: 'Start with Mission Workspace',
       understand_customers: 'Start with customer signal',
       store_reusable_proof: 'Start with reusable proof',
-      not_sure: 'Let TODD choose the next move'
+      not_sure: 'Let 16Ahead choose the next move'
     };
 
     return goal ? titleByGoal[goal] || 'Start the selected activation lane' : 'Start activation';
@@ -450,13 +450,13 @@ export class ToddActivationStateService {
 
   private getGoalMessage ( goal: ToddActivationGoal | null ): string {
     const messageByGoal: Partial<Record<ToddActivationGoal, string>> = {
-      organize_work: 'The selected first win is organizing work, so TODD should move the user into Mission Workspace and help turn loose tasks into a guided operating path.',
-      understand_customers: 'The selected first win is understanding customers, so TODD should move the user into Pulse and help collect useful signal instead of guessing.',
-      store_reusable_proof: 'The selected first win is reusable proof, so TODD should move the user into Docs and help build a memory bank that can support outreach and answers later.',
-      not_sure: 'The user is not sure where to start, so TODD should open Daily Momentum and choose the next move from current setup, blockers, and available product paths.'
+      organize_work: 'The selected first win is organizing work, so 16Ahead should move the user into Mission Workspace and help turn loose tasks into a guided operating path.',
+      understand_customers: 'The selected first win is understanding customers, so 16Ahead should move the user into Pulse and help collect useful signal instead of guessing.',
+      store_reusable_proof: 'The selected first win is reusable proof, so 16Ahead should move the user into Docs and help build a memory bank that can support outreach and answers later.',
+      not_sure: 'The user is not sure where to start, so 16Ahead should open Daily Momentum and choose the next move from current setup, blockers, and available product paths.'
     };
 
-    return goal ? messageByGoal[goal] || 'TODD should move the user into the selected activation lane.' : 'TODD should move the user into activation.';
+    return goal ? messageByGoal[goal] || '16Ahead should move the user into the selected activation lane.' : '16Ahead should move the user into activation.';
   }
 
   private buildActivationGoalStorageKey ( tenantId: string, userId: string ): string {

@@ -36,7 +36,7 @@ export class EmailService implements OnDestroy {
   © 2026 
   <a href="https://taliferro.com" style="color: #1a73e8; text-decoration: none;">Taliferro</a>. 
   Email sent from 
-  <a href="https://todd.taliferro.tech" style="color: #1a73e8; text-decoration: none;">TODD</a>. 
+  <a href="https://app.16ahead.com" style="color: #1a73e8; text-decoration: none;">16Ahead</a>. 
   taliferro-tech-unsubscribe.
   </p>
   </div>
@@ -394,10 +394,10 @@ export class EmailService implements OnDestroy {
 
   public sendQuestionEmail ( question: string, aiAnswer: any, userId: string, userMeta?: any ): Observable<any> {
 
-    const subject = `New TODD Question Submitted`;
+    const subject = `New 16Ahead Question Submitted`;
 
     let emailBody = `<p>Hello,</p>`;
-    emailBody += `<p>A new question was submitted on the TODD homepage:</p>`;
+    emailBody += `<p>A new question was submitted on the 16Ahead homepage:</p>`;
     emailBody += `<p><strong>Question:</strong> ${question}</p>`;
     emailBody += `<p><strong>Conversation Transcript:</strong></p>`;
     if ( userMeta )
@@ -409,7 +409,7 @@ export class EmailService implements OnDestroy {
       subject,
       text: emailBody, // plain text can just be same as HTML here unless you want to strip tags
       html: `<div>${emailBody}</div>`,
-      contactName: 'TODD User Submission',
+      contactName: '16Ahead User Submission',
       date: new Date().toISOString(),
       from: 'noreply@taliferro.tech' // You can customize this sender address
     };
@@ -427,13 +427,13 @@ export class EmailService implements OnDestroy {
 
 
   public sendAffiliateEmail ( emailAddress: string, userId: string ): Observable<any> {
-    const subject = 'Welcome to the TODD Affiliate Program';
+    const subject = 'Welcome to the 16Ahead Affiliate Program';
     const dashboardUrl = `${window.location.origin}/affiliate-dashboard`;
 
     const textBody = [
       'Hello,',
       '',
-      'Welcome to the TODD Affiliate Program.',
+      'Welcome to the 16Ahead Affiliate Program.',
       '',
       `Your affiliate dashboard is ready: ${dashboardUrl}`,
       '',
@@ -448,7 +448,7 @@ export class EmailService implements OnDestroy {
 
     const htmlBody =
       `<p>Hello,</p>` +
-      `<p><strong>Welcome to the TODD Affiliate Program.</strong></p>` +
+      `<p><strong>Welcome to the 16Ahead Affiliate Program.</strong></p>` +
       `<p>Your affiliate dashboard is ready: <a href="${dashboardUrl}">${dashboardUrl}</a></p>` +
       `<p><strong>Next steps:</strong></p>` +
       `<ul>` +
@@ -573,7 +573,7 @@ export class EmailService implements OnDestroy {
       noteRaw ? '' : '',
       `View it in-app: ${postUrl}`,
       '',
-      '— TODD',
+      '— 16Ahead',
     ].filter( Boolean ).join( '\n' );
 
     const escapeHtml = ( s: string ) =>

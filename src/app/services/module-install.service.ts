@@ -26,7 +26,7 @@ export class ModuleInstallService {
   private readonly defaultManifestPath = '/manifest.webmanifest';
   private readonly defaultIconPath = '/assets/TODD-icon.png';
   private readonly defaultThemeColor = '#1976d2';
-  private readonly defaultAppTitle = 'TODD';
+  private readonly defaultAppTitle = '16Ahead';
 
   private deferredPrompt: DeferredInstallPromptEvent | null = null;
   private initialized = false;

@@ -60,7 +60,7 @@ export class AssistantBoxComponent implements OnInit, OnChanges, OnDestroy {
     assistantResponse = '';
     isDemoRunning = false;
     isLoading = false;
-    placeholder = "What do you want TODD to do next?";
+    placeholder = "What do you want 16Ahead to do next?";
     PRODUCTION = false;
     recoveryOptions: Array<{ label: string; action: () => void; }> = [];
     @Input() landingIntakeMode = false;
@@ -388,7 +388,7 @@ export class AssistantBoxComponent implements OnInit, OnChanges, OnDestroy {
         if ( looksLikeQuotaOrBilling ) {
             return [
                 '<div class="assistant-nudge">',
-                '<strong>TODD could not finish that right now.</strong><br>',
+                '<strong>16Ahead could not finish that right now.</strong><br>',
                 'It looks like the OpenAI Platform account may need attention because the balance, quota, or usage limit was reached.<br>',
                 'Please replenish the OpenAI Platform account or raise its limit, then try again. Once that is updated, I should be able to pick this back up.',
                 '</div>'
@@ -447,11 +447,11 @@ export class AssistantBoxComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         if ( /\b(enriched|data expanded)\b/.test( normalized ) ) {
-            return `TODD shows ${enrichedContacts.toLocaleString()} enriched contacts on this Network view right now.`;
+            return `16Ahead shows ${enrichedContacts.toLocaleString()} enriched contacts on this Network view right now.`;
         }
 
         if ( /\b(next move ready|contacts staged|staged)\b/.test( normalized ) ) {
-            return `TODD has ${nextMoveReadyContacts.toLocaleString()} contacts staged and ready for the next move.`;
+            return `16Ahead has ${nextMoveReadyContacts.toLocaleString()} contacts staged and ready for the next move.`;
         }
 
         if ( /\b(human reply|needs human|need me|need my attention)\b/.test( normalized ) ) {
@@ -460,7 +460,7 @@ export class AssistantBoxComponent implements OnInit, OnChanges, OnDestroy {
 
         if ( /\b(follow[- ]?up|overdue)\b/.test( normalized ) && /\bhow many|count|number\b/.test( normalized ) ) {
             const activeFollowUpCount = queuedFollowUpCount || followUpCount;
-            return `TODD is tracking ${activeFollowUpCount.toLocaleString()} follow-up contacts right now on this page.`;
+            return `16Ahead is tracking ${activeFollowUpCount.toLocaleString()} follow-up contacts right now on this page.`;
         }
 
         if ( /\b(hottest leads|hot leads|important contacts|priority contacts)\b/.test( normalized ) ) {

@@ -39,7 +39,7 @@ describe( 'maya progress', () => {
 
     expect( rows.map( row => [row.id, row.state] ) ).toEqual( [['done', 'done'], ['old-blocked', 'stuck'], ['todo', 'todo']] );
     expect( rows[1].needsContact ).toBeTrue();
-    expect( rows[1].href ).toBe( 'https://moves.taliferro.tech/move/m1' );
+    expect( rows[1].href ).toBe( 'https://moves.16ahead.com/move/m1' );
     expect( rows[0].title ).toBe( 'Draft' );
   } );
 

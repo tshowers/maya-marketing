@@ -23,11 +23,11 @@
 
     <ng-container *ngIf="stepIndex === 0">
       <div class="gs-existing-card" data-cy="get-started-existing-card">
-        <strong>Already use Network or another TODD app?</strong>
-        <span>Sign in and Maya already knows you.</span>
+        <strong>Already use Network or another 16Ahead app?</strong>
+        <span>Sign in and the Marketing Assistant already knows you.</span>
         <a class="gs-button" routerLink="/login" [queryParams]="{ returnUrl: '/' }" data-cy="get-started-existing-primary">Sign in</a>
       </div>
-      <p class="gs-lede">New to TODD? You're already 1 step in. A few quick answers and Maya's advice fits your business.</p>
+      <p class="gs-lede">New to 16Ahead? You're already 1 step in. A few quick answers and the Marketing Assistant's advice fits your business.</p>
     </ng-container>
 
     <h1 class="gs-question" data-cy="get-started-question">{{ step.question }}</h1>
@@ -82,7 +82,7 @@
 
     <div *ngIf="step.key === 'signIn'" class="gs-actions">
       <button type="button" class="gs-button" [disabled]="isSigningIn" (click)="signIn()" data-cy="get-started-sign-in">
-        {{ isSigningIn ? 'Redirecting...' : 'Sign in with TODD' }}
+        {{ isSigningIn ? 'Redirecting...' : 'Sign in with 16Ahead' }}
       </button>
     </div>
 

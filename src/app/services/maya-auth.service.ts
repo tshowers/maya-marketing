@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { getAuth, onAuthStateChanged, signInWithCustomToken, signOut, User } from 'firebase/auth';
 import { Observable, map } from 'rxjs';
+import { hostedLoginUrl } from '@taliferro/ui/platform/hosted-login.model';
 
 @Injectable({ providedIn: 'root' })
 export class MayaAuthService {
@@ -18,7 +19,7 @@ export class MayaAuthService {
     const state = crypto.randomUUID();
     sessionStorage.setItem(this.pendingLoginStorageKey, JSON.stringify({ state, returnUrl }));
     const client = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'maya-web-local' : 'maya-web';
-    window.location.href = `https://todd.taliferro.tech/login?client=${client}&state=${encodeURIComponent(state)}`;
+    window.location.href = hostedLoginUrl(client, state);
   }
 
   consumePendingLogin(state: string | null): { returnUrl?: string } | null {

@@ -1210,7 +1210,7 @@ const toddOfferTactics: ToddOfferTactic[] = [
         triggerConditions: ['recoveryMode', 'noRevenue', 'lowReplies', 'middayOrLater'],
         executionTarget: 'email',
         positioningType: 'fast_track',
-        reasoning: 'Use speed-to-result framing when TODD needs same-day movement from a low-friction offer.'
+        reasoning: 'Use speed-to-result framing when 16Ahead needs same-day movement from a low-friction offer.'
     },
     {
         id: 'landing-page-urgency',
@@ -1862,7 +1862,7 @@ export class GoalService {
             || this.buildDefaultReason( status, blockerMessages );
         const executionStatus = this.resolveDailyMomentumExecutionStatus( status, nextAction, blockerMessages, persistedDecision, primarySuggestion || undefined );
         const executionMode = this.resolveDailyMomentumExecutionMode( executionStatus, nextAction, persistedDecision, primaryActionPlan );
-        const selectedMove = persistedDecision?.selectedMove || nextAction?.detail || 'TODD is executing the strongest available path right now.';
+        const selectedMove = persistedDecision?.selectedMove || nextAction?.detail || '16Ahead is executing the strongest available path right now.';
         const selectedMoveTitle = persistedDecision?.selectedMoveTitle || nextAction?.title || 'Strongest next move';
         const selectedMoveRoute = persistedDecision?.route || nextAction?.route || '';
         const actionsTaken = this.buildDailyMomentumActionsTaken( prioritizedExecutionSuggestions, nextAction, blockerMessages, executionStatus, persistedDecision, payload.socialQueueSummary );
@@ -2167,37 +2167,37 @@ export class GoalService {
             {
                 key: 'outreach_drafting',
                 label: 'Outreach drafting',
-                description: 'TODD prepares campaign copy, selects contacts, and gets outreach ready for review.'
+                description: '16Ahead prepares campaign copy, selects contacts, and gets outreach ready for review.'
             },
             {
                 key: 'outreach_sending',
                 label: 'Outreach sending',
-                description: 'TODD sends or queues outreach after the campaign is ready.'
+                description: '16Ahead sends or queues outreach after the campaign is ready.'
             },
             {
                 key: 'lead_addition',
                 label: 'Lead addition',
-                description: 'TODD adds approved leads into the contact store so they can be worked immediately.'
+                description: '16Ahead adds approved leads into the contact store so they can be worked immediately.'
             },
             {
                 key: 'social_drafting',
                 label: 'Social drafting',
-                description: 'TODD creates LinkedIn and Threads drafts based on today’s goal and gaps.'
+                description: '16Ahead creates LinkedIn and Threads drafts based on today’s goal and gaps.'
             },
             {
                 key: 'social_posting',
                 label: 'Social posting',
-                description: 'TODD publishes approved social posts when the policy allows it.'
+                description: '16Ahead publishes approved social posts when the policy allows it.'
             },
             {
                 key: 'contact_reactivation',
                 label: 'Contact reactivation',
-                description: 'TODD prepares stale contacts for reactivation and follow-up.'
+                description: '16Ahead prepares stale contacts for reactivation and follow-up.'
             },
             {
                 key: 'page_optimization',
                 label: 'Page optimization',
-                description: 'TODD prepares page improvement suggestions when conversion signals are weak.'
+                description: '16Ahead prepares page improvement suggestions when conversion signals are weak.'
             }
         ];
 
@@ -2205,17 +2205,17 @@ export class GoalService {
             {
                 value: 'manual',
                 label: 'Manual',
-                description: 'TODD will not act unless you do it yourself.'
+                description: '16Ahead will not act unless you do it yourself.'
             },
             {
                 value: 'approval-first',
                 label: 'Approval-first',
-                description: 'TODD prepares the work and waits for permission.'
+                description: '16Ahead prepares the work and waits for permission.'
             },
             {
                 value: 'auto',
                 label: 'Auto',
-                description: 'TODD performs allowed actions automatically.'
+                description: '16Ahead performs allowed actions automatically.'
             }
         ];
 
@@ -2230,7 +2230,7 @@ export class GoalService {
                 .map( key => ( {
                     key,
                     label: this.humanizeApprovalCategoryLabel( key ),
-                    description: 'TODD can use this category when a future action type is added to Daily Momentum.'
+                    description: '16Ahead can use this category when a future action type is added to Daily Momentum.'
                 } ) )
         ].sort( ( a, b ) => {
             const aOrder = preferredOrder.has( a.key ) ? preferredOrder.get( a.key )! : Number.MAX_SAFE_INTEGER;
@@ -2239,8 +2239,8 @@ export class GoalService {
         } );
 
         return {
-            headline: 'How TODD is allowed to operate',
-            summary: 'Choose whether TODD should stay manual, pause for approval, or carry safe categories automatically. These settings explain why TODD paused or auto-executed work today.',
+            headline: 'How 16Ahead is allowed to operate',
+            summary: 'Choose whether 16Ahead should stay manual, pause for approval, or carry safe categories automatically. These settings explain why 16Ahead paused or auto-executed work today.',
             categories: mergedDefinitions.map( definition => {
                 const policyCategory = categories[definition.key] || {};
                 const mode = this.normalizeDailyMomentumExecutionMode( policyCategory.mode );
@@ -2450,7 +2450,7 @@ export class GoalService {
 
     private buildScopedSocialPreparedSummary ( fallback: string, state: MomentumScopedSocialState ): string {
         if ( state.stage === 'draft' ) {
-            return `TODD already created ${state.draftPostIds.length} scoped social draft${state.draftPostIds.length === 1 ? '' : 's'} for review.`;
+            return `16Ahead already created ${state.draftPostIds.length} scoped social draft${state.draftPostIds.length === 1 ? '' : 's'} for review.`;
         }
         if ( state.stage === 'approved' ) {
             return `${state.approvedPostIds.length} scoped social post${state.approvedPostIds.length === 1 ? ' is' : 's are'} approved and ready for publishing.`;
@@ -2646,20 +2646,20 @@ export class GoalService {
         const primaryAction = actionsTaken[0];
         if ( primaryAction ) {
             if ( primaryAction.state === 'auto_executed' || primaryAction.state === 'completed' ) {
-                return this.ensureSentence( `TODD moved this ${offerContext?.name ? `${offerContext.name} ` : ''}path into execution because it was the fastest live route available from today’s signals.` );
+                return this.ensureSentence( `16Ahead moved this ${offerContext?.name ? `${offerContext.name} ` : ''}path into execution because it was the fastest live route available from today’s signals.` );
             }
 
             if ( primaryAction.state === 'waiting_for_approval' ) {
-                return this.ensureSentence( `TODD prepared the ${offerContext?.name ? `${offerContext.name} ` : ''}execution path and is holding only at the final execution gate.` );
+                return this.ensureSentence( `16Ahead prepared the ${offerContext?.name ? `${offerContext.name} ` : ''}execution path and is holding only at the final execution gate.` );
             }
 
             if ( primaryAction.state === 'prepared_by_todd' ) {
-                return this.ensureSentence( `TODD prepared this ${offerContext?.name ? `around ${offerContext.name} ` : ''}as the next execution path instead of leaving today in analysis mode.` );
+                return this.ensureSentence( `16Ahead prepared this ${offerContext?.name ? `around ${offerContext.name} ` : ''}as the next execution path instead of leaving today in analysis mode.` );
             }
         }
 
         if ( executionStatus === 'queued' || executionStatus === 'completed' ) {
-            return 'TODD is prioritizing active execution over additional planning.';
+            return '16Ahead is prioritizing active execution over additional planning.';
         }
 
         return fallbackReason;
@@ -2990,7 +2990,7 @@ export class GoalService {
                 return {
                     label: 'View Contacts',
                     route: '/contact-list',
-                    path: 'Open Contact List at /contact-list to review the contacts TODD added.'
+                    path: 'Open Contact List at /contact-list to review the contacts 16Ahead added.'
                 };
             }
 
@@ -3000,7 +3000,7 @@ export class GoalService {
             return {
                 label: 'Review Lead Set',
                 route: candidateRoute,
-                path: 'Open Lead Vault at the staged momentum lead set and review the candidates TODD prepared.'
+                path: 'Open Lead Vault at the staged momentum lead set and review the candidates 16Ahead prepared.'
             };
         }
 
@@ -3904,12 +3904,12 @@ export class GoalService {
         forcedRevenueRecovery: boolean
     ): string {
         const pressureLine = forcedRevenueRecovery
-            ? 'TODD is in forced recovery. The current approach is not working and the strategy is being changed now.'
+            ? '16Ahead is in forced recovery. The current approach is not working and the strategy is being changed now.'
             : level === 'critical'
-                ? 'TODD is in active recovery. Immediate revenue comes first.'
+                ? '16Ahead is in active recovery. Immediate revenue comes first.'
                 : level === 'pressure'
-                    ? 'TODD is tightening the plan around the fastest higher-impact moves.'
-                    : 'TODD is staying in standard planning mode while monitoring the day closely.';
+                    ? '16Ahead is tightening the plan around the fastest higher-impact moves.'
+                    : '16Ahead is staying in standard planning mode while monitoring the day closely.';
 
         return [pressureLine, patterns[0] || '', interventionMessage, profileStrategySummary]
             .filter( Boolean )
@@ -3925,11 +3925,11 @@ export class GoalService {
         volumeModeActive: boolean = false
     ): string {
         if ( closeModeActive ) {
-            return `${profileStrategySummary} Close Mode is active. TODD is pushing the strongest same-day revenue path now, keeping booked conversations as the primary KPI before midnight.`;
+            return `${profileStrategySummary} Close Mode is active. 16Ahead is pushing the strongest same-day revenue path now, keeping booked conversations as the primary KPI before midnight.`;
         }
 
         if ( volumeModeActive ) {
-            return `${profileStrategySummary} Volume Mode is active. TODD is widening execution across warm outreach, supporting channels, and alternate angles where the live signal justifies it. Warm contacts go first, Lead Vault expansion follows when coverage is thin, and booked conversations outrank passive revenue waiting.`;
+            return `${profileStrategySummary} Volume Mode is active. 16Ahead is widening execution across warm outreach, supporting channels, and alternate angles where the live signal justifies it. Warm contacts go first, Lead Vault expansion follows when coverage is thin, and booked conversations outrank passive revenue waiting.`;
         }
 
         if ( forcedRevenueRecovery ) {
@@ -4399,13 +4399,13 @@ export class GoalService {
                 headline: `Today&apos;s ${this.formatMoney( goalStatus.goal || 0 )} goal is met. I am now building for tomorrow.`,
                 summary: 'I have covered today&apos;s target and I am now building for tomorrow instead of letting momentum go cold.',
                 postureLabel: 'Operating posture',
-                postureSummary: 'Recovery pressure is off, so TODD can return to compounding momentum and preparing tomorrow’s strongest move.',
+                postureSummary: 'Recovery pressure is off, so 16Ahead can return to compounding momentum and preparing tomorrow’s strongest move.',
                 interventionLabel: 'Next short-cycle opportunities',
                 interventions: operatorState.immediateActions.slice( 0, 3 ),
                 reasonsLabel: 'What got us here',
                 preparedLabel: 'What I completed or prepared',
                 needsLabel: 'What I am doing next',
-                reasons: ['Today\'s target is covered, so TODD can shift from recovery into compounding momentum.'],
+                reasons: ['Today\'s target is covered, so 16Ahead can shift from recovery into compounding momentum.'],
                 prepared,
                 needs: ['I am preparing the next moves now so tomorrow starts with working momentum instead of a cold start.']
             };
@@ -4679,19 +4679,19 @@ export class GoalService {
     private buildDefaultReason ( status: 'behind' | 'on_track' | 'met' | 'unknown', blockers: string[] ): string {
         if ( status === 'behind' ) {
             return blockers[0]
-                ? `TODD prioritized the fastest move available after finding this constraint: ${blockers[0]}`
-                : 'TODD prioritized the fastest available path to close today\'s remaining gap.';
+                ? `16Ahead prioritized the fastest move available after finding this constraint: ${blockers[0]}`
+                : '16Ahead prioritized the fastest available path to close today\'s remaining gap.';
         }
 
         if ( status === 'met' ) {
-            return 'TODD is protecting the win and looking for the best quality-improvement move.';
+            return '16Ahead is protecting the win and looking for the best quality-improvement move.';
         }
 
         if ( status === 'on_track' ) {
-            return 'TODD is leaning toward the move most likely to keep today\'s momentum moving.';
+            return '16Ahead is leaning toward the move most likely to keep today\'s momentum moving.';
         }
 
-        return 'TODD is working from the clearest available momentum signals right now.';
+        return '16Ahead is working from the clearest available momentum signals right now.';
     }
 
     private toExecutionRealityStatus ( status: DailyMomentumExecutionStatus ): DailyMomentumExecutionRealityStatus {
@@ -4740,16 +4740,16 @@ export class GoalService {
         const realityStatus = this.toExecutionRealityStatus( executionStatus );
         const actionName = this.resolveRevenuePathLabel( primarySuggestion, nextAction, executionAccountabilityMode, offerContext ) || 'Current path';
         const reason = closeModeActive
-            ? 'TODD is executing the same-day rescue path now, with booked-conversation asks taking priority.'
+            ? '16Ahead is executing the same-day rescue path now, with booked-conversation asks taking priority.'
             : executionAccountabilityMode && primarySuggestion?.requiresConfirmation === false
-                ? 'TODD switched to an executable path because revenue is still $0 after midday and the fallback can move now.'
+                ? '16Ahead switched to an executable path because revenue is still $0 after midday and the fallback can move now.'
                 : realityStatus === 'blocked'
                     ? blockers[0] || 'Execution is blocked at the current gate.'
                     : realityStatus === 'executing'
-                        ? 'TODD is carrying this path forward now.'
+                        ? '16Ahead is carrying this path forward now.'
                         : realityStatus === 'completed'
-                            ? 'TODD completed the active execution path.'
-                            : nextAction?.detail || 'TODD prepared the active path and is pushing it forward now.';
+                            ? '16Ahead completed the active execution path.'
+                            : nextAction?.detail || '16Ahead prepared the active path and is pushing it forward now.';
 
         return {
             actionName,
@@ -4779,10 +4779,10 @@ export class GoalService {
             executionStatusLabel: this.formatExecutionRealityStatusLabel( primaryStatus ),
             reason: this.ensureSentence( this.removePassiveExecutionLanguage(
                 closeModeActive
-                    ? 'TODD is pushing the strongest same-day revenue path on this offer now.'
+                    ? '16Ahead is pushing the strongest same-day revenue path on this offer now.'
                     : executionAccountabilityMode && primarySuggestion?.requiresConfirmation === false
-                        ? 'TODD is working this path now because it can execute without waiting.'
-                        : nextAction?.detail || blockers[0] || 'TODD selected this as the current revenue path.'
+                        ? '16Ahead is working this path now because it can execute without waiting.'
+                        : nextAction?.detail || blockers[0] || '16Ahead selected this as the current revenue path.'
             ) ),
             route: String( primarySuggestion?.route || nextAction?.route || '' ).trim(),
             actionPath: String( primarySuggestion?.actionPath || nextAction?.actionPath || '' ).trim(),
@@ -4799,10 +4799,10 @@ export class GoalService {
                 ),
                 reason: this.ensureSentence( this.removePassiveExecutionLanguage(
                     closeModeActive
-                        ? 'TODD will run this backup path next if the active close batch stalls.'
+                        ? '16Ahead will run this backup path next if the active close batch stalls.'
                         : backupSuggestion.requiresConfirmation
-                            ? 'This path is held as backup because it still needs approval before TODD can run it.'
-                            : this.buildSuggestionFallback( backupSuggestion ) || 'TODD will run this backup path if the primary path stalls.'
+                            ? 'This path is held as backup because it still needs approval before 16Ahead can run it.'
+                            : this.buildSuggestionFallback( backupSuggestion ) || '16Ahead will run this backup path if the primary path stalls.'
                 ) ),
                 route: String( backupSuggestion.route || '' ).trim(),
                 actionPath: String( backupSuggestion.actionPath || '' ).trim(),
@@ -4855,7 +4855,7 @@ export class GoalService {
                 ? `${batchesGenerated} batches generated, 0 sent yet, waiting on approval before first send.`
                 : `${batchesGenerated} batches generated, 0 sent yet, no live execution yet.`;
         const decisionPressure = approvalBlockingFirstSend
-            ? `First send is blocked by approval. If not approved by ${operatorState.closeModeActive ? 'the next hour' : 'mid-afternoon'}, TODD will switch to fallback path.`
+            ? `First send is blocked by approval. If not approved by ${operatorState.closeModeActive ? 'the next hour' : 'mid-afternoon'}, 16Ahead will switch to fallback path.`
             : sentCount > 0 && replyCount <= 0
                 ? leadVaultCount > 0
                     ? 'No replies from warm segment. Expanding to Lead Vault.'
@@ -5039,19 +5039,19 @@ export class GoalService {
         }
 
         if ( /contact coverage|verified contacts|thin contact|not enough contacts|contact store|lead coverage is too thin/.test( raw ) ) {
-            add( 'Contact coverage is too thin for TODD to safely push more volume, so it needs more qualified people in the working set.' );
+            add( 'Contact coverage is too thin for 16Ahead to safely push more volume, so it needs more qualified people in the working set.' );
         }
 
         if ( /no recent social posting|social is stale|social gap|threads|linkedin|social posting/.test( raw ) && !hasSocialFallbackCoverage ) {
-            add( 'No recent social posting exists, so TODD has less visible market signal to work with today and needs fresh public activity.' );
+            add( 'No recent social posting exists, so 16Ahead has less visible market signal to work with today and needs fresh public activity.' );
         }
 
         if ( /stale messaging|messaging is stale|weak message|copy is stale|offer is stale/.test( raw ) ) {
-            add( 'Messaging is stale and needs a sharper angle before TODD scales outreach, or volume will keep underperforming.' );
+            add( 'Messaging is stale and needs a sharper angle before 16Ahead scales outreach, or volume will keep underperforming.' );
         }
 
         if ( /no usable offer|no promotion|weak offer|missing offer|proposal gap/.test( raw ) ) {
-            add( 'There is no usable offer or promotion for TODD to push right now, so even good traffic has less chance to convert.' );
+            add( 'There is no usable offer or promotion for 16Ahead to push right now, so even good traffic has less chance to convert.' );
         }
 
         if ( /landing page is not optimized|page optimization|page needs work|conversion leak/.test( raw ) ) {
@@ -5059,39 +5059,39 @@ export class GoalService {
         }
 
         if ( /lead coverage|not enough leads|lead search|lead vault|lead inflow|lead pipeline/.test( raw ) ) {
-            add( 'Not enough leads are entering the system for TODD to keep today\'s push full, so it needs stronger lead flow.' );
+            add( 'Not enough leads are entering the system for 16Ahead to keep today\'s push full, so it needs stronger lead flow.' );
         }
 
         if ( /reactivat|stale contacts|inactive contacts|old contacts/.test( raw ) ) {
-            add( 'Old contacts have not been reactivated, so TODD has less warm inventory to work with and fewer easy wins.' );
+            add( 'Old contacts have not been reactivated, so 16Ahead has less warm inventory to work with and fewer easy wins.' );
         }
 
         if ( /target audience is too narrow|audience is too narrow|narrow audience|too narrow/.test( raw ) ) {
-            add( 'The target audience is too narrow for the size of today’s goal, so TODD needs a broader working audience.' );
+            add( 'The target audience is too narrow for the size of today’s goal, so 16Ahead needs a broader working audience.' );
         }
 
         if ( /follow-up volume is too low|not enough follow-up|follow up volume|too few follow-ups/.test( raw ) ) {
-            add( 'Follow-up volume is too low for today’s goal size, so TODD needs more approved follow-up work or more contacts.' );
+            add( 'Follow-up volume is too low for today’s goal size, so 16Ahead needs more approved follow-up work or more contacts.' );
         }
 
         if ( goalAmount >= 250 && revenueGap > 0 && completedOutreachCount === 0 && outreachPlanCount === 0 ) {
-            add( 'Not enough recent outreach execution exists for the size of today’s goal, so TODD needs more live outreach volume.' );
+            add( 'Not enough recent outreach execution exists for the size of today’s goal, so 16Ahead needs more live outreach volume.' );
         }
 
         if ( goalAmount >= 250 && revenueGap > 0 && completedOutreachCount === 0 ) {
-            add( 'Follow-up volume is too low for today’s goal size, so TODD needs more approved follow-up work or more contacts.' );
+            add( 'Follow-up volume is too low for today’s goal size, so 16Ahead needs more approved follow-up work or more contacts.' );
         }
 
         if ( revenueGap > 0 && socialPlanCount === 0 && completedSocialCount === 0 && approvedSocialCount === 0 && publishedThisWeekCount === 0 && !hasSocialFallbackCoverage ) {
-            add( 'No recent social posting exists, so TODD has less visible market signal to work with today and needs fresh public activity.' );
+            add( 'No recent social posting exists, so 16Ahead has less visible market signal to work with today and needs fresh public activity.' );
         }
 
         if ( revenueGap > 0 && leadPlanCount === 0 && completedLeadAdds === 0 && goalAmount >= 100 ) {
-            add( 'Not enough leads are entering the system for TODD to keep today’s push full, so it needs stronger lead flow.' );
+            add( 'Not enough leads are entering the system for 16Ahead to keep today’s push full, so it needs stronger lead flow.' );
         }
 
         if ( revenueGap > 0 && reactivationPlanCount === 0 && /contact|lead|coverage|thin|stale|inactive/.test( raw ) ) {
-            add( 'Old contacts have not been reactivated, so TODD has less warm inventory to work with and fewer easy wins.' );
+            add( 'Old contacts have not been reactivated, so 16Ahead has less warm inventory to work with and fewer easy wins.' );
         }
 
         if ( revenueGap > 0 && goalAmount >= 500 && appointmentsSoFar === 0 ) {
@@ -5115,7 +5115,7 @@ export class GoalService {
         tacticContext?: ToddOfferTactic | null
     ): string {
         if ( operatorState.closeModeActive ) {
-            return 'Running Same-Day Rescue push now. Booked conversations are the KPI, TODD is leaning on the fastest same-day path, and the next angle will switch if replies stay weak.';
+            return 'Running Same-Day Rescue push now. Booked conversations are the KPI, 16Ahead is leaning on the fastest same-day path, and the next angle will switch if replies stay weak.';
         }
 
         if ( operatorState.volumeModeActive ) {
@@ -5221,7 +5221,7 @@ export class GoalService {
             || blockerText.includes( 'stripe' );
         const stripeDetail = revenueVerification.message
             || blockers.find( ( blocker ) => blocker.toLowerCase().includes( 'stripe' ) )
-            || 'TODD checked the revenue path and found a Stripe issue.';
+            || '16Ahead checked the revenue path and found a Stripe issue.';
         const contactCount = this.resolveAuditMetricCount( executionSuggestions, ['contactsCount', 'contactCount'], ['candidateLeads'] );
         const campaignCount = Math.max( 1, executionSuggestions.filter( suggestion => /outreach|follow-up|compose-email|campaign/i.test(
             `${suggestion.title || ''} ${suggestion.detail || ''} ${suggestion.action || ''} ${suggestion.route || ''}`
@@ -5236,7 +5236,7 @@ export class GoalService {
                 label: revenueVerification.source === 'stripe_connected_account' || stripeNeedsAttention ? 'Stripe checked' : 'Revenue source checked',
                 detail: stripeNeedsAttention
                     ? stripeDetail
-                    : revenueVerification.message || 'TODD checked today\'s revenue path against the active goal.',
+                    : revenueVerification.message || '16Ahead checked today\'s revenue path against the active goal.',
                 proofLine: `Checked revenue today · ${this.formatMoney( goalStatus.revenue || 0 )} tracked · today`,
                 state: stripeNeedsAttention ? 'attention' : 'checked'
             },
@@ -5253,31 +5253,31 @@ export class GoalService {
                 label: 'Contacts reviewed',
                 detail: blockerText.includes( 'contact' ) || blockerText.includes( 'verified' )
                     ? blockers.find( ( blocker ) => /contact|verified/i.test( blocker ) ) || 'Contact coverage needs attention before volume can increase.'
-                    : 'TODD reviewed contact coverage and buyer availability.',
+                    : '16Ahead reviewed contact coverage and buyer availability.',
                 proofLine: `${contactCount > 0 ? `Checked ${contactCount} contacts` : 'Checked multiple contacts'} · ${blockerText.includes( 'contact' ) || blockerText.includes( 'verified' ) ? 'limited lead coverage found' : 'working coverage available'} · last 24h`,
                 state: blockerText.includes( 'contact' ) || blockerText.includes( 'verified' ) ? 'attention' : 'checked'
             },
             {
                 label: 'Outreach reviewed',
                 detail: strategyText.includes( 'outreach' ) || suggestionText.includes( 'outreach' ) || suggestionText.includes( 'follow-up' )
-                    ? 'TODD reviewed live outreach and follow-up options for today.'
-                    : 'TODD reviewed whether outreach is the fastest available move.',
+                    ? '16Ahead reviewed live outreach and follow-up options for today.'
+                    : '16Ahead reviewed whether outreach is the fastest available move.',
                 proofLine: `Reviewed ${campaignCount} campaign${campaignCount === 1 ? '' : 's'} · ${emailsSent > 0 ? `${emailsSent} emails sent` : 'prepared but not sent'} · today`,
                 state: 'checked'
             },
             {
                 label: 'Replies reviewed',
                 detail: strategyText.includes( 'repl' ) || suggestionText.includes( 'repl' ) || suggestionText.includes( 'follow-up' )
-                    ? 'TODD checked reply and follow-up signals before selecting the next move.'
-                    : 'TODD checked for reply momentum before shifting channels.',
+                    ? '16Ahead checked reply and follow-up signals before selecting the next move.'
+                    : '16Ahead checked for reply momentum before shifting channels.',
                 proofLine: `Reviewed ${campaignCount} campaign${campaignCount === 1 ? '' : 's'} · ${replyCount > 0 ? `${replyCount} replies detected` : 'no new replies detected'} · today`,
                 state: 'checked'
             },
             {
                 label: 'Channel options reviewed',
                 detail: executionSuggestions.length > 1 || ( strategy.availableActions || [] ).length > 0
-                    ? 'TODD compared the available channels and selected the strongest path.'
-                    : 'TODD reviewed the available channel options from current momentum data.',
+                    ? '16Ahead compared the available channels and selected the strongest path.'
+                    : '16Ahead reviewed the available channel options from current momentum data.',
                 proofLine: `Compared ${channelCount} channel path${channelCount === 1 ? '' : 's'} · ${this.toProofResultLabel( selectedPath )} selected · today`,
                 state: 'checked'
             }
@@ -5332,7 +5332,7 @@ export class GoalService {
         const primaryTarget = actions.find( action => action.risk === 'high' ) || actions[0];
         const primaryCta = primaryTarget?.route
             ? {
-                label: primaryTarget.risk === 'high' ? 'Approve TODD actions' : 'Let TODD proceed',
+                label: primaryTarget.risk === 'high' ? 'Approve 16Ahead actions' : 'Let 16Ahead proceed',
                 route: primaryTarget.route,
                 actionPath: primaryTarget.actionPath
             }
@@ -5341,14 +5341,14 @@ export class GoalService {
             ? {
                 label: 'Review actions',
                 route: '/daily-momentum',
-                actionPath: 'Open Daily Momentum at /daily-momentum to review what TODD tried, what is blocked, and what needs approval.'
+                actionPath: 'Open Daily Momentum at /daily-momentum to review what 16Ahead tried, what is blocked, and what needs approval.'
             }
             : null;
 
         return {
             headline: closeModeActive ? 'What I am executing before midnight' : 'I could not meet today\'s goal because I need approval to do the following.',
             summary: closeModeActive
-                ? 'Close Mode is reducing approval friction. TODD will execute the lowest-friction path now and keep the blocked actions visible.'
+                ? 'Close Mode is reducing approval friction. 16Ahead will execute the lowest-friction path now and keep the blocked actions visible.'
                 : this.buildApprovalSummary( actions, blockers, strategy ),
             tried,
             blockedBy,
@@ -5368,13 +5368,13 @@ export class GoalService {
 
         if ( highRiskCount > 0 ) {
             return blockerLead
-                ? `TODD already worked the safe checks. To close the remaining gap, it needs approval for higher-impact actions and access that are still blocked by: ${blockerLead}`
-                : 'TODD already worked the safe checks. To close the remaining gap, it needs approval for the higher-impact actions below.';
+                ? `16Ahead already worked the safe checks. To close the remaining gap, it needs approval for higher-impact actions and access that are still blocked by: ${blockerLead}`
+                : '16Ahead already worked the safe checks. To close the remaining gap, it needs approval for the higher-impact actions below.';
         }
 
         return blockerLead
-            ? `TODD reached a practical limit because a required permission or connection is still missing: ${blockerLead}`
-            : 'TODD reached a practical limit because the next useful actions still need your permission or a connected system.';
+            ? `16Ahead reached a practical limit because a required permission or connection is still missing: ${blockerLead}`
+            : '16Ahead reached a practical limit because the next useful actions still need your permission or a connected system.';
     }
 
     private buildApprovalTriedItems (
@@ -5391,24 +5391,24 @@ export class GoalService {
 
         tried.push(
             revenueVerification.connected
-                ? 'TODD checked revenue against the active daily goal.'
-                : 'TODD checked whether revenue verification was available.'
+                ? '16Ahead checked revenue against the active daily goal.'
+                : '16Ahead checked whether revenue verification was available.'
         );
 
         tried.push(
             calendarVerification.status === 'connected'
-                ? 'TODD checked meeting activity for today.'
-                : 'TODD checked whether meeting verification was available.'
+                ? '16Ahead checked meeting activity for today.'
+                : '16Ahead checked whether meeting verification was available.'
         );
 
         if ( executionSuggestions.length > 0 || nextAction ) {
-            tried.push( persistedDecision?.lastActionTaken || nextAction?.detail || 'TODD compared the available moves and selected the strongest one it could take.' );
+            tried.push( persistedDecision?.lastActionTaken || nextAction?.detail || '16Ahead compared the available moves and selected the strongest one it could take.' );
         } else if ( strategy.summary || strategy.explanation ) {
             tried.push( String( strategy.summary || strategy.explanation ).trim() );
         }
 
         if ( blockers.some( blocker => /contact|lead|verified/i.test( blocker ) ) ) {
-            tried.push( 'TODD checked whether there was enough lead and contact coverage to push volume.' );
+            tried.push( '16Ahead checked whether there was enough lead and contact coverage to push volume.' );
         }
 
         return tried.filter( Boolean ).slice( 0, 4 );
@@ -5469,7 +5469,7 @@ export class GoalService {
         if ( revenueVerification.status === 'connection_required' || blockers.some( blocker => blocker.toLowerCase().includes( 'stripe' ) ) ) {
             addAction( {
                 label: 'Use Stripe for revenue verification',
-                description: 'Connect Stripe so TODD can verify revenue and work from a real gap instead of an estimated one.',
+                description: 'Connect Stripe so 16Ahead can verify revenue and work from a real gap instead of an estimated one.',
                 missingApproval: 'Stripe access is still missing.',
                 risk: 'low',
                 route: '/daily-momentum',
@@ -5481,7 +5481,7 @@ export class GoalService {
         if ( calendarVerification.status !== 'connected' ) {
             addAction( {
                 label: 'Use Calendar for meeting verification',
-                description: 'Review and connect meeting tracking so TODD can verify whether appointments are helping today\'s goal.',
+                description: 'Review and connect meeting tracking so 16Ahead can verify whether appointments are helping today\'s goal.',
                 missingApproval: 'Calendar access is still missing.',
                 risk: 'low',
                 route: '/daily-momentum?tab=operator',
@@ -5540,8 +5540,8 @@ export class GoalService {
             const reviewRoute = this.buildOutreachApprovalReviewRoute();
             return {
                 label: 'Send outreach emails',
-                description: 'Approve TODD to send or queue the outreach batch it prepared to close today\'s gap.',
-                missingApproval: 'Explicit approval is required before TODD sends outreach on your behalf.',
+                description: 'Approve 16Ahead to send or queue the outreach batch it prepared to close today\'s gap.',
+                missingApproval: 'Explicit approval is required before 16Ahead sends outreach on your behalf.',
                 risk: 'high',
                 route: reviewRoute,
                 actionPath: String(
@@ -5553,11 +5553,11 @@ export class GoalService {
         if ( /lead-vault|search for leads|generate fresh leads|warm leads|lead search/.test( raw ) ) {
             return {
                 label: 'Search for more leads',
-                description: 'Let TODD expand the pool of people or companies it can work today.',
-                missingApproval: 'TODD needs permission to keep working additional lead search.',
+                description: 'Let 16Ahead expand the pool of people or companies it can work today.',
+                missingApproval: '16Ahead needs permission to keep working additional lead search.',
                 risk: 'low',
                 route: route || '/lead-vault',
-                actionPath: String( suggestion.actionPath || 'Open Lead Vault at /lead-vault and continue the lead search TODD selected.' ).trim()
+                actionPath: String( suggestion.actionPath || 'Open Lead Vault at /lead-vault and continue the lead search 16Ahead selected.' ).trim()
             };
         }
 
@@ -5568,8 +5568,8 @@ export class GoalService {
             const reviewRoute = this.buildOutreachApprovalReviewRoute();
             return {
                 label: 'Send outreach emails',
-                description: 'Approve TODD to send or queue the outreach batch it prepared to close today\'s gap.',
-                missingApproval: 'Explicit approval is required before TODD sends outreach on your behalf.',
+                description: 'Approve 16Ahead to send or queue the outreach batch it prepared to close today\'s gap.',
+                missingApproval: 'Explicit approval is required before 16Ahead sends outreach on your behalf.',
                 risk: 'high',
                 route: route || reviewRoute,
                 actionPath: String(
@@ -5581,11 +5581,11 @@ export class GoalService {
         if ( /reply|follow-up|thread/.test( raw ) && !/send|queue/.test( raw ) ) {
             return {
                 label: 'Analyze replies and recommend follow-ups',
-                description: 'Let TODD review live conversations and recommend the next follow-up moves.',
-                missingApproval: 'TODD needs permission to keep working reply analysis and follow-up recommendations.',
+                description: 'Let 16Ahead review live conversations and recommend the next follow-up moves.',
+                missingApproval: '16Ahead needs permission to keep working reply analysis and follow-up recommendations.',
                 risk: 'low',
                 route: route || '/outreach/momentum-threads',
-                actionPath: String( suggestion.actionPath || 'Open the outreach threads view and review TODD\'s next reply recommendations.' ).trim()
+                actionPath: String( suggestion.actionPath || 'Open the outreach threads view and review 16Ahead\'s next reply recommendations.' ).trim()
             };
         }
 
@@ -5595,8 +5595,8 @@ export class GoalService {
             }
             return {
                 label: 'Approve Drafts',
-                description: `TODD already created ${scopedSocialState.draftPostIds.length} draft${scopedSocialState.draftPostIds.length === 1 ? '' : 's'} for review in Social.`,
-                missingApproval: 'Explicit approval is required before TODD can move the prepared drafts forward.',
+                description: `16Ahead already created ${scopedSocialState.draftPostIds.length} draft${scopedSocialState.draftPostIds.length === 1 ? '' : 's'} for review in Social.`,
+                missingApproval: 'Explicit approval is required before 16Ahead can move the prepared drafts forward.',
                 risk: 'high',
                 route: scopedSocialState.route,
                 actionPath: scopedSocialState.actionPath
@@ -5610,7 +5610,7 @@ export class GoalService {
             return {
                 label: 'Open social queue to publish',
                 description: `${scopedSocialState.approvedPostIds.length} approved social post${scopedSocialState.approvedPostIds.length === 1 ? ' is' : 's are'} ready on the Social page — open it to publish them.`,
-                missingApproval: 'Explicit approval is required before TODD publishes approved social posts.',
+                missingApproval: 'Explicit approval is required before 16Ahead publishes approved social posts.',
                 risk: 'high',
                 route: scopedSocialState.route,
                 actionPath: scopedSocialState.actionPath
@@ -5637,8 +5637,8 @@ export class GoalService {
                 }
                 return {
                     label: 'Approve Drafts',
-                    description: `TODD already created ${pendingDraftCount} draft${pendingDraftCount === 1 ? '' : 's'} for review in Social.`,
-                    missingApproval: 'Explicit approval is required before TODD can move the prepared drafts forward.',
+                    description: `16Ahead already created ${pendingDraftCount} draft${pendingDraftCount === 1 ? '' : 's'} for review in Social.`,
+                    missingApproval: 'Explicit approval is required before 16Ahead can move the prepared drafts forward.',
                     risk: 'high',
                     route: '/outreach/social',
                     actionPath: 'Open Social at /outreach/social and review the prepared drafts.'
@@ -5650,47 +5650,47 @@ export class GoalService {
             return {
                 label: approvedSocialCount > 0 ? 'Publish approved social' : 'Draft or post to social',
                 description: approvedSocialCount > 0
-                    ? `Approve TODD to publish from the ${approvedSocialCount} approved social post${approvedSocialCount === 1 ? '' : 's'} already queued for today.`
-                    : 'Approve TODD to create or publish the social move it selected for today.',
-                missingApproval: 'Explicit approval is required before TODD publishes or schedules social content.',
+                    ? `Approve 16Ahead to publish from the ${approvedSocialCount} approved social post${approvedSocialCount === 1 ? '' : 's'} already queued for today.`
+                    : 'Approve 16Ahead to create or publish the social move it selected for today.',
+                missingApproval: 'Explicit approval is required before 16Ahead publishes or schedules social content.',
                 risk: 'high',
                 route: route || '/pulse/app',
                 actionPath: String( suggestion.actionPath || ( approvedSocialCount > 0
-                    ? 'Open Pulse at /outreach/social to review the approved social queue TODD can publish from.'
-                    : 'Open Pulse to review the social draft or posting action TODD selected.' ) ).trim()
+                    ? 'Open Pulse at /outreach/social to review the approved social queue 16Ahead can publish from.'
+                    : 'Open Pulse to review the social draft or posting action 16Ahead selected.' ) ).trim()
             };
         }
 
         if ( /optimiz|campaign|targeting|subject line|page/.test( raw ) ) {
             return {
                 label: 'Optimize key pages',
-                description: 'Let TODD tighten campaign or page-level conversion details before the next push.',
-                missingApproval: 'TODD needs approval to apply optimization changes.',
+                description: 'Let 16Ahead tighten campaign or page-level conversion details before the next push.',
+                missingApproval: '16Ahead needs approval to apply optimization changes.',
                 risk: 'low',
                 route: route || '/docs/app',
-                actionPath: String( suggestion.actionPath || 'Open the selected page and review the optimization changes TODD wants to make.' ).trim()
+                actionPath: String( suggestion.actionPath || 'Open the selected page and review the optimization changes 16Ahead wants to make.' ).trim()
             };
         }
 
         if ( /offer|proposal|quote|sales/.test( raw ) ) {
             return {
                 label: 'Prepare offers and sales actions',
-                description: 'Approve TODD to prepare the offer or sales-support step it believes will move the deal.',
-                missingApproval: 'Explicit approval is required before TODD prepares or advances sales-facing materials.',
+                description: 'Approve 16Ahead to prepare the offer or sales-support step it believes will move the deal.',
+                missingApproval: 'Explicit approval is required before 16Ahead prepares or advances sales-facing materials.',
                 risk: 'high',
                 route: route || '/docs/app',
-                actionPath: String( suggestion.actionPath || 'Open Docs and review the offer or sales action TODD prepared.' ).trim()
+                actionPath: String( suggestion.actionPath || 'Open Docs and review the offer or sales action 16Ahead prepared.' ).trim()
             };
         }
 
         if ( blockers.some( blocker => /contact|verified/i.test( blocker ) ) ) {
             return {
                 label: 'Search for more leads',
-                description: 'TODD needs more workable lead coverage before it can push volume with confidence.',
+                description: '16Ahead needs more workable lead coverage before it can push volume with confidence.',
                 missingApproval: 'Lead coverage still needs your approval or attention.',
                 risk: 'low',
                 route: '/lead-vault',
-                actionPath: 'Open Lead Vault at /lead-vault and review the next lead search TODD recommends.'
+                actionPath: 'Open Lead Vault at /lead-vault and review the next lead search 16Ahead recommends.'
             };
         }
 
@@ -5745,7 +5745,7 @@ export class GoalService {
                 state: 'prepared_by_todd',
                 stateLabel: this.formatActionStateLabel( 'prepared_by_todd' ),
                 preparedSummary: `${approvedCount} approved social post${approvedCount === 1 ? '' : 's'} ready for manual publish.`,
-                approvalSummary: 'Open Social to publish or schedule approved posts. TODD will not publish from this queue unless the publish flow is used.',
+                approvalSummary: 'Open Social to publish or schedule approved posts. 16Ahead will not publish from this queue unless the publish flow is used.',
                 route: '/outreach/social#approved-posts',
                 actionPath: 'Open Social at /outreach/social#approved-posts and review approved posts ready for publishing.',
                 reviewLabel: 'Open social queue',
@@ -6068,9 +6068,9 @@ export class GoalService {
 
         if ( /recommend_appointment_first_push/.test( raw ) ) {
             if ( offerName ) {
-                return `I recommended an appointment-first push for ${offerName} because the contact is already showing intent and TODD should tighten the path to a booked conversation.`;
+                return `I recommended an appointment-first push for ${offerName} because the contact is already showing intent and 16Ahead should tighten the path to a booked conversation.`;
             }
-            return 'I recommended an appointment-first push because the contact is already showing intent and TODD should tighten the path to a booked conversation.';
+            return 'I recommended an appointment-first push because the contact is already showing intent and 16Ahead should tighten the path to a booked conversation.';
         }
 
         if ( /social|pulse|post/.test( raw ) ) {
@@ -6147,9 +6147,9 @@ export class GoalService {
 
         if ( /recommend_contact_handoff_task/.test( raw ) ) {
             if ( offerName ) {
-                return `Open the contact workspace and move the ${offerName} handoff with the live signal context TODD already found.`;
+                return `Open the contact workspace and move the ${offerName} handoff with the live signal context 16Ahead already found.`;
             }
-            return 'Open the contact workspace and move the handoff with the live signal context TODD already found.';
+            return 'Open the contact workspace and move the handoff with the live signal context 16Ahead already found.';
         }
 
         if ( /recommend_direct_note/.test( raw ) ) {
@@ -6468,7 +6468,7 @@ export class GoalService {
         if ( scopedSocialState?.stage === 'draft' ) {
             return {
                 label: 'Approve Drafts',
-                description: `TODD already created ${scopedSocialState.draftPostIds.length} draft${scopedSocialState.draftPostIds.length === 1 ? '' : 's'} tied to this recommendation for review.`,
+                description: `16Ahead already created ${scopedSocialState.draftPostIds.length} draft${scopedSocialState.draftPostIds.length === 1 ? '' : 's'} tied to this recommendation for review.`,
                 route: scopedSocialState.route,
                 actionPath: scopedSocialState.actionPath,
                 kind: 'primary'
@@ -6503,9 +6503,9 @@ export class GoalService {
         if ( pendingDraftCount > 0 ) {
             return {
                 label: 'Approve Drafts',
-                description: `TODD already created ${pendingDraftCount} draft${pendingDraftCount === 1 ? '' : 's'} for review. Open Social and approve the queue.`,
+                description: `16Ahead already created ${pendingDraftCount} draft${pendingDraftCount === 1 ? '' : 's'} for review. Open Social and approve the queue.`,
                 route: '/outreach/social',
-                actionPath: 'Open Social at /outreach/social and review the drafts TODD already prepared.',
+                actionPath: 'Open Social at /outreach/social and review the drafts 16Ahead already prepared.',
                 kind: 'primary'
             };
         }
@@ -6517,7 +6517,7 @@ export class GoalService {
         if ( executionStatus === 'waiting_for_confirmation' && route ) {
             return {
                 label: executionLabel || ( nextAction?.title && /lead/i.test( nextAction.title ) ? 'Execute lead add' : 'Execute now' ),
-                description: pendingAction?.description || 'Open the prepared execution path so TODD can carry it forward now.',
+                description: pendingAction?.description || 'Open the prepared execution path so 16Ahead can carry it forward now.',
                 route,
                 actionPath,
                 kind: 'primary'
@@ -6527,7 +6527,7 @@ export class GoalService {
         if ( executionStatus === 'drafted' && route ) {
             return {
                 label: executionLabel || 'Open execution path',
-                description: 'TODD already prepared the next execution path. Open it and keep the day moving.',
+                description: '16Ahead already prepared the next execution path. Open it and keep the day moving.',
                 route,
                 actionPath,
                 kind: 'primary'
@@ -6537,7 +6537,7 @@ export class GoalService {
         if ( executionStatus === 'queued' && route ) {
             return {
                 label: 'Open live execution',
-                description: 'TODD already moved this action into execution. Open the live page for status and results.',
+                description: '16Ahead already moved this action into execution. Open the live page for status and results.',
                 route,
                 actionPath,
                 kind: 'primary'
@@ -6567,7 +6567,7 @@ export class GoalService {
         if ( route ) {
             return {
                 label: executionLabel || ( this.isExecutionReady( executionStatus, nextAction ) ? 'Open execution path' : 'Open prepared work' ),
-                description: nextAction?.detail || 'TODD prepared the strongest executable move for today.',
+                description: nextAction?.detail || '16Ahead prepared the strongest executable move for today.',
                 route,
                 actionPath,
                 kind: 'primary'
@@ -6673,7 +6673,7 @@ export class GoalService {
         if ( blockerText.includes( 'stripe' ) ) {
             return {
                 label: 'Connect Stripe',
-                description: 'Connect Stripe so TODD can verify tenant revenue before judging today\'s gap.',
+                description: 'Connect Stripe so 16Ahead can verify tenant revenue before judging today\'s gap.',
                 route: '/daily-momentum',
                 actionPath: 'Open Daily Momentum at /daily-momentum and use the Connect Stripe action.',
                 kind: 'primary'
@@ -6683,7 +6683,7 @@ export class GoalService {
         if ( blockerText.includes( 'contact' ) || blockerText.includes( 'verified' ) ) {
             return {
                 label: 'Review contacts',
-                description: 'Increase verified contact coverage so TODD can push more volume.',
+                description: 'Increase verified contact coverage so 16Ahead can push more volume.',
                 route: '/network/app',
                 actionPath: 'Open Network at /network/app to review contact coverage.',
                 kind: 'primary'
@@ -6693,7 +6693,7 @@ export class GoalService {
         if ( blockerText.includes( 'social' ) ) {
             return {
                 label: 'Review prepared social',
-                description: 'Review the social channel setup before TODD advances the prepared post sequence.',
+                description: 'Review the social channel setup before 16Ahead advances the prepared post sequence.',
                 route: '/pulse/app',
                 actionPath: 'Open Pulse at /pulse/app to review the social publishing setup.',
                 kind: 'primary'
@@ -6703,9 +6703,9 @@ export class GoalService {
         if ( blockerText.includes( 'landing page' ) || blockerText.includes( 'homepage' ) || blockerText.includes( 'conversion' ) ) {
             return {
                 label: 'Review page optimization',
-                description: 'Review the conversion blocker so TODD can push traffic into a stronger page.',
+                description: 'Review the conversion blocker so 16Ahead can push traffic into a stronger page.',
                 route: '/docs/app',
-                actionPath: 'Open Docs at /docs/app and review the page optimization TODD wants to make.',
+                actionPath: 'Open Docs at /docs/app and review the page optimization 16Ahead wants to make.',
                 kind: 'primary'
             };
         }
@@ -6713,9 +6713,9 @@ export class GoalService {
         if ( blockerText.includes( 'lead' ) ) {
             return {
                 label: 'Review lead flow',
-                description: 'Review the lead pipeline so TODD can keep today\'s momentum push stocked.',
+                description: 'Review the lead pipeline so 16Ahead can keep today\'s momentum push stocked.',
                 route: '/lead-vault',
-                actionPath: 'Open Lead Vault at /lead-vault and review the next lead set TODD prepared.',
+                actionPath: 'Open Lead Vault at /lead-vault and review the next lead set 16Ahead prepared.',
                 kind: 'primary'
             };
         }
@@ -6723,9 +6723,9 @@ export class GoalService {
         if ( blockerText.includes( 'offer' ) || blockerText.includes( 'promotion' ) || blockerText.includes( 'messaging' ) ) {
             return {
                 label: 'Review prepared offer',
-                description: 'Review the offer or messaging blocker so TODD can move today\'s campaign forward.',
+                description: 'Review the offer or messaging blocker so 16Ahead can move today\'s campaign forward.',
                 route: '/docs/app',
-                actionPath: 'Open Docs at /docs/app and review the offer or messaging adjustment TODD prepared.',
+                actionPath: 'Open Docs at /docs/app and review the offer or messaging adjustment 16Ahead prepared.',
                 kind: 'primary'
             };
         }
@@ -6733,9 +6733,9 @@ export class GoalService {
         if ( blockerText.includes( 'reactivat' ) || blockerText.includes( 'old contacts' ) ) {
             return {
                 label: 'Review reactivation set',
-                description: 'Review the stale contact segment TODD prepared for reactivation.',
+                description: 'Review the stale contact segment 16Ahead prepared for reactivation.',
                 route: '/network/app',
-                actionPath: 'Open Network at /network/app and review the reactivation list TODD assembled.',
+                actionPath: 'Open Network at /network/app and review the reactivation list 16Ahead assembled.',
                 kind: 'primary'
             };
         }
@@ -6755,7 +6755,7 @@ export class GoalService {
         if ( status === 'connection_required' || blockerText.includes( 'cannot verify revenue until stripe is connected' ) ) {
             return {
                 title: 'Stripe connection required',
-                message: revenueVerification.message || 'TODD cannot verify revenue until Stripe is connected for this workspace.',
+                message: revenueVerification.message || '16Ahead cannot verify revenue until Stripe is connected for this workspace.',
                 tone: 'attention',
                 actionLabel: 'Connect Stripe'
             };
@@ -6764,7 +6764,7 @@ export class GoalService {
         if ( status === 'not_started' || ( !status && !connected ) ) {
             return {
                 title: 'Stripe not connected',
-                message: revenueVerification.message || 'Connect Stripe so TODD can verify revenue against today\'s target with live data.',
+                message: revenueVerification.message || 'Connect Stripe so 16Ahead can verify revenue against today\'s target with live data.',
                 tone: 'attention',
                 actionLabel: 'Connect Stripe'
             };
@@ -6773,7 +6773,7 @@ export class GoalService {
         if ( status === 'lookup_failed' ) {
             return {
                 title: 'Stripe needs attention',
-                message: revenueVerification.message || 'TODD connected to Stripe, but could not read today\'s revenue yet.',
+                message: revenueVerification.message || '16Ahead connected to Stripe, but could not read today\'s revenue yet.',
                 tone: 'attention',
                 actionLabel: 'Connect Stripe'
             };
@@ -6797,7 +6797,7 @@ export class GoalService {
         if ( status === 'legacy_customer' ) {
             return {
                 title: 'Stripe connection can be upgraded',
-                message: revenueVerification.message || 'TODD is using a legacy Stripe customer link. A tenant Stripe connection gives cleaner revenue verification for Momentum.',
+                message: revenueVerification.message || '16Ahead is using a legacy Stripe customer link. A tenant Stripe connection gives cleaner revenue verification for Momentum.',
                 tone: 'info',
                 actionLabel: 'Connect Stripe'
             };
@@ -6816,7 +6816,7 @@ export class GoalService {
         if ( calendarVerification.status === 'not_connected' || blockerText.includes( 'calendar not connected' ) ) {
             return {
                 title: 'Calendar not connected',
-                message: 'Connect your calendar so TODD can track meetings and detect revenue activity.',
+                message: 'Connect your calendar so 16Ahead can track meetings and detect revenue activity.',
                 tone: 'attention',
                 actionLabel: 'Connect Calendar'
             };

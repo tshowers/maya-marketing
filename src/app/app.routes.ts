@@ -31,7 +31,7 @@ export const routes: Routes = [
     // Work that needs more than marketing: a Mission with an owner on every
     // step (design_handoff_todd_missions 1e).
     path: 'missions',
-    title: 'Plan it with Maya',
+    title: 'Plan it with the Marketing Assistant',
     loadComponent: () => import('./features/missions/missions-pages.component').then((m) => m.MayaMissionsPageComponent),
   },
   {

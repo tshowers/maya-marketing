@@ -10,7 +10,7 @@ export const marketingRoutes: Routes = [
       import( './pages/marketing-director-session/marketing-director-session.component' ).then(
         ( m ) => m.MarketingDirectorSessionComponent
       ),
-    title: 'Maya — Marketing Director'
+    title: 'Marketing Assistant — Marketing Director'
   },
   {
     path: 'marketing-director',

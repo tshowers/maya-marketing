@@ -5,4 +5,4 @@ Disallow: /auth/
 Disallow: /mobile-handoff
 Disallow: /marketing-employee
 
-Sitemap: https://maya.taliferro.tech/sitemap.xml
+Sitemap: https://marketing.16ahead.com/sitemap.xml

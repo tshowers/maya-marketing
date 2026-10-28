@@ -193,7 +193,7 @@ Create an email campaign with the following parameters:
 - Goal: ${data.goal}
 - Audience: ${data.audience}
 - Tone: ${data.tone}
-- Stages: ${data.stages === 'standard' ? 'Use TODD standard stages (Intro, Problem, Solution, Tribe, Change, Close)' : 'Custom stages defined by user'}
+- Stages: ${data.stages === 'standard' ? 'Use 16Ahead standard stages (Intro, Problem, Solution, Tribe, Change, Close)' : 'Custom stages defined by user'}
 - Frequency: ${data.schedule}
 - Notes: ${data.notes || 'None'}
 
@@ -253,7 +253,7 @@ ${senderInfo}
 
     const script: Array<{ user: string; assistantHtml: string; requires?: { selectedContact?: boolean; }; fallback?: { user: string; assistantHtml: string; }; }> = [
       {
-        user: 'What can you do for me in TODD?',
+        user: 'What can you do for me in 16Ahead?',
         assistantHtml: md(
           `Here’s what I do:\n\n- Find people and details fast\n- Draft emails and short campaigns\n- Spot missing data and fix it\n- Turn notes into tasks\n- Help you decide the next move\n\nAsk me like you’d ask a sharp assistant.`
         )
@@ -539,7 +539,7 @@ ${senderInfo}
       catalystContext: ctx
     } );
     return [
-      'You are generating or rewriting an email draft inside TODD Catalyst.',
+      'You are generating or rewriting an email draft inside 16Ahead Catalyst.',
       'Return ONLY valid JSON.',
       'Do not use markdown fences.',
       'Do not add commentary outside JSON.',
@@ -590,7 +590,7 @@ ${senderInfo}
       '- Return a short confirmation sentence in "message".',
       '',
       'Example:',
-      '{"subject":"Quick question about TODD","html":"<p>Hi there,</p><p>I wanted to reach out about TODD...</p><p>Best,<br/>Ty</p>","message":"I drafted a new email for Catalyst. Apply it?"}',
+      '{"subject":"Quick question about 16Ahead","html":"<p>Hi there,</p><p>I wanted to reach out about 16Ahead...</p><p>Best,<br/>Ty</p>","message":"I drafted a new email for Catalyst. Apply it?"}',
       'Return JSON with EXACT keys only:',
       '{"subject":"","html":"","message":""}'
     ].join( '\n' );
@@ -699,7 +699,7 @@ ${senderInfo}
         return 'Add this contact detail?';
 
       default:
-        return 'Do you want TODD to do this?';
+        return 'Do you want 16Ahead to do this?';
     }
   }
   // Heuristic: only treat an LLM response as an email draft

@@ -3,11 +3,12 @@
   <main class="maya-main">
     <section class="maya-conversation" [class.maya-conversation--started]="hasUserMessages">
       <div class="maya-welcome" *ngIf="!hasUserMessages">
-        <img class="maya-avatar" src="assets/find/entities/maya/logo-icon.png" alt="Maya" />
-        <h1 class="maya-hello">Hi, I'm Maya.</h1>
-        <p class="maya-intro">I can see your marketing plan in TODD. Ask me what to tighten, cut, or move today.</p>
+        <img class="maya-avatar" src="assets/find/entities/maya/logo-icon.png" alt="Marketing Assistant" />
+        <h1 class="maya-hello">Hi, I'm the Marketing Assistant.</h1>
+        <p class="maya-intro">I can see your marketing plan in 16Ahead. Ask me what to tighten, cut, or move today.</p>
+        <maya-demo-video></maya-demo-video>
         <div class="maya-composer">
-          <textarea rows="3" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya…" aria-label="Ask Maya"></textarea>
+          <textarea rows="3" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask the Marketing Assistant…" aria-label="Ask the Marketing Assistant"></textarea>
           <div class="maya-composer__row">
             <button type="button" class="maya-attach" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" [attr.aria-busy]="statusReportGenerating">
               <span *ngIf="statusReportGenerating" class="maya-button-spinner" aria-hidden="true"></span>
@@ -16,21 +17,21 @@
             </button>
             <span class="maya-composer__hint">Enter to send</span>
             <button type="button" class="maya-ask" (click)="sendMessage()" [disabled]="sending">
-              {{ sending ? 'Asking…' : 'Ask Maya' }}
+              {{ sending ? 'Asking…' : 'Ask the Marketing Assistant' }}
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
           </div>
         </div>
-        <div class="maya-chips" aria-label="Maya prompts">
+        <div class="maya-chips" aria-label="Marketing Assistant prompts">
           <button type="button" *ngIf="hasStuckWork" (click)="sendMessage('Let\'s work through what you\'re stuck on, one task at a time.')">Work through what’s stuck</button>
-          <button type="button" *ngFor="let item of ['Sharpen my message', 'Create a presentation', 'Clarify my offer']" (click)="sendMessage(item === 'Create a presentation' ? 'I want to create a presentation with Maya.' : item)">{{ item }}</button>
+          <button type="button" *ngFor="let item of ['Sharpen my message', 'Create a presentation', 'Clarify my offer']" (click)="sendMessage(item === 'Create a presentation' ? 'I want to create a presentation with the Marketing Assistant.' : item)">{{ item }}</button>
         </div>
-        <p class="tt-made-by tt-made-by--center"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-mark-128.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
+        <p class="tt-made-by tt-made-by--center"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-mark-128.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </div>
 
       <div #directorMessagesContainer class="maya-messages" *ngIf="hasUserMessages">
         <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'">
-          <img *ngIf="message.role !== 'user'" class="maya-message__avatar" src="assets/find/entities/maya/logo-icon.png" alt="Maya" />
+          <img *ngIf="message.role !== 'user'" class="maya-message__avatar" src="assets/find/entities/maya/logo-icon.png" alt="Marketing Assistant" />
           <div class="maya-message__body">
             <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
             <div class="maya-why-callout" *ngIf="message.role === 'director' && message.why">
@@ -43,13 +44,13 @@
             </div>
           </div>
         </article>
-        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="Maya is thinking">
+        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="The Marketing Assistant is thinking">
           <img class="maya-message__avatar" src="assets/find/entities/maya/logo-icon.png" alt="" />
-          <div class="maya-thinking"><span class="maya-thinking__label">Maya is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
+          <div class="maya-thinking"><span class="maya-thinking__label">The Marketing Assistant is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
         </article>
         <aside class="maya-presentation-ready" *ngIf="presentationMode && presentationState === 'READY_TO_GENERATE'">
           <div class="maya-eyebrow">Presentation plan ready</div>
-          <p>Maya has enough information to build the story for this presentation.</p>
+          <p>The Marketing Assistant has enough information to build the story for this presentation.</p>
           <div class="maya-presentation-options">
             <label>Theme <select [(ngModel)]="presentationTheme"><option value="corporate">Corporate</option><option value="minimal">Minimal</option></select></label>
             <label>Accent <input type="color" [(ngModel)]="presentationAccentColor" aria-label="Presentation accent color"></label>
@@ -64,14 +65,14 @@
       </div>
 
       <aside class="maya-upgrade" *ngIf="showUpgradePanel" data-cy="maya-upgrade">
-        <div class="maya-eyebrow">Let Maya do the work</div>
-        <h2>Advice is free. The Maya app lets her do the work.</h2>
-        <p>Creating documents, Moves and surveys, building decks and status reports, and downloading transcripts come with the Maya app on your iPhone or iPad &mdash; one subscription unlocks it here too.</p>
-        <a class="maya-primary-button" routerLink="/pricing">Get the Maya app</a>
+        <div class="maya-eyebrow">Let the Marketing Assistant do the work</div>
+        <h2>Advice is free. The Marketing Assistant app lets it do the work.</h2>
+        <p>Creating documents, Moves and surveys, building decks and status reports, and downloading transcripts come with the Marketing Assistant app on your iPhone or iPad &mdash; one subscription unlocks it here too.</p>
+        <a class="maya-primary-button" routerLink="/pricing">Get the Marketing Assistant app</a>
       </aside>
 
       <div class="maya-composer maya-composer--docked" *ngIf="hasUserMessages">
-        <textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask Maya…" aria-label="Ask Maya"></textarea>
+        <textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask the Marketing Assistant…" aria-label="Ask the Marketing Assistant"></textarea>
         <div class="maya-composer__row">
           <button type="button" class="maya-attach" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" [attr.aria-busy]="statusReportGenerating">
             <span *ngIf="statusReportGenerating" class="maya-button-spinner" aria-hidden="true"></span>
@@ -83,12 +84,12 @@
             Download chat
           </button>
           <span class="maya-composer__hint"></span>
-          <button type="button" class="maya-send" [class.is-ready]="prompt.trim()" (click)="sendMessage()" [disabled]="sending" aria-label="Ask Maya">
+          <button type="button" class="maya-send" [class.is-ready]="prompt.trim()" (click)="sendMessage()" [disabled]="sending" aria-label="Ask the Marketing Assistant">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </button>
         </div>
       </div>
-      <div class="maya-status" *ngIf="sending || statusReportGenerating || errorMessage">{{ sending ? 'Maya is working on your answer…' : statusReportGenerating ? 'Maya is creating your status report…' : errorMessage }}</div>
+      <div class="maya-status" *ngIf="sending || statusReportGenerating || errorMessage">{{ sending ? 'The Marketing Assistant is working on your answer…' : statusReportGenerating ? 'The Marketing Assistant is creating your status report…' : errorMessage }}</div>
     </section>
   </main>
 

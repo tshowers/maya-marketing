@@ -144,11 +144,11 @@ export function applyVisitContextToAd (
 
   if ( context.isKnownEmailJourney ) {
     next.subheading = interest !== 'TODD'
-      ? `You clicked through from an email because ${interest} matters right now. This page picks up that conversation and shows how TODD helps the work keep moving.`
-      : 'You clicked through from an email for a reason. This page picks up that conversation and shows how TODD helps work keep moving.';
+      ? `You clicked through from an email because ${interest} matters right now. This page picks up that conversation and shows how 16Ahead helps the work keep moving.`
+      : 'You clicked through from an email for a reason. This page picks up that conversation and shows how 16Ahead helps work keep moving.';
     next.bullet1 = 'Continue the conversation without losing context.';
     next.bullet2 = 'See the next move without more admin work.';
-    next.finalAppeal = interest !== 'TODD' ? `See how TODD supports ${interest}` : 'See what TODD can move for you';
+    next.finalAppeal = interest !== 'TODD' ? `See how 16Ahead supports ${interest}` : 'See what 16Ahead can move for you';
     next.finalAppealSub = 'If you are not ready to buy, book a meeting and we will walk through the real fit together.';
     return next;
   }
@@ -159,15 +159,15 @@ export function applyVisitContextToAd (
       next.heading = interest !== 'TODD'
         ? `${interest} should feel lighter, not heavier`
         : 'Work should feel lighter, not heavier';
-      next.subheading = `You came from ${context.sourceLabel}. Here is the short version: TODD reduces the chasing, checking, and remembering that slows work down.`;
-      next.finalAppeal = interest !== 'TODD' ? `See ${interest} in motion` : 'See TODD in motion';
+      next.subheading = `You came from ${context.sourceLabel}. Here is the short version: 16Ahead reduces the chasing, checking, and remembering that slows work down.`;
+      next.finalAppeal = interest !== 'TODD' ? `See ${interest} in motion` : 'See 16Ahead in motion';
       next.finalAppealSub = 'Watch the flow, ask a quick question, or book a short walkthrough.';
       break;
     case 'linkedin':
       next.heading = interest !== 'TODD'
         ? `${interest} needs operating clarity`
         : 'Operations need more clarity, not more software';
-      next.subheading = 'You came from LinkedIn, so let’s keep it practical. TODD connects signals, follow-up, and next actions so progress does not depend on memory.';
+      next.subheading = 'You came from LinkedIn, so let’s keep it practical. 16Ahead connects signals, follow-up, and next actions so progress does not depend on memory.';
       next.bullet1 = 'Turn signals into clear next steps.';
       next.bullet2 = 'Reduce operational drag without adding more dashboards.';
       next.finalAppealSub = 'Book a meeting if you want to see the operating model, not just the marketing story.';
@@ -176,18 +176,18 @@ export function applyVisitContextToAd (
     case 'bing':
     case 'search':
       next.heading = 'Most software gives you more work';
-      next.subheading = `You came from ${context.sourceLabel}, probably looking for a better answer. TODD is built for people who are tired of tools that create more checking, more setup, and more stress.`;
+      next.subheading = `You came from ${context.sourceLabel}, probably looking for a better answer. 16Ahead is built for people who are tired of tools that create more checking, more setup, and more stress.`;
       next.bullet1 = 'Less system babysitting.';
       next.bullet2 = 'More visible movement.';
       next.heading5 = 'That is the scam nobody talks about';
       next.subHeading5 = 'Software should reduce the burden, not quietly add more work to your day.';
       next.image5 = '/assets/ads/todd-asset9.webp';
       next.finalAppeal = 'Want the honest walkthrough?';
-      next.finalAppealSub = 'Leave your info or book a meeting and we will explain what makes TODD different.';
+      next.finalAppealSub = 'Leave your info or book a meeting and we will explain what makes 16Ahead different.';
       break;
     default:
       if ( context.interestArea !== 'general' ) {
-        next.finalAppeal = `See how TODD helps with ${interest}`;
+        next.finalAppeal = `See how 16Ahead helps with ${interest}`;
         next.finalAppealSub = `If ${interest} is what pulled you in, we can show you the clearest next step.`;
       }
       break;
@@ -206,8 +206,8 @@ export function buildJourneyBannerCopy ( context: LandingPage4VisitContext ): {
       eyebrow: 'Email Journey',
       title: 'You did not land here cold',
       body: context.interestArea !== 'general'
-        ? `This visit started from an email and points toward ${context.interestLabel}. TODD can keep that conversation moving without losing context.`
-        : 'This visit started from an email. TODD can keep that conversation moving without losing context.'
+        ? `This visit started from an email and points toward ${context.interestLabel}. 16Ahead can keep that conversation moving without losing context.`
+        : 'This visit started from an email. 16Ahead can keep that conversation moving without losing context.'
     };
   }
 
@@ -215,7 +215,7 @@ export function buildJourneyBannerCopy ( context: LandingPage4VisitContext ): {
     return {
       eyebrow: context.sourceLabel,
       title: 'Curious from social? Start with the short version',
-      body: 'TODD is built to reduce the invisible work that piles up behind growth. If the message caught your eye, this page gives you the practical version.'
+      body: '16Ahead is built to reduce the invisible work that piles up behind growth. If the message caught your eye, this page gives you the practical version.'
     };
   }
 
@@ -223,7 +223,7 @@ export function buildJourneyBannerCopy ( context: LandingPage4VisitContext ): {
     return {
       eyebrow: 'LinkedIn Visit',
       title: 'This is the operating-system conversation',
-      body: 'TODD is about visibility, momentum, and less coordination drag. If you came from LinkedIn, we assume you want the practical explanation.'
+      body: '16Ahead is about visibility, momentum, and less coordination drag. If you came from LinkedIn, we assume you want the practical explanation.'
     };
   }
 
@@ -231,7 +231,7 @@ export function buildJourneyBannerCopy ( context: LandingPage4VisitContext ): {
     return {
       eyebrow: `${context.sourceLabel} Visit`,
       title: 'You were probably looking for a better answer',
-      body: 'Most people who land here from search are trying to solve a real workflow problem. TODD is built for that kind of visit.'
+      body: 'Most people who land here from search are trying to solve a real workflow problem. 16Ahead is built for that kind of visit.'
     };
   }
 
@@ -239,10 +239,10 @@ export function buildJourneyBannerCopy ( context: LandingPage4VisitContext ): {
     eyebrow: 'Journey Context',
     title: context.interestArea !== 'general'
       ? `Interested in ${context.interestLabel}?`
-      : 'See why TODD was built',
+      : 'See why 16Ahead was built',
     body: context.interestArea !== 'general'
       ? `If ${context.interestLabel} is what brought you here, the next sections are tuned to that interest.`
-      : 'This page is designed to help you quickly see where TODD fits and whether it is worth a conversation.'
+      : 'This page is designed to help you quickly see where 16Ahead fits and whether it is worth a conversation.'
   };
 }
 
@@ -256,7 +256,7 @@ export function buildExitIntentContent ( context: LandingPage4VisitContext ): La
   return {
     eyebrow: 'Before You Go',
     title: 'Most software gives you more work - Nobody says that part aloud',
-    body: `${sourceLead} If you want, leave your info and we will explain how TODD reduces the extra work most systems quietly create.`,
+    body: `${sourceLead} If you want, leave your info and we will explain how 16Ahead reduces the extra work most systems quietly create.`,
     imageSrc: '/assets/ads/todd-asset9.webp',
     imageAlt: 'Most software gives you more work - Nobody says that part aloud',
     formTitle: context.interestArea !== 'general'
@@ -343,9 +343,9 @@ function formatInterestLabel ( interestArea: LandingVisitInterestArea ): string 
     case 'docs': return 'Docs';
     case 'sayit': return 'SayIt';
     case 'lead-vault': return 'Lead Vault';
-    case 'suite': return 'TODD Suite';
+    case 'suite': return '16Ahead Suite';
     case 'momentum': return 'Momentum';
-    default: return 'TODD';
+    default: return '16Ahead';
   }
 }
 

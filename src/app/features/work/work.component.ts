@@ -13,7 +13,7 @@ import { EmailFillIn, EmailSendTarget, MayaJob, MayaJobStep, MayaJobsService, Ma
  * ?mayaEmail=, backend GET /email-creator/maya-email/:documentId).
  */
 export function emailCreatorEditUrl ( documentId: string ): string {
-  return `https://emails.taliferro.tech/?mayaEmail=${encodeURIComponent( documentId )}`;
+  return `https://emails.16ahead.com/?mayaEmail=${encodeURIComponent( documentId )}`;
 }
 
 /** One thing waiting on the user, from any job. */
@@ -70,7 +70,7 @@ const SLOW_POLL_MS = 30000;
 } )
 export class WorkComponent implements OnInit, OnDestroy {
   readonly pushbackOptions: Array<{ id: PushbackLevel; label: string; detail: string; }> = [
-    { id: 'firm', label: 'Firm', detail: 'Stops and makes her case when a request works against the plan.' },
+    { id: 'firm', label: 'Firm', detail: 'Stops and makes its case when a request works against the plan.' },
     { id: 'standard', label: 'Standard', detail: 'Stops and lists the consequences, without arguing.' },
     { id: 'light', label: 'Light', detail: 'Goes ahead and tells you the consequences up front.' },
   ];
@@ -124,7 +124,7 @@ export class WorkComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit (): void {
-    this.title.setTitle( "Maya's work — Maya | Taliferro Tech" );
+    this.title.setTitle( "The Marketing Assistant's work — Marketing Assistant | Taliferro Tech" );
     // Maya's chat links here with ?job=<id> after starting a job.
     const linkedJob = this.route.snapshot.queryParamMap.get( 'job' );
     if ( linkedJob ) {
@@ -266,7 +266,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       this.schedulePoll( FAST_POLL_MS );
     } catch ( error: any ) {
       this.needsPurchase = error?.error?.error === 'APP_PURCHASE_REQUIRED';
-      this.errorMessage = error?.error?.message || error?.message || 'Maya couldn’t start that.';
+      this.errorMessage = error?.error?.message || error?.message || 'The Marketing Assistant couldn’t start that.';
     } finally {
       this.isStarting = false;
     }
@@ -303,7 +303,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       .filter( ( step ) => step.tool === 'email.create' && step.status === 'done' && step.output?.['documentId'] )
       .map( ( step ) => ( {
         documentId: String( step.output!['documentId'] ),
-        subject: String( step.output!['subject'] || 'Email from Maya' ),
+        subject: String( step.output!['subject'] || 'Email from the Marketing Assistant' ),
         preheader: String( step.output!['preheader'] || '' ),
         fillIns: Array.isArray( step.output!['fillIns'] ) ? step.output!['fillIns'] : [],
       } ) );
@@ -394,7 +394,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       this.answers[job.id] = '';
       this.schedulePoll( FAST_POLL_MS );
     } catch ( error: any ) {
-      this.errorMessage = error?.error?.message || error?.message || 'Maya didn’t get that answer. Please try again.';
+      this.errorMessage = error?.error?.message || error?.message || 'The Marketing Assistant didn’t get that answer. Please try again.';
     } finally {
       this.busy[job.id] = false;
     }
@@ -435,7 +435,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       case 'queued':
       case 'running': return job.steps.length ? 'Working on it' : 'Planning';
       case 'awaiting_user': return 'Needs your answer';
-      case 'awaiting_decision': return 'Maya has concerns';
+      case 'awaiting_decision': return 'The Marketing Assistant has concerns';
       case 'awaiting_approval': return 'Waiting for your approval';
       case 'waiting': return job.resumeAt ? `Continues ${this.shortDateTime( job.resumeAt )}` : 'Paused';
       case 'done': return 'Done';
@@ -540,7 +540,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       }
       this.loaded = true;
     } catch ( error: any ) {
-      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load Maya’s work.';
+      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load the Marketing Assistant’s work.';
     }
     this.schedulePoll( this.jobs.some( ( job ) => this.isActive( job ) ) ? FAST_POLL_MS : SLOW_POLL_MS );
   }

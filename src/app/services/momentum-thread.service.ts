@@ -340,8 +340,8 @@ export class MomentumThreadService {
         'signal',
         openCount > 1 ? 'Signal read: repeat open' : 'Signal read: opened',
         openCount > 1
-          ? `TODD kept the subject logic for ${this.getThreadContextLabel( thread )} and moved this thread into a softer body-refactor path.`
-          : `TODD interpreted the open as subject resonance for ${this.getThreadContextLabel( thread )} and moved this thread into a body-refactor path.`
+          ? `16Ahead kept the subject logic for ${this.getThreadContextLabel( thread )} and moved this thread into a softer body-refactor path.`
+          : `16Ahead interpreted the open as subject resonance for ${this.getThreadContextLabel( thread )} and moved this thread into a body-refactor path.`
       )
     } );
   }
@@ -390,7 +390,7 @@ export class MomentumThreadService {
         thread,
         'handoff',
         'Signal read: reply handoff',
-        'TODD stopped automation and handed this thread back to you.'
+        '16Ahead stopped automation and handed this thread back to you.'
       )
     } );
   }
@@ -498,7 +498,7 @@ export class MomentumThreadService {
     } );
   }
 
-  handoffToTodd ( contactId: string, reason = 'TODD resumed control of this conversation.' ): void {
+  handoffToTodd ( contactId: string, reason = '16Ahead resumed control of this conversation.' ): void {
     const thread = this.getThreadByContactId( contactId );
     if ( !thread ) return;
 
@@ -514,7 +514,7 @@ export class MomentumThreadService {
       actionLog: this.appendThreadLog(
         thread,
         'control',
-        'TODD resumed control',
+        '16Ahead resumed control',
         reason
       )
     } );
@@ -559,7 +559,7 @@ export class MomentumThreadService {
       return 'Signal Engine is off, so your manual follow-up will lead this relationship.';
     }
     return thread.nextActionReason
-      || 'TODD is already managing the timing and next move for this contact.';
+      || '16Ahead is already managing the timing and next move for this contact.';
   }
 
   setNextAction (
@@ -1055,14 +1055,14 @@ export class MomentumThreadService {
     const contextLabel = this.getThreadContextLabel( thread );
 
     if ( thread.signalState === 'clicked' ) {
-      return `TODD is leaning into the clicked interest around ${this.getClickedTopicLabel( thread )} for ${contextLabel}. ${fallback}`;
+      return `16Ahead is leaning into the clicked interest around ${this.getClickedTopicLabel( thread )} for ${contextLabel}. ${fallback}`;
     }
 
     if ( thread.signalState === 'multi_open' || thread.signalState === 'opened' ) {
-      return `TODD is keeping the subject logic for ${contextLabel} and refactoring the body around what already got attention. ${fallback}`;
+      return `16Ahead is keeping the subject logic for ${contextLabel} and refactoring the body around what already got attention. ${fallback}`;
     }
 
-    return `TODD is tailoring the next subject line more closely to ${contextLabel}. ${fallback}`;
+    return `16Ahead is tailoring the next subject line more closely to ${contextLabel}. ${fallback}`;
   }
 
   private getThreadContextLabel ( thread: MomentumThread ): string {

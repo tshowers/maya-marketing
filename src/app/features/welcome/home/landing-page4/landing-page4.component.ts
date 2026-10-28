@@ -73,9 +73,9 @@ type LandingProductStory = {
 const offers: Record<OfferKey, OfferConfig> = {
   default: {
     key: 'default',
-    kicker: 'TODD',
+    kicker: '16Ahead',
     headline: 'Most software gives you more work.',
-    subhead: 'TODD tries to give you your time back.',
+    subhead: '16Ahead tries to give you your time back.',
     oneLiner: 'Less admin. Less chasing. More movement.',
     outcomes: [
       'A focused review of what is stealing time',
@@ -97,7 +97,7 @@ const offers: Record<OfferKey, OfferConfig> = {
     key: 'realestate',
     kicker: 'Deal Rescue',
     headline: 'Stop losing deals to follow-up fatigue.',
-    subhead: 'TODD keeps outreach moving so opportunities stop dying quietly.',
+    subhead: '16Ahead keeps outreach moving so opportunities stop dying quietly.',
     oneLiner: 'Less chasing spreadsheets. More closed business.',
     outcomes: [
       'Stalled deals reviewed',
@@ -108,7 +108,7 @@ const offers: Record<OfferKey, OfferConfig> = {
     notes: 'The problem usually is not effort. It is operational slowness.',
     credibilityLinks: [
       { label: 'Taliferro (Consulting)', href: 'https://taliferro.com' },
-      { label: 'TODD (Product)', href: 'https://todd.taliferro.tech' }
+      { label: '16Ahead (Product)', href: 'https://app.16ahead.com' }
     ],
     testimonials: [],
     stripeUrl: 'https://buy.stripe.com/8x200jdZ6eCb7mGcG42VG0o',
@@ -119,7 +119,7 @@ const offers: Record<OfferKey, OfferConfig> = {
     key: 'consulting',
     kicker: 'Decision Context',
     headline: 'Your team should not spend all day reconstructing context.',
-    subhead: 'TODD captures movement, rationale, and decisions automatically.',
+    subhead: '16Ahead captures movement, rationale, and decisions automatically.',
     oneLiner: 'Less rework. Less confusion. More forward motion.',
     outcomes: [
       'Key decisions documented',
@@ -192,7 +192,7 @@ export const ads: {
   BMS: {
     headingA: "Software should move work, not create more of it",
     headingB: "Stop feeding systems that do not feed you back",
-    subheading: "TODD is a Momentum System that turns contacts, emails, documents, feedback, and tasks into clear next moves.",
+    subheading: "16Ahead is a Momentum System that turns contacts, emails, documents, feedback, and tasks into clear next moves.",
     bullet1: "Less chasing work.",
     bullet2: "More work moving.",
 
@@ -206,19 +206,19 @@ export const ads: {
     subHeading3: "A reply sits in email. A task sits somewhere else. A document gets buried. The follow-up gets missed.",
     image3: "/assets/images/postcrm-hero-3.webp",
 
-    heading4: "TODD connects the signal to the next move",
+    heading4: "16Ahead connects the signal to the next move",
     subHeading4: "It helps draft the message, create the task, organize the document, and keep the work from going cold.",
     image4: "/assets/images/postcrm-hero-4.webp",
 
-    heading5: "You stay in control TODD carries the weight",
+    heading5: "You stay in control 16Ahead carries the weight",
     subHeading5: "The system handles repetitive follow-up and coordination so your team can focus on judgment, relationships, and decisions.",
     image5: "/assets/images/postcrm-hero-5.webp",
 
     heading6: "Get time back without losing control",
-    subHeading6: "Ask TODD what is stuck, what needs action, and what should happen next.",
+    subHeading6: "Ask the General Assistant what is stuck, what needs action, and what should happen next.",
     image6: "/assets/images/todd-screenshot1.webp",
 
-    finalAppeal: "See what TODD can move for you",
+    finalAppeal: "See what 16Ahead can move for you",
     finalAppealSub: "Ask a question, book a meeting, or start with one workflow.",
 
     link: `${environment.PLATFORM_URL}/landing-page?audience=bms`,
@@ -229,7 +229,7 @@ export const ads: {
   automation: {
     headingA: "Automation should give you time back",
     headingB: "Not another system to manage",
-    subheading: "TODD handles follow-ups, reminders, coordination, and repetitive work so your brain doesn't have to.",
+    subheading: "16Ahead handles follow-ups, reminders, coordination, and repetitive work so your brain doesn't have to.",
     bullet1: "Less mental overhead.",
     bullet2: "More room to think.",
 
@@ -240,7 +240,7 @@ export const ads: {
     image2: "/assets/images/automation-hero-2.webp",
 
     heading3: "Most automation still needs babysitting",
-    subHeading3: "TODD tries to quietly carry the repetitive work for you.",
+    subHeading3: "16Ahead tries to quietly carry the repetitive work for you.",
     image3: "/assets/images/automation-hero-3.webp",
 
     heading4: "Busy is not the goal",
@@ -248,7 +248,7 @@ export const ads: {
     image4: "/assets/images/automation-hero-4.webp",
 
     heading5: "You stay in control",
-    subHeading5: "TODD just removes the repetitive stuff.",
+    subHeading5: "16Ahead just removes the repetitive stuff.",
     image5: "/assets/images/automation-hero-5.webp",
 
     heading6: "Get your headspace back",
@@ -267,7 +267,7 @@ export const ads: {
   solo: {
     headingA: "You are not disorganized - You are carrying too much",
     headingB: "Run solo without running scattered",
-    subheading: "TODD helps solo founders, coaches, and small teams keep follow-ups, tasks, notes, and deals moving without living inside admin work.",
+    subheading: "16Ahead helps solo founders, coaches, and small teams keep follow-ups, tasks, notes, and deals moving without living inside admin work.",
     bullet1: "Fewer missed follow-ups.",
     bullet2: "More room to sell.",
     image1: "/assets/ads/todd-asset21.webp",
@@ -277,14 +277,14 @@ export const ads: {
     heading3: "Doing everything alone creates hidden leaks",
     subHeading3: "A missed reply, late proposal, or forgotten note can quietly cost the deal.",
     image3: "/assets/ads/todd-asset9.webp",
-    heading4: "TODD keeps the next move visible",
+    heading4: "16Ahead keeps the next move visible",
     subHeading4: "It helps draft the message, track the reply, and nudge the work before momentum slips.",
     image4: "/assets/ads/todd-asset10.webp",
     heading5: "You still own the relationship",
-    subHeading5: "TODD handles the repetitive coordination so you can focus on judgment, trust, and the close.",
+    subHeading5: "16Ahead handles the repetitive coordination so you can focus on judgment, trust, and the close.",
     image5: "/assets/ads/todd-asset11.webp",
     heading6: "Stop carrying the whole system in your head",
-    subHeading6: "Ask TODD what needs attention and what should happen next.",
+    subHeading6: "Ask the General Assistant what needs attention and what should happen next.",
     image6: undefined,
     finalAppeal: "Run your solo act like a system",
     finalAppealSub: "Doing it all should not mean remembering it all.",
@@ -294,7 +294,7 @@ export const ads: {
   overwhelmed: {
     headingA: "You are not lazy - The work is spread everywhere",
     headingB: "One system for the work your brain keeps carrying",
-    subheading: "TODD coordinates emails, tasks, documents, follow-ups, and timing so you stop juggling the same work all day.",
+    subheading: "16Ahead coordinates emails, tasks, documents, follow-ups, and timing so you stop juggling the same work all day.",
     bullet1: "Clear next moves.",
     bullet2: "Less mental load.",
     image1: "/assets/ads/todd-asset1.webp",
@@ -304,16 +304,16 @@ export const ads: {
     heading3: "Your brain is managing too many systems",
     subHeading3: "Memory, admin, pipeline, messages, and timing should not all depend on you.",
     image3: "/assets/ads/todd-asset3.webp",
-    heading4: "TODD gives the work a place to move",
+    heading4: "16Ahead gives the work a place to move",
     subHeading4: "It connects what happened to what should happen next so fewer things slip.",
     image4: "/assets/ads/todd-asset4.webp",
     heading5: "Trying harder is not a system",
     subHeading5: "A better system reduces the chasing, checking, and remembering.",
     image5: "/assets/ads/todd-asset6.webp",
     heading6: "Close loops without chasing every detail",
-    subHeading6: "Ask TODD what is stalled, what is due, and what needs action.",
+    subHeading6: "Ask the General Assistant what is stalled, what is due, and what needs action.",
     image6: "/assets/ads/todd-asset6.webp",
-    finalAppeal: "Let TODD carry some of the load",
+    finalAppeal: "Let 16Ahead carry some of the load",
     finalAppealSub: "So you can lead the work instead of juggling it.",
     link: `${environment.PLATFORM_URL}/landing-page?audience=overwhelmed`,
     audienceDescription: "Solo founders and small teams doing too much across too many disconnected tools."
@@ -321,7 +321,7 @@ export const ads: {
   supplier: {
     headingA: "Supplier work should not live in spreadsheets",
     headingB: "See who is active, stalled, and ready for support",
-    subheading: "TODD helps supplier programs track engagement, spot gaps, and move follow-up from scattered files into one working system.",
+    subheading: "16Ahead helps supplier programs track engagement, spot gaps, and move follow-up from scattered files into one working system.",
     bullet1: "Clear vendor visibility.",
     bullet2: "Better follow-through.",
     image1: "/assets/images/supplier-hero-1.webp",
@@ -329,26 +329,26 @@ export const ads: {
     subHeading2: "Spreadsheets rarely show who is drifting, who needs help, or which relationship needs action now.",
     image2: "/assets/images/supplier-hero-2.webp",
     heading3: "Engagement should not be guesswork",
-    subHeading3: "TODD helps show who is active, quiet, overdue, or ready for the next step.",
+    subHeading3: "16Ahead helps show who is active, quiet, overdue, or ready for the next step.",
     image3: "/assets/images/supplier-hero-3.webp",
     heading4: "Manual tracking creates missed opportunity",
     subHeading4: "One forgotten follow-up can weaken a vendor relationship or delay a real opportunity.",
     image4: "/assets/images/supplier-hero-4.webp",
-    heading5: "TODD connects activity across people, forms, emails, and documents",
+    heading5: "16Ahead connects activity across people, forms, emails, and documents",
     subHeading5: "Your team gets a clearer picture without hunting through every inbox and folder.",
     image5: "/assets/images/supplier-hero-5.webp",
     heading6: "Replace static files with a living workflow",
     subHeading6: "Turn scattered supplier data into visible next steps.",
     image6: undefined,
     finalAppeal: "See your supplier flow clearly",
-    finalAppealSub: "Book a demo and see how TODD helps close the loop.",
+    finalAppealSub: "Book a demo and see how 16Ahead helps close the loop.",
     link: `${environment.PLATFORM_URL}/landing-page?audience=supplier`,
     audienceDescription: "Supplier diversity teams, ecosystem builders, and nonprofit organizers managing vendors across spreadsheets, inboxes, and forms."
   },
   chamber: {
     headingA: "Support more businesses without losing the thread",
     headingB: "See who needs help before they disappear",
-    subheading: "TODD helps chambers, incubators, and business centers track engagement, needs, follow-up, and movement across their ecosystem.",
+    subheading: "16Ahead helps chambers, incubators, and business centers track engagement, needs, follow-up, and movement across their ecosystem.",
     bullet1: "Spot stalls early.",
     bullet2: "Route support faster.",
     image1: "/assets/images/org-hero-1.webp",
@@ -359,13 +359,13 @@ export const ads: {
     subHeading3: "No-shows, stalled applications, cold replies, and missed timing are signals your team can act on.",
     image3: "/assets/images/org-hero-3.webp",
     heading4: "Your staff cannot chase everyone manually",
-    subHeading4: "TODD helps prioritize where attention can create the most movement.",
+    subHeading4: "16Ahead helps prioritize where attention can create the most movement.",
     image4: "/assets/images/org-hero-4.webp",
     heading5: "Move beyond spreadsheets and scattered notes",
     subHeading5: "Give your team a clearer way to see engagement and follow-through.",
     image5: "/assets/images/org-hero-5.webp",
     heading6: "Support becomes easier when signals are visible",
-    subHeading6: "TODD helps turn member activity into clear action.",
+    subHeading6: "16Ahead helps turn member activity into clear action.",
     image6: undefined,
     finalAppeal: "Give your team clearer visibility",
     finalAppealSub: "Book a demo and see who is active, stalled, and ready for support.",
@@ -374,35 +374,35 @@ export const ads: {
   },
   bootstrap: {
     headingA: "Build with a system, not grit",
-    headingB: "TODD turns chaos into flow",
-    subheading: "TODD runs the back office—emails, nudges, tracking—while you build.",
+    headingB: "16Ahead turns chaos into flow",
+    subheading: "16Ahead runs the back office—emails, nudges, tracking—while you build.",
     bullet1: "One place for motion.",
     bullet2: "Progress without hiring.",
     image1: "/assets/ads/todd-asset1.webp",
     heading2: "This isn't entrepreneurship - This is survival mode",
-    subHeading2: "You're wearing 5 hats. TODD wears a few for you.",
+    subHeading2: "You're wearing 5 hats. 16Ahead wears a few for you.",
     image2: "/assets/ads/todd-asset3.webp",
     heading3: "Every missed follow-up is money walking away",
     subHeading3: "You don't have to be everywhere at once.",
     image3: "/assets/ads/todd-asset5.webp",
-    heading4: "TODD does the boring stuff you hate",
+    heading4: "16Ahead does the boring stuff you hate",
     subHeading4: "Emails, nudges, data cleanup—automated.",
     image4: "/assets/ads/todd-asset7.webp",
     heading5: "Admin isn't the job. Growth is",
     subHeading5: "Stop managing tasks. Start moving forward.",
     image5: "/assets/ads/todd-asset9.webp",
     heading6: "Get your hours—and your headspace—back",
-    subHeading6: "TODD handles the load. You handle the mission.",
+    subHeading6: "16Ahead handles the load. You handle the mission.",
     image6: undefined,
-    finalAppeal: "Let TODD be your ops system",
+    finalAppeal: "Let 16Ahead be your ops system",
     finalAppealSub: "So you can get back to building.", link: `${environment.PLATFORM_URL}/?audience=bootstrap`,
-    audienceDescription: "Bootstrapped founders, part-time operators, or community connectors who need an assistant but can't afford to hire. TODD becomes the doer.",
+    audienceDescription: "Bootstrapped founders, part-time operators, or community connectors who need an assistant but can't afford to hire. 16Ahead becomes the doer.",
 
   },
   spreadsheet: {
-    headingA: "Spreadsheets track - TODD moves",
+    headingA: "Spreadsheets track - 16Ahead moves",
     headingB: "Trade tabs for a system",
-    subheading: "TODD turns scattered rows into coordinated action.",
+    subheading: "16Ahead turns scattered rows into coordinated action.",
     bullet1: "From data to doing.",
     bullet2: "Flow replaces manual steps.",
     image1: "/assets/ads/todd-asset1.webp",
@@ -415,11 +415,11 @@ export const ads: {
     heading4: "Color-coding is not a strategy",
     subHeading4: "You shouldn't need 10 columns to remember who to call.",
     image4: "/assets/images/spreadsheet-hero-4.webp",
-    heading5: "TODD replaces the chaos with clarity",
+    heading5: "16Ahead replaces the chaos with clarity",
     subHeading5: "Searchable, trackable, and always on point.",
     image5: "/assets/images/software-scam.webp",
     heading6: "Drop the spreadsheet. Keep the progress",
-    subHeading6: "TODD moves your work forward—automatically.",
+    subHeading6: "16Ahead moves your work forward—automatically.",
     image6: undefined,
     finalAppeal: "See momentum when the system runs",
     finalAppealSub: "Book a demo. Get out of the grid.", link: `${environment.PLATFORM_URL}/?audience=spreadsheet`,
@@ -428,8 +428,8 @@ export const ads: {
   },
   tasks: {
     headingA: "Manage outcomes - not lists",
-    headingB: "TODD shows flow, blocks, next steps",
-    subheading: "TODD makes work visible across people, tasks, and timing.",
+    headingB: "16Ahead shows flow, blocks, next steps",
+    subheading: "16Ahead makes work visible across people, tasks, and timing.",
     bullet1: "What’s moving, live.",
     bullet2: "Who owns the next move.",
     image1: "/assets/ads/todd-asset2.webp",
@@ -440,16 +440,16 @@ export const ads: {
     subHeading3: "You shouldn't have to ask what's done. You should know.",
     image3: "/assets/ads/todd-asset6.webp",
     heading4: "Delegation without visibility is a guessing game",
-    subHeading4: "TODD shows where things stand—no meetings required.",
+    subHeading4: "16Ahead shows where things stand—no meetings required.",
     image4: "/assets/ads/todd-asset8.webp",
     heading5: "No more buried tasks and forgotten follow-ups",
     subHeading5: "Every task has a status. Every status drives action.",
     image5: "/assets/ads/todd-asset10.webp",
     heading6: "Manage outcomes, not lists",
-    subHeading6: "TODD keeps projects moving—even when no one's watching.",
+    subHeading6: "16Ahead keeps projects moving—even when no one's watching.",
     image6: undefined,
     finalAppeal: "Run projects as a system",
-    finalAppealSub: "Let TODD show what's really getting done.",
+    finalAppealSub: "Let 16Ahead show what's really getting done.",
     link: `${environment.PLATFORM_URL}/?audience=tasks`,
     audienceDescription: "Project Leads or Program Coordinators",
 
@@ -457,27 +457,27 @@ export const ads: {
   survey: {
     headingA: "Feedback should not sit in a report",
     headingB: "Turn answers into action",
-    subheading: "TODD reads survey responses, finds the patterns, and helps you create the follow-up work before momentum fades.",
+    subheading: "16Ahead reads survey responses, finds the patterns, and helps you create the follow-up work before momentum fades.",
     bullet1: "Signals become next steps.",
     bullet2: "Feedback turns into follow-through.",
     image1: "/assets/images/pulse-hero-1.webp",
     heading2: "Raw responses are only the beginning",
-    subHeading2: "TODD looks across the feedback and surfaces the trends, gaps, outliers, and people who may need attention.",
+    subHeading2: "16Ahead looks across the feedback and surfaces the trends, gaps, outliers, and people who may need attention.",
     image2: "/assets/images/pulse-hero-2.webp",
     heading3: "You should not need a pivot table to know what matters",
-    subHeading3: "TODD helps explain what the responses mean so your team can act faster.",
+    subHeading3: "16Ahead helps explain what the responses mean so your team can act faster.",
     image3: "/assets/images/pulse-hero-3.webp",
     heading4: "The system creates movement from the insight",
     subHeading4: "Turn findings into tasks, outreach, documents, and follow-up without starting from scratch.",
     image4: "/assets/images/pulse-hero-4.webp",
     heading5: "See who needs support before they disappear",
-    subHeading5: "TODD connects feedback to people, timing, and next actions so quiet issues do not stay hidden.",
+    subHeading5: "16Ahead connects feedback to people, timing, and next actions so quiet issues do not stay hidden.",
     image5: "/assets/images/pulse-hero-5.webp",
     heading6: "Close the loop while the signal is still fresh",
     subHeading6: "Survey data becomes a plan your team can move on immediately.",
     image6: undefined,
-    finalAppeal: "See what TODD surfaces",
-    finalAppealSub: "Ask TODD what action your feedback should trigger next.", link: `${environment.PLATFORM_URL}/?audience=survey`,
+    finalAppeal: "See what 16Ahead surfaces",
+    finalAppealSub: "Ask the General Assistant what action your feedback should trigger next.", link: `${environment.PLATFORM_URL}/?audience=survey`,
     audienceDescription: "Program evaluators, nonprofit administrators, and equity teams that need survey feedback to produce visible follow-up, not another static report.",
 
   },
@@ -485,7 +485,7 @@ export const ads: {
   marketingbaby: {
     headingA: "You move fast. Your system should keep up",
     headingB: "All hustle Less pull",
-    subheading: "TODD helps solo founders and contractors keep leads, emails, tasks, proposals, and documents moving in one connected system.",
+    subheading: "16Ahead helps solo founders and contractors keep leads, emails, tasks, proposals, and documents moving in one connected system.",
     bullet1: "Less tab-hopping.",
     bullet2: "More finished work.",
     image1: "/assets/ads/todd-asset11.webp",
@@ -493,48 +493,48 @@ export const ads: {
     subHeading2: "You should not lose momentum because a lead, note, email, or proposal lives in a different place.",
     image2: "/assets/ads/todd-asset13.webp",
     heading3: "No more bouncing between tabs and tools",
-    subHeading3: "TODD brings the work into one motion so you can see what needs attention and act without hunting for context.",
+    subHeading3: "16Ahead brings the work into one motion so you can see what needs attention and act without hunting for context.",
     image3: "/assets/ads/todd-asset15.webp",
-    heading4: "Most tools track effort. TODD makes moves",
-    subHeading4: "From warm lead to signed proposal, TODD helps push the next step forward.",
+    heading4: "Most tools track effort. 16Ahead makes moves",
+    subHeading4: "From warm lead to signed proposal, 16Ahead helps push the next step forward.",
     image4: "/assets/ads/todd-asset17.webp",
     heading5: "Looking busy is not the goal",
     subHeading5: "Closed loops, sent follow-ups, finished tasks, and paid work are the goal.",
     image5: "/assets/ads/todd-asset19.webp",
     heading6: "You do not need more hours You need less problems",
-    subHeading6: "TODD handles the repetitive coordination so you can stay focused on the win.",
+    subHeading6: "16Ahead handles the repetitive coordination so you can stay focused on the win.",
     image6: undefined,
-    finalAppeal: "Watch TODD do the doing",
+    finalAppeal: "Watch 16Ahead do the doing",
     finalAppealSub: "Less grind. More progress. Same hustle.", link: `${environment.PLATFORM_URL}/?audience=marketingbaby`,
     audienceDescription: "Solo founders and contractors juggling sales, admin, marketing, documents, and follow-up without enough time.",
 
   },
   recovery: {
     headingA: "Recover momentum you missed",
-    headingB: "TODD watches the quiet signals",
-    subheading: "TODD surfaces silent replies and restarts the flow.",
+    headingB: "16Ahead watches the quiet signals",
+    subheading: "16Ahead surfaces silent replies and restarts the flow.",
     bullet1: "Find the almost‑wins.",
     bullet2: "Re‑engage automatically.",
     image1: "/assets/ads/todd-asset20.webp",
     heading2: "You missed a message. It cost you money",
-    subHeading2: "TODD catches the quiet replies you never saw.",
+    subHeading2: "16Ahead catches the quiet replies you never saw.",
     image2: "/assets/ads/todd-asset21.webp",
     heading3: "Most deals don't go cold—they go quiet",
     subHeading3: "And without follow-up, silence becomes a no.",
     image3: "/assets/ads/todd-asset22.webp",
     heading4: "Not every opportunity knocks twice",
-    subHeading4: "But TODD makes sure you're at the door when it does.",
+    subHeading4: "But 16Ahead makes sure you're at the door when it does.",
     image4: "/assets/ads/todd-asset23.webp",
     heading5: "Your inbox shouldn't be a graveyard",
     subHeading5: "Resurrect missed replies and lost momentum.",
     image5: "/assets/ads/solo-2.webp",
     heading6: "Follow-up is the difference between maybe and money",
-    subHeading6: "TODD makes sure you never miss your shot again.",
+    subHeading6: "16Ahead makes sure you never miss your shot again.",
     image6: undefined,
     finalAppeal: "Win back stalled opportunities",
-    finalAppealSub: "TODD's watching—even when you're not.",
+    finalAppealSub: "16Ahead's watching—even when you're not.",
     link: `${environment.PLATFORM_URL}/?audience=recovery`,
-    audienceDescription: "Operators losing out because they can't follow up fast enough, or don't even know a reply came in. TODD catches it all.",
+    audienceDescription: "Operators losing out because they can't follow up fast enough, or don't even know a reply came in. 16Ahead catches it all.",
   }
 
 
@@ -662,7 +662,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
     {
       id: 'product-signals',
       eyebrow: 'Signals — Step 1 of the loop',
-      heading: 'This is where TODD watches',
+      heading: 'This is where 16Ahead watches',
       body: 'Every email open, contact change, social response, and missed follow-up is a signal. Signals collects them all and surfaces what changed since you last looked.',
       route: '/signal-engine',
       cta: 'Open Signals',
@@ -687,7 +687,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       route: '/outreach/social',
       cta: 'Open Social',
       imageUrl: '/assets/outreach/todd-social2.png',
-      imageAlt: 'TODD Social Preview'
+      imageAlt: '16Ahead Social Preview'
     },
     {
       id: 'product-network',
@@ -818,13 +818,13 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
   handleLandingStoryAction ( actionId: string ): void {
     switch ( actionId ) {
       case 'ask_intro':
-        this.onQuickPill( 'How can TODD help my organization today?' );
+        this.onQuickPill( 'How can 16Ahead help my organization today?' );
         return;
       case 'ask_problem':
         this.onQuickPill( 'Why are we spending more on technology and still moving slow?' );
         return;
       case 'ask_solution':
-        this.onQuickPill( 'What should I understand first about how TODD solves operational slowness?' );
+        this.onQuickPill( 'What should I understand first about how 16Ahead solves operational slowness?' );
         return;
       case 'book_meeting':
         this.buttonClick();
@@ -933,11 +933,11 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
     return {
       id: 'todd-intro',
       type: 'image',
-      eyebrow: 'What is TODD?',
-      heading: `TODD is a Momentum System`,
+      eyebrow: 'What is 16Ahead?',
+      heading: `16Ahead is a Momentum System`,
       body: 'What is a Momentum System? A Momentum System answers one question: "Given what I know right now, what should I do next?"',
       imageUrl: this.storyImagePlaceholders.intro,
-      imageAlt: 'TODD intro',
+      imageAlt: '16Ahead intro',
       actions: [
         {
           label: this.isLoggedIn ? 'Enter' : 'Login',
@@ -959,7 +959,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       body: 'What should I do next? Most people answer that question by checking email, opening dashboards, scrolling through tasks, and hoping nothing important gets missed. Opportunities cool off. Relationships weaken. Projects slow down. Not because people are lazy. Because no system connected what happened to what should happen next.',
 
       imageUrl: this.storyImagePlaceholders.problem,
-      imageAlt: 'TODD Problem',
+      imageAlt: '16Ahead Problem',
       mediaPosition: 'right',
 
       panelClass: 'todd-landing-story-panel todd-landing-story-panel--problem'
@@ -970,11 +970,11 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
     return {
       id: 'todd-solution',
       type: 'image',
-      eyebrow: 'How TODD works',
+      eyebrow: 'How 16Ahead works',
       heading: 'One loop Eight modules Nothing falls between them',
-      body: 'Something happens. TODD notices it. It figures out what should happen next and drafts the response. You approve. It executes. That loop — signal to action — repeats every day across your contacts, outreach, documents, tasks, and feedback.',
+      body: 'Something happens. 16Ahead notices it. It figures out what should happen next and drafts the response. You approve. It executes. That loop — signal to action — repeats every day across your contacts, outreach, documents, tasks, and feedback.',
       imageUrl: this.storyImagePlaceholders.solution,
-      imageAlt: 'TODD solution',
+      imageAlt: '16Ahead solution',
       mediaPosition: 'left',
       panelClass: 'todd-landing-story-panel todd-landing-story-panel--solution'
     };
@@ -1007,7 +1007,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       heading: 'Nothing falls through Not because you remembered Because the system carries it',
       body: 'Eight modules. One loop. Every signal connected to an action, every action connected to an outcome.',
       embedUrl: `https://www.youtube.com/embed/${proofShortId}?playsinline=1&rel=0&modestbranding=1`,
-      embedTitle: 'TODD proof short',
+      embedTitle: '16Ahead proof short',
       mediaAspectRatio: '9 / 16',
       mediaPosition: 'left',
       panelClass: 'todd-landing-story-panel todd-landing-story-panel--credibility'
@@ -1019,8 +1019,8 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       id: 'todd-closing',
       type: 'cta',
       eyebrow: 'Next step',
-      heading: this.selectedAd?.finalAppeal || this.offer?.title || 'Ready to see what TODD can move?',
-      body: this.selectedAd?.finalAppealSub || this.offer?.description || 'Ask TODD a question, book time, or start with the operating model that best fits the pressure you are under.',
+      heading: this.selectedAd?.finalAppeal || this.offer?.title || 'Ready to see what 16Ahead can move?',
+      body: this.selectedAd?.finalAppealSub || this.offer?.description || 'Ask the General Assistant a question, book time, or start with the operating model that best fits the pressure you are under.',
       actions: [
         { label: 'Start Now', actionId: 'start_now', variant: 'primary' },
         { label: 'Book a Meeting', actionId: 'book_meeting', variant: 'secondary' }
@@ -1285,7 +1285,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       ${userPrompt}`;
       }
 
-      fullPrompt += ` Context: The user is on the landing page deciding whether to purchase TODD. They clicked a link from the email to get here and are now weighing their options.
+      fullPrompt += ` Context: The user is on the landing page deciding whether to purchase 16Ahead. They clicked a link from the email to get here and are now weighing their options.
       Visitor source: ${this.visitContext.sourceLabel}
       Visitor channel: ${this.visitContext.channel}
       Interest area: ${this.visitContext.interestLabel}
@@ -1336,7 +1336,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       - Avoid verbs like “Enjoy” or “Experience.” Just state the benefit.
       - Never use “site” as a verb.
       - Use a persuasive tone—calm, direct, and modern. No hype.
-      - finalAppeal should be a single strong CTA (e.g., “Book a demo,” “Try TODD today”).
+      - finalAppeal should be a single strong CTA (e.g., “Book a demo,” “Try 16Ahead today”).
       - finalAppealSub is the emotional backup. Think relief, clarity, time saved.
       - Each heading/subheading pair (1 through 6) should stack like a narrative—build tension, then shift toward relief.
       - Assume everything will be scanned, not read. Make it punchy.
@@ -1884,7 +1884,7 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
         this.showForm = false;
         if ( this.shouldSendEmail() && this.contact && this.contact.email ) {
           const prompt = `
-          Write a short HTML email (under 120 words) that speaks to someone who visited our website about TODD but is leaving without taking action. 
+          Write a short HTML email (under 120 words) that speaks to someone who visited our website about 16Ahead but is leaving without taking action. 
           Make it deep and human—skip the typical sales pitch. 
           Focus on a lesser-known benefit like reduced decision fatigue, cognitive offloading, or the emotional relief of not dropping the ball. 
           Avoid cliches. 

@@ -49,14 +49,14 @@ export class GetStartedComponent implements OnInit {
   ];
 
   readonly steps: Step[] = [
-    { key: 'firstName', section: 1, question: "What's your first name?", hint: 'So Maya knows who she\'s advising.' },
+    { key: 'firstName', section: 1, question: "What's your first name?", hint: 'So the Marketing Assistant knows who it\'s advising.' },
     { key: 'lastName', section: 1, question: 'And your last name?', hint: '' },
     { key: 'role', section: 1, question: "What's your role?", hint: 'Pick the closest fit.' },
-    { key: 'company', section: 2, question: "What's your company called?", hint: 'Maya uses it in the plans and posts she drafts.', optional: true },
-    { key: 'employees', section: 2, question: 'How many people work there?', hint: "Including you. Enter 1 if it's just you. Maya uses this to set realistic goals for a business your size." },
-    { key: 'helpWith', section: 2, question: 'What should Maya help you with?', hint: 'Pick as many as you like.' },
+    { key: 'company', section: 2, question: "What's your company called?", hint: 'The Marketing Assistant uses it in the plans and posts it drafts.', optional: true },
+    { key: 'employees', section: 2, question: 'How many people work there?', hint: "Including you. Enter 1 if it's just you. The Marketing Assistant uses this to set realistic goals for a business your size." },
+    { key: 'helpWith', section: 2, question: 'What should Marketing Assistant help you with?', hint: 'Pick as many as you like.' },
     { key: 'timezone', section: 3, question: 'What timezone is your workday in?', hint: 'So reminders and follow-ups land during your business hours.' },
-    { key: 'signIn', section: 3, question: 'Last step: sign in', hint: 'Your answers go to your TODD profile, so Network, Docs and the rest know you too.' },
+    { key: 'signIn', section: 3, question: 'Last step: sign in', hint: 'Your answers go to your 16Ahead profile, so Network, Docs and the rest know you too.' },
   ];
 
   readonly roleOptions = ROLE_OPTIONS;
@@ -77,7 +77,7 @@ export class GetStartedComponent implements OnInit {
   ) { }
 
   ngOnInit (): void {
-    this.title.setTitle( 'Get started — Maya | Taliferro Tech' );
+    this.title.setTitle( 'Get started — Marketing Assistant | Taliferro Tech' );
     this.returnUrl = this.route.snapshot.queryParamMap.get( 'returnUrl' ) || '/';
     this.draft = this.onboarding.load();
     if ( !this.draft.timezone ) this.draft.timezone = this.onboarding.detectTimezone();

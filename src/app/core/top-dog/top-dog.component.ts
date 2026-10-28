@@ -174,6 +174,7 @@ export class TopDogComponent implements OnInit, OnDestroy, AfterViewInit {
       return path.includes( 'sayit' )
         || path.includes( 'say-it' )
         || hostname === 'sayit.taliferro.tech'
+        || hostname === 'sayit.16ahead.com'
         || hostname === 'todd-sayit.web.app';
     } catch {
       return false;

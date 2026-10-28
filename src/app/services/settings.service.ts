@@ -275,6 +275,7 @@ export class SettingsService {
       return path.includes( 'say-it' )
         || path.includes( 'sayit' )
         || hostname === 'sayit.taliferro.tech'
+        || hostname === 'sayit.16ahead.com'
         || hostname === 'todd-sayit.web.app';
     } catch {
       return false;

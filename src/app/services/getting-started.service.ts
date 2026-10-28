@@ -66,7 +66,7 @@ export class GettingStartedService {
   routeFor ( step: GettingStartedStep ): string {
     switch ( step.id ) {
       case 'profile': return '/profile';
-      case 'otherApps': return 'https://network.taliferro.tech';
+      case 'otherApps': return 'https://network.16ahead.com';
       default: return '/';
     }
   }
@@ -75,7 +75,7 @@ export class GettingStartedService {
     switch ( step.id ) {
       case 'profile': return step.done ? 'View profile' : 'Complete profile';
       case 'otherApps': return step.done ? 'Open Network' : 'Add contacts in Network';
-      default: return 'Talk to Maya';
+      default: return 'Talk to the Marketing Assistant';
     }
   }
 }

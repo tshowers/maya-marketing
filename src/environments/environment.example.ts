@@ -13,7 +13,7 @@ export const environment = {
     COMPANY_NAME: 'COMPANY_NAME',
     paid: false,
     // Where sign-in and other TODD platform links point. http://localhost:4200
-    // for development, https://todd.taliferro.tech for production.
+    // for development, https://app.16ahead.com for production.
     PLATFORM_URL: 'http://localhost:4200',
     VERSION: require('../../package.json').version,
     // Shared Taliferro Tech Firebase web app (Auth, Firestore, Storage, Functions).

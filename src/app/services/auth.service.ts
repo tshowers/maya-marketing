@@ -1853,7 +1853,7 @@ export class AuthService implements OnDestroy {
       if ( typeof window !== 'undefined' ) {
         const host = window.location.hostname.toLowerCase();
         if ( host === 'localhost' || host === '127.0.0.1' ) {
-          return 'Phone recovery cannot send real SMS codes from localhost. Test this flow on a deployed TODD domain instead.';
+          return 'Phone recovery cannot send real SMS codes from localhost. Test this flow on a deployed 16Ahead domain instead.';
         }
       }
 
@@ -1913,19 +1913,19 @@ export class AuthService implements OnDestroy {
         const expectedEmail = String( recoveryEmail || '' ).trim().toLowerCase();
 
         if ( outcome === 'email_not_found' ) {
-          return { success: false, error: 'No TODD account was found for that email address.', errorCode: 'email_not_found' };
+          return { success: false, error: 'No 16Ahead account was found for that email address.', errorCode: 'email_not_found' };
         }
 
         if ( outcome === 'phone_mismatch' ) {
-          return { success: false, error: 'That verified phone number does not match the phone saved on this TODD profile.', errorCode: 'phone_mismatch' };
+          return { success: false, error: 'That verified phone number does not match the phone saved on this 16Ahead profile.', errorCode: 'phone_mismatch' };
         }
 
         if ( outcome === 'no_match' ) {
-          return { success: false, error: 'No TODD account matched that phone number.', errorCode: 'no_match' };
+          return { success: false, error: 'No 16Ahead account matched that phone number.', errorCode: 'no_match' };
         }
 
         if ( outcome === 'ambiguous_match' ) {
-          return { success: false, error: 'Multiple TODD accounts matched that phone number.', errorCode: 'ambiguous_match' };
+          return { success: false, error: 'Multiple 16Ahead accounts matched that phone number.', errorCode: 'ambiguous_match' };
         }
 
         if ( !parsed?.uid || !parsed?.email ) {
@@ -1933,7 +1933,7 @@ export class AuthService implements OnDestroy {
         }
 
         if ( expectedEmail && String( parsed.email || '' ).trim().toLowerCase() !== expectedEmail ) {
-          return { success: false, error: 'No TODD account was found for that email address.', errorCode: 'email_not_found' };
+          return { success: false, error: 'No 16Ahead account was found for that email address.', errorCode: 'email_not_found' };
         }
 
         window.localStorage.setItem( '__cypressAuthOverride', JSON.stringify( {
@@ -1973,7 +1973,7 @@ export class AuthService implements OnDestroy {
       if ( !response.ok || !payload?.success || !payload?.customToken ) {
         return {
           success: false,
-          error: payload?.message || 'Unable to recover your TODD account from this phone number.',
+          error: payload?.message || 'Unable to recover your 16Ahead account from this phone number.',
           errorCode: payload?.errorCode || 'recover_failed'
         };
       }
@@ -1989,7 +1989,7 @@ export class AuthService implements OnDestroy {
       this.logger.error( 'AuthService.recoverToddAccountFromPhoneUser failed:', error );
       return {
         success: false,
-        error: error?.message || 'Unable to recover your TODD account from this phone number.',
+        error: error?.message || 'Unable to recover your 16Ahead account from this phone number.',
         errorCode: 'recover_failed'
       };
     }

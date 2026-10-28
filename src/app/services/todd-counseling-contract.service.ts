@@ -58,7 +58,7 @@ export class ToddCounselingContractService {
           audience,
           title: 'Do this next',
           message: nextProfileStep.message,
-          whyItMatters: 'TODD should point to the next unfinished piece of context, not send you back to a page you are already using.',
+          whyItMatters: '16Ahead should point to the next unfinished piece of context, not send you back to a page you are already using.',
           primaryAction: { label: nextProfileStep.label, route: `/update-profile?guided=profile#${nextProfileStep.fragment}` },
           teachingPoints: [
             `Personal Information is complete. The next unfinished section is ${nextProfileStep.section}.`,
@@ -73,12 +73,12 @@ export class ToddCounselingContractService {
       return {
         audience,
         title: 'Finish the profile before the advice gets specific.',
-        message: `Profile readiness is ${facts.profileReadiness.score}%. TODD can see the workspace, but important business context is still missing.`,
-        whyItMatters: 'Your profile is the operating brief TODD and Maya use to decide what matters, how to prioritize it, and how to sound like you.',
+        message: `Profile readiness is ${facts.profileReadiness.score}%. 16Ahead can see the workspace, but important business context is still missing.`,
+        whyItMatters: 'Your profile is the operating brief 16Ahead and the Marketing Assistant use to decide what matters, how to prioritize it, and how to sound like you.',
         primaryAction: { label: 'Finish Profile', route: '/update-profile?guided=profile' },
         secondaryAction,
         teachingPoints: [
-          `TODD is still missing: ${facts.profileReadiness.missingSections.join( ', ' ) || 'business context'}.`,
+          `16Ahead is still missing: ${facts.profileReadiness.missingSections.join( ', ' ) || 'business context'}.`,
           facts.profileReadiness.toddView,
           facts.profileReadiness.mayaView
         ],
@@ -159,15 +159,15 @@ export class ToddCounselingContractService {
         section: 'About Company',
         label: 'Complete About Company',
         fragment: 'org-card',
-        message: 'Personal Information is complete. Next, tell TODD what your company does, who it serves, and why it matters so Maya can make the rest of the guidance specific.'
+        message: 'Personal Information is complete. Next, tell 16Ahead what your company does, who it serves, and why it matters so the Marketing Assistant can make the rest of the guidance specific.'
       };
     }
     if ( !status['howToddHelps'] ) {
       return {
-        section: 'How TODD Helps You',
+        section: 'How 16Ahead Helps You',
         label: 'Describe the Work',
         fragment: 'helps-card',
-        message: 'Your company context is in place. Next, describe the work you want TODD and Maya to move forward so the system can prioritize the right outcomes.'
+        message: 'Your company context is in place. Next, describe the work you want 16Ahead and the Marketing Assistant to move forward so the system can prioritize the right outcomes.'
       };
     }
     if ( !status['communication'] ) {
@@ -175,14 +175,14 @@ export class ToddCounselingContractService {
         section: 'Communication',
         label: 'Set Up Communication',
         fragment: 'communication-card',
-        message: 'Your operating context is nearly ready. Next, set up your communication details so TODD can help turn recommendations into consistent follow-up.'
+        message: 'Your operating context is nearly ready. Next, set up your communication details so 16Ahead can help turn recommendations into consistent follow-up.'
       };
     }
     return {
       section: 'Profile review',
       label: 'Review Profile',
       fragment: 'personal-card',
-      message: 'Your profile is nearly ready. Review the remaining setup details, then TODD can move you into contacts and the next live workflow.'
+      message: 'Your profile is nearly ready. Review the remaining setup details, then 16Ahead can move you into contacts and the next live workflow.'
     };
   }
 
@@ -217,11 +217,11 @@ export class ToddCounselingContractService {
     return {
       audience,
       title: `Your plan is focused on ${label}.`,
-      message: `TODD is keeping the advice specific to ${label}, because that is where your current access and next result live. The other applications are available when you are ready to expand the operating system.`,
-      whyItMatters: 'Focused guidance reduces noise. TODD should help you get a result from the product you chose before asking you to learn another workflow.',
+      message: `16Ahead is keeping the advice specific to ${label}, because that is where your current access and next result live. The other applications are available when you are ready to expand the operating system.`,
+      whyItMatters: 'Focused guidance reduces noise. 16Ahead should help you get a result from the product you chose before asking you to learn another workflow.',
       primaryAction: { label: `Open ${label}`, route: routes[moduleKey] || '/daily-momentum' },
       teachingPoints: [
-        `TODD will coach the complete ${label} workflow, including its supporting tools and completion signals.`,
+        `16Ahead will coach the complete ${label} workflow, including its supporting tools and completion signals.`,
         'Daily Momentum may still summarize the next action, but it will not redirect you into an unlocked product workflow.',
         'The rest of the suite can be explored separately when expansion is the right business decision.'
       ],
@@ -237,7 +237,7 @@ export class ToddCounselingContractService {
         audience,
         title: 'Docs turns scattered knowledge into reusable proof.',
         message: page === 'document-editor'
-          ? 'You are shaping the proof layer now. Give the document a clear audience, claim, and next use so Maya can reuse it instead of making the same explanation from scratch.'
+          ? 'You are shaping the proof layer now. Give the document a clear audience, claim, and next use so the Marketing Assistant can reuse it instead of making the same explanation from scratch.'
           : 'Use Docs when a lesson, explanation, or proof should survive beyond one conversation and become available to the rest of the operating system.',
         whyItMatters: 'Reusable proof shortens the distance between knowing something and using it in outreach, sales, onboarding, or the next decision.',
         primaryAction: { label: page === 'document-editor' ? 'Keep Editing' : 'Open Documents', route: '/document' },
@@ -257,13 +257,13 @@ export class ToddCounselingContractService {
       return {
         audience,
         title: 'Knowledge is useful when it changes the next decision.',
-        message: 'TODD is helping you build a searchable business memory. Capture the answer, source, or operating rule once, then let Maya and Daily Momentum use it when the work calls for it.',
+        message: '16Ahead is helping you build a searchable business memory. Capture the answer, source, or operating rule once, then let the Marketing Assistant and Daily Momentum use it when the work calls for it.',
         whyItMatters: 'A knowledge base should reduce repeated explanation and make good judgment available at the moment a decision needs it.',
         primaryAction: { label: 'Review Knowledge', route: '/knowledge-base' },
         secondaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
         teachingPoints: [
           'Save durable answers, sources, and rules—not temporary notes that will be obsolete tomorrow.',
-          'Use categories and citations so Maya can distinguish memory from speculation.',
+          'Use categories and citations so the Marketing Assistant can distinguish memory from speculation.',
           'Docs stores reusable proof; Knowledge gives the system the context to apply it correctly.'
         ],
         currentStage: 'Business memory',
@@ -280,7 +280,7 @@ export class ToddCounselingContractService {
         title: dueToday > 0 ? 'Moves is showing where execution needs attention today.' : 'Moves turns intention into accountable execution.',
         message: dueToday > 0
           ? `${dueToday.toLocaleString( 'en-US' )} Move${dueToday === 1 ? '' : 's'} need attention today. Use the cockpit to choose the highest-leverage commitment, then let Daily Momentum keep it visible.`
-          : `TODD sees ${activeMoves.toLocaleString( 'en-US' )} active Move${activeMoves === 1 ? '' : 's'}. Keep each Move attached to an owner, a due date, and the smallest next action that proves progress.`,
+          : `16Ahead sees ${activeMoves.toLocaleString( 'en-US' )} active Move${activeMoves === 1 ? '' : 's'}. Keep each Move attached to an owner, a due date, and the smallest next action that proves progress.`,
         whyItMatters: 'A plan creates possibility; a Move creates ownership, timing, and evidence that something actually changed.',
         primaryAction: { label: 'Open Moves Cockpit', route: '/moves-view' },
         secondaryAction: { label: 'Open Daily Momentum', route: '/daily-momentum' },
@@ -302,7 +302,7 @@ export class ToddCounselingContractService {
         audience,
         title: responses > 0 ? 'Pulse has signal. Now decide what it changes.' : 'Pulse turns customer opinion into usable signal.',
         message: responses > 0
-          ? `TODD sees ${responses.toLocaleString( 'en-US' )} response${responses === 1 ? '' : 's'}. Review the pattern, decide what deserves a response, and send the resulting decision into Daily Momentum.`
+          ? `16Ahead sees ${responses.toLocaleString( 'en-US' )} response${responses === 1 ? '' : 's'}. Review the pattern, decide what deserves a response, and send the resulting decision into Daily Momentum.`
           : `Pulse currently has ${published.toLocaleString( 'en-US' )} published instrument${published === 1 ? '' : 's'} and is waiting for customer signal. Keep the question focused, distribute it, and use the responses as evidence—not applause.`,
         whyItMatters: 'Customer signal matters when it changes what you build, say, prioritize, or stop doing.',
         primaryAction: { label: page === 'survey-add' ? 'Finish Pulse Setup' : 'Review Pulse Signal', route: '/pulse/app' },
@@ -356,13 +356,13 @@ export class ToddCounselingContractService {
     if ( completed ) {
       return {
         audience,
-        title: 'The import landed. Now let TODD work the network.',
+        title: 'The import landed. Now let 16Ahead work the network.',
         message: `Your import is complete and Network now has ${Number( contactCount || summary['contactCount'] || 0 ).toLocaleString( 'en-US' )} contact${Number( contactCount || summary['contactCount'] || 0 ) === 1 ? '' : 's'}. Validation and enrichment will continue automatically in the backend; review the list when convenient, then activate Pipeline.`,
         whyItMatters: 'Import is only the handoff. The value appears when records become reachable, prioritized, and connected to a next move.',
         primaryAction: { label: 'Review Network', route: '/contact-list' },
         secondaryAction: { label: 'Open Pipeline', route: '/contact-deal-flow' },
         teachingPoints: [
-          'TODD validates email addresses and enriches available records automatically in the backend; Network does not need to stay open.',
+          '16Ahead validates email addresses and enriches available records automatically in the backend; Network does not need to stay open.',
           'Review the list when you want to see the latest processing results.',
           'After review, activate Pipeline so the most important relationships have somewhere to move.'
         ],
@@ -376,10 +376,10 @@ export class ToddCounselingContractService {
       return {
         audience,
         title: 'The network is being written now.',
-        message: 'TODD is processing the import. Keep this workflow open until it finishes, then review the records in Network before deciding what deserves a pipeline stage.',
+        message: '16Ahead is processing the import. Keep this workflow open until it finishes, then review the records in Network before deciding what deserves a pipeline stage.',
         whyItMatters: 'A clean handoff prevents partial imports from becoming bad guidance later.',
         primaryAction: { label: 'Stay With Import', route: '/contact-import' },
-        teachingPoints: [ 'Wait for the completion confirmation before starting another import.', 'After completion, Network is the next screen—not Pipeline yet.', 'TODD will remember that the import finished.' ],
+        teachingPoints: [ 'Wait for the completion confirmation before starting another import.', 'After completion, Network is the next screen—not Pipeline yet.', '16Ahead will remember that the import finished.' ],
         currentStage: 'Import in progress',
         nextStage: 'Import complete',
         crossSellAllowed: false
@@ -390,7 +390,7 @@ export class ToddCounselingContractService {
       audience,
       title: previewCount > 0 ? 'Your list is mapped. One careful review comes next.' : 'Bring the relationship layer into view.',
       message: previewCount > 0
-        ? `TODD sees ${previewCount.toLocaleString( 'en-US' )} records ready for preview. Spot-check the mapping, confirm the import, and then Network can begin the real work.`
+        ? `16Ahead sees ${previewCount.toLocaleString( 'en-US' )} records ready for preview. Spot-check the mapping, confirm the import, and then Network can begin the real work.`
         : 'Upload a CSV, map the fields, and preview the records before writing them into Network.',
       whyItMatters: 'The preview is where small field mistakes are caught before they multiply across the relationship graph.',
       primaryAction: { label: previewCount > 0 ? 'Review Import' : 'Choose a CSV', route: '/contact-import' },
@@ -439,17 +439,17 @@ export class ToddCounselingContractService {
   }
 
   private whyItMatters ( stage: string ): string {
-    if ( stage === 'contacts_missing' ) return 'Without relationship inventory, TODD has no real signal to prioritize.';
-    if ( stage === 'activation_goal_pending' ) return 'A first outcome gives TODD a standard for deciding what “next” means.';
+    if ( stage === 'contacts_missing' ) return 'Without relationship inventory, 16Ahead has no real signal to prioritize.';
+    if ( stage === 'activation_goal_pending' ) return 'A first outcome gives 16Ahead a standard for deciding what “next” means.';
     if ( stage.includes( 'sender' ) ) return 'Outreach cannot create momentum until sending is safe, connected, and approved.';
-    return 'TODD is most useful when every page ends with a clear next action and a reason it matters.';
+    return '16Ahead is most useful when every page ends with a clear next action and a reason it matters.';
   }
 
   private teachingPoints ( stage: string ): string[] {
     if ( stage === 'contacts_missing' ) return [ 'Import a list or add one contact manually.', 'Lead Vault is the optional path for finding additional relationships.', 'After contacts arrive, validation and enrichment continue automatically in the backend.' ];
-    if ( stage === 'activation_goal_pending' ) return [ 'Choose the outcome you want first.', 'TODD will use that outcome to rank the rest of the suite.', 'You can change the goal later as the work becomes clearer.' ];
-    if ( stage === 'contacts_ready' ) return [ 'TODD validates and enriches available records automatically in the backend.', 'Review Network when you want to see the latest relationship health signals.', 'Activate Pipeline when you are ready to decide which relationships deserve attention.' ];
-    return [ 'TODD keeps the current blocker visible.', 'Maya prepares the work that follows the blocker.', 'Daily Momentum turns completed setup into a daily operating rhythm.' ];
+    if ( stage === 'activation_goal_pending' ) return [ 'Choose the outcome you want first.', '16Ahead will use that outcome to rank the rest of the suite.', 'You can change the goal later as the work becomes clearer.' ];
+    if ( stage === 'contacts_ready' ) return [ '16Ahead validates and enriches available records automatically in the backend.', 'Review Network when you want to see the latest relationship health signals.', 'Activate Pipeline when you are ready to decide which relationships deserve attention.' ];
+    return [ '16Ahead keeps the current blocker visible.', 'The Marketing Assistant prepares the work that follows the blocker.', 'Daily Momentum turns completed setup into a daily operating rhythm.' ];
   }
 
   private toRoute ( path: string | undefined, queryParams?: Record<string, string> ): string {

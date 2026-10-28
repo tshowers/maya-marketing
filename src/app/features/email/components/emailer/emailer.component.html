@@ -43,7 +43,7 @@
     <div class="emailer-signal-note mt-3">
       <div class="emailer-signal-note__eyebrow">Signal Engine</div>
       <div class="emailer-signal-note__copy">
-        Catalyst sends the first custom email. After that, TODD owns the thread and adapts the follow-up from opens, clicks, and silence.
+        Catalyst sends the first custom email. After that, 16Ahead owns the thread and adapts the follow-up from opens, clicks, and silence.
       </div>
     </div>
   </div>
@@ -76,12 +76,12 @@
             <input class="form-check-input" type="checkbox" [(ngModel)]="useTemplate">
             <span class="form-check-label">Use pasted HTML template</span>
           </label>
-          <span class="text-muted small" *ngIf="useTemplate">Paste HTML below. TODD will fill Note: tokens may include hyphens like <code>{{'{{...}}'}}</code>. tokens.</span>
+          <span class="text-muted small" *ngIf="useTemplate">Paste HTML below. 16Ahead will fill Note: tokens may include hyphens like <code>{{'{{...}}'}}</code>. tokens.</span>
         </div>
         <div *ngIf="useTemplate" class="mt-2">
           <div class="mb-2">
             <label class="form-label small mb-1"><b>Template subject</b></label>
-            <input class="form-control" type="text" [(ngModel)]="templateSubject" (ngModelChange)="onTemplateSubjectChanged()" placeholder="Enter subject or leave blank to let TODD choose it">
+            <input class="form-control" type="text" [(ngModel)]="templateSubject" (ngModelChange)="onTemplateSubjectChanged()" placeholder="Enter subject or leave blank to let 16Ahead choose it">
             <div class="text-muted small mt-1">You can use tokens here too, like <code>{{'{{companyName}}'}}</code>.</div>
           </div>
           <textarea class="form-control" [(ngModel)]="templateHtml" (input)="templateTokensDetected = extractTemplateTokens(templateHtml); emitAssistantContext()" rows="10" placeholder="Paste email HTML here..."></textarea>

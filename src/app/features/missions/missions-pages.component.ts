@@ -38,7 +38,7 @@ const STYLES = `
   @media (max-width: 640px) { .page { padding: 20px 16px 48px; } }
 `;
 
-const SIGN_IN = `<div class="signin" data-cy="missions-signin"><b>Sign in to work with Maya.</b><a class="btn" routerLink="/login">Sign in</a></div>`;
+const SIGN_IN = `<div class="signin" data-cy="missions-signin"><b>Sign in to work with the Marketing Assistant.</b><a class="btn" routerLink="/login">Sign in</a></div>`;
 
 @Component( {
   selector: 'app-maya-missions-page',
@@ -46,11 +46,11 @@ const SIGN_IN = `<div class="signin" data-cy="missions-signin"><b>Sign in to wor
   imports: [PlanReplyComponent, RouterLink],
   template: `
     <div class="page">
-      <nav class="top"><a routerLink="/work">Maya’s work</a><span class="spacer"></span><a href="https://ask.taliferro.tech/playbooks" data-cy="to-playbooks">Playbooks</a></nav>
-      <h1>Plan it with Maya</h1>
+      <nav class="top"><a routerLink="/work">The Marketing Assistant’s work</a><span class="spacer"></span><a href="https://assistant.16ahead.com/playbooks" data-cy="to-playbooks">Playbooks</a></nav>
+      <h1>Plan it with the Marketing Assistant</h1>
       @if (signedIn() === false) { ${SIGN_IN} }
       @if (signedIn()) {
-        <tm-plan-reply [request]="q()" origin="maya" agent="maya" [viewerId]="viewerId()" detailBase="https://moves.taliferro.tech/missions/" />
+        <tm-plan-reply [request]="q()" origin="maya" agent="maya" [viewerId]="viewerId()" detailBase="https://moves.16ahead.com/missions/" />
       }
     </div>
   `,

@@ -26,7 +26,7 @@ export class NotFoundComponent implements OnInit, OnDestroy {
     this.previousRobots = this.meta.getTag( 'name="robots"' )?.content ?? null;
     this.previousTitle = this.title.getTitle();
     this.meta.updateTag( { name: 'robots', content: 'noindex' } );
-    this.title.setTitle( 'Page not found | Maya' );
+    this.title.setTitle( 'Page not found | Marketing Assistant' );
   }
 
   ngOnDestroy (): void {

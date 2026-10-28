@@ -29,12 +29,12 @@
   </div>
 
   <section *ngIf="!loading && !isLoggedIn" class="ms-body">
-    <h1 class="ms-h1">Sign in to see Maya’s status</h1>
-    <p class="ms-maya">What Maya has done today, what she’s doing, and what she needs from you.</p>
+    <h1 class="ms-h1">Sign in to see the Marketing Assistant’s status</h1>
+    <p class="ms-maya">What the Marketing Assistant has done today, what it’s doing, and what it needs from you.</p>
     <a class="ms-btn" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee' }">Sign in</a>
   </section>
 
-  <p *ngIf="loading" class="ms-body ms-muted">Checking on Maya…</p>
+  <p *ngIf="loading" class="ms-body ms-muted">Checking on the Marketing Assistant…</p>
   <p *ngIf="errorMessage" class="ms-body ms-error" role="alert">{{ errorMessage }}</p>
 
   <!-- Done, doing, next -->
@@ -64,7 +64,7 @@
       <section>
         <h2 class="ms-colhead"><i class="ms-led" data-tone="doing"></i>Doing now <span>{{ doingSteps.length }}</span></h2>
         <ng-container *ngFor="let step of doingSteps; trackBy: trackById"><ng-container *ngTemplateOutlet="card; context: { $implicit: step }"></ng-container></ng-container>
-        <p *ngIf="!doingSteps.length" class="ms-empty">Maya isn’t working on anything this minute.</p>
+        <p *ngIf="!doingSteps.length" class="ms-empty">The Marketing Assistant isn’t working on anything this minute.</p>
       </section>
       <section>
         <h2 class="ms-colhead"><i class="ms-led" data-tone="next"></i>Up next <span>{{ nextSteps.length + moreNextCount }}</span></h2>
@@ -143,8 +143,8 @@
       </section>
       <section *ngIf="!currentPlanStep && !plan" class="ms-panel">
         <p class="ms-kicker">Where today sits in the plan</p>
-        <p>Maya needs a plan to work from.</p>
-        <a class="ms-arrow-link" routerLink="/">Create a plan with Maya <ng-container *ngTemplateOutlet="icon; context: { $implicit: 'arrow' }"></ng-container></a>
+        <p>The Marketing Assistant needs a plan to work from.</p>
+        <a class="ms-arrow-link" routerLink="/">Create a plan with the Marketing Assistant <ng-container *ngTemplateOutlet="icon; context: { $implicit: 'arrow' }"></ng-container></a>
       </section>
       <section *ngIf="tomorrow" class="ms-panel">
         <p class="ms-kicker">Tomorrow</p>

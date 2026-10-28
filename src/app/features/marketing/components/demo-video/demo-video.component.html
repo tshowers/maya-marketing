@@ -1,0 +1,10 @@
+<button type="button" class="demo-trigger" (click)="open()" data-cy="demo-video-open">
+  <span class="demo-trigger__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+  Watch the demo <span class="demo-trigger__length">1:22</span>
+</button>
+
+<dialog #dialog class="demo-dialog" aria-label="Marketing Assistant demo video" (close)="handleClosed()" (click)="handleDialogClick($event)">
+  <button type="button" class="demo-close" (click)="close()" aria-label="Close demo video">×</button>
+  <video #video [src]="src" [poster]="poster" controls playsinline muted preload="none"
+         aria-label="One request, three apps: the Marketing Assistant uses Image Creator and Email Creator, then you send with Outreach. 82 seconds, captions on screen, no sound."></video>
+</dialog>

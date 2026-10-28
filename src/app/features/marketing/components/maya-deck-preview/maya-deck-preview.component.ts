@@ -92,7 +92,7 @@ export class MayaDeckPreviewComponent implements OnChanges, AfterViewInit, OnDes
       });
     } catch (error) {
       console.error('[Maya Deck] PDF export failed', error);
-      this.error = 'Maya could not export this deck. Please try again.';
+      this.error = 'The Marketing Assistant could not export this deck. Please try again.';
     } finally {
       this.exporting = false;
       this.progress = '';

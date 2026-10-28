@@ -98,7 +98,7 @@ export class NavConfigService {
       icon: 'tabler:shield-cog',
       route: '/admin',
       feature: 'admin',
-      description: 'TODD Administration'
+      description: '16Ahead Administration'
     },
     {
       label: 'Settings',
@@ -209,7 +209,7 @@ export class NavConfigService {
     return [
       {
         id: 'global-ask-todd',
-        label: 'Ask TODD',
+        label: 'General Assistant',
         image: '/assets/TODD-icon.png',
         kind: 'route',
         context: 'todd',
@@ -221,7 +221,7 @@ export class NavConfigService {
       },
       {
         id: 'global-talk-to-maya',
-        label: 'Maya',
+        label: 'Marketing Assistant',
         image: '/assets/marketing/marketing-director-avatar.png',
         kind: 'route',
         context: 'todd',

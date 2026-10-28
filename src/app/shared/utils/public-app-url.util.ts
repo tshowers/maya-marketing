@@ -21,12 +21,14 @@ function getOrigin (): string {
 function isStagingHost (): boolean {
   const hostname = getHostname();
   return hostname === 'staging.taliferro.tech'
+    || hostname === 'staging.16ahead.com'
     || hostname === 'todd-staging.web.app';
 }
 
 function isSayitHost (): boolean {
   const hostname = getHostname();
   return hostname === 'sayit.taliferro.tech'
+    || hostname === 'sayit.16ahead.com'
     || hostname === 'todd-sayit.web.app';
 }
 
@@ -35,17 +37,17 @@ export function getToddHomeUrl (): string {
     return getOrigin();
   }
 
-  return String( environment.PLATFORM_URL || 'https://todd.taliferro.tech' )
+  return String( environment.PLATFORM_URL || 'https://app.16ahead.com' )
     .trim()
     .replace( /\/$/, '' );
 }
 
 export function getFindHomeUrl (): string {
-  return 'https://find.taliferro.tech';
+  return 'https://find.16ahead.com';
 }
 
 export function getSignatureBuilderUrl (): string {
-  return 'https://signature.taliferro.tech';
+  return 'https://signature.16ahead.com';
 }
 
 export function getSayitHomeUrl (): string {
@@ -57,7 +59,7 @@ export function getSayitHomeUrl (): string {
     return `${getOrigin()}/say-it/app`;
   }
 
-  return 'https://sayit.taliferro.tech';
+  return 'https://sayit.16ahead.com';
 }
 
 export function buildSayitShareUrl (

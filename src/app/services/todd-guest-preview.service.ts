@@ -38,21 +38,21 @@ export class ToddGuestPreviewService {
   // one render (image/title/message are resolved independently) stay coherent and don't flicker.
   private readonly resolvedAdCache = new Map<string, { adImageUrl?: string; adTitle: string; adMessage: string; }>();
   private readonly guestAdCopy: Array<{ title: string; message: string; }> = [
-    { title: 'Your business already knows more than you think.', message: 'TODD turns scattered signals into forward motion.' },
-    { title: 'Momentum doesn’t happen by accident.', message: 'TODD helps your people, priorities, and decisions move together.' },
-    { title: 'The next move is already in the room.', message: 'TODD helps you find it.' },
-    { title: 'Your business is talking.', message: 'TODD helps you hear what matters.' },
-    { title: 'Busy is not the same as moving forward.', message: 'TODD helps turn effort into momentum.' },
-    { title: 'Most businesses don’t need more noise.', message: 'They need a clearer signal. TODD helps uncover it.' },
-    { title: 'The work is happening. Is it adding up?', message: 'TODD helps connect daily effort to meaningful progress.' },
+    { title: 'Your business already knows more than you think.', message: '16Ahead turns scattered signals into forward motion.' },
+    { title: 'Momentum doesn’t happen by accident.', message: '16Ahead helps your people, priorities, and decisions move together.' },
+    { title: 'The next move is already in the room.', message: '16Ahead helps you find it.' },
+    { title: 'Your business is talking.', message: '16Ahead helps you hear what matters.' },
+    { title: 'Busy is not the same as moving forward.', message: '16Ahead helps turn effort into momentum.' },
+    { title: 'Most businesses don’t need more noise.', message: 'They need a clearer signal. 16Ahead helps uncover it.' },
+    { title: 'The work is happening. Is it adding up?', message: '16Ahead helps connect daily effort to meaningful progress.' },
     { title: 'You don’t need another dashboard.', message: 'You need to know what deserves attention next.' },
-    { title: 'Every decision creates momentum—or friction.', message: 'TODD helps your business choose momentum.' },
-    { title: 'Your blind spots are expensive.', message: 'TODD helps you see what your business is missing.' },
-    { title: 'Growth gets easier when the business moves as one.', message: 'TODD helps make that possible.' },
-    { title: 'The gap between knowing and doing is where momentum disappears.', message: 'TODD helps close the gap.' },
-    { title: 'A business can be full of activity and short on progress.', message: 'TODD helps you see the difference.' },
-    { title: 'What if your business could tell you what to do next?', message: 'TODD brings the signal into focus.' },
-    { title: 'Momentum is not a feeling. It’s a system.', message: 'TODD helps build the system behind progress.' }
+    { title: 'Every decision creates momentum—or friction.', message: '16Ahead helps your business choose momentum.' },
+    { title: 'Your blind spots are expensive.', message: '16Ahead helps you see what your business is missing.' },
+    { title: 'Growth gets easier when the business moves as one.', message: '16Ahead helps make that possible.' },
+    { title: 'The gap between knowing and doing is where momentum disappears.', message: '16Ahead helps close the gap.' },
+    { title: 'A business can be full of activity and short on progress.', message: '16Ahead helps you see the difference.' },
+    { title: 'What if your business could tell you what to do next?', message: '16Ahead brings the signal into focus.' },
+    { title: 'Momentum is not a feeling. It’s a system.', message: '16Ahead helps build the system behind progress.' }
   ];
 
   isGuestPreviewContext ( context: ToddGuestPreviewContext ): boolean {
@@ -74,64 +74,64 @@ export class ToddGuestPreviewService {
 
     const copyMap: Record<string, { title: string; message: string; }> = {
       'contact-home': {
-        title: 'Network shows how TODD manages relationship momentum',
-        message: 'TODD uses this page to diagnose relationship health, surface follow-up pressure, and prove where relief is showing up. In preview mode you can see the structure; after sign-in, the same page works against your real contacts and companies.'
+        title: 'Network shows how 16Ahead manages relationship momentum',
+        message: '16Ahead uses this page to diagnose relationship health, surface follow-up pressure, and prove where relief is showing up. In preview mode you can see the structure; after sign-in, the same page works against your real contacts and companies.'
       },
       'contact-list': {
-        title: 'Relationships helps TODD rank who matters most',
-        message: 'This page matters because TODD turns a contact list into a relationship cockpit. It helps you see who is reachable, who needs attention, and where momentum can build once your real network is connected.'
+        title: 'Relationships helps 16Ahead rank who matters most',
+        message: 'This page matters because 16Ahead turns a contact list into a relationship cockpit. It helps you see who is reachable, who needs attention, and where momentum can build once your real network is connected.'
       },
       'contact-deal-flow': {
-        title: 'Pipeline shows how TODD reads relationship movement',
-        message: 'TODD uses this page to separate progressing relationships from stalled ones so follow-up does not depend on memory alone. In preview mode you can see the structure; after sign-in, the same board works against your live pipeline.'
+        title: 'Pipeline shows how 16Ahead reads relationship movement',
+        message: '16Ahead uses this page to separate progressing relationships from stalled ones so follow-up does not depend on memory alone. In preview mode you can see the structure; after sign-in, the same board works against your live pipeline.'
       },
       'contact-import': {
-        title: 'Import is where TODD turns contact files into usable momentum',
-        message: 'This page exists to convert a spreadsheet into a relationship graph TODD can actually work with. In preview mode you can see the workflow; after sign-in, this is where raw contact data becomes live operating data.'
+        title: 'Import is where 16Ahead turns contact files into usable momentum',
+        message: 'This page exists to convert a spreadsheet into a relationship graph 16Ahead can actually work with. In preview mode you can see the workflow; after sign-in, this is where raw contact data becomes live operating data.'
       },
       'outreach-home': {
-        title: 'Outreach shows how TODD turns context into live follow-up',
-        message: 'TODD uses this page to turn relationship context into drafts, campaigns, and follow-up pressure. In preview mode you can explore the workflow; after sign-in, it runs against your actual outreach activity.'
+        title: 'Outreach shows how 16Ahead turns context into live follow-up',
+        message: '16Ahead uses this page to turn relationship context into drafts, campaigns, and follow-up pressure. In preview mode you can explore the workflow; after sign-in, it runs against your actual outreach activity.'
       },
       'outbox-cockpit': {
-        title: 'Signals shows how TODD catches momentum before it goes cold',
-        message: 'TODD uses this page to watch reply pressure, stalled outreach, and handoff risk so follow-up does not depend on memory alone. In preview mode you can see the signal workflow; after sign-in, it works against your live conversations.'
+        title: 'Signals shows how 16Ahead catches momentum before it goes cold',
+        message: '16Ahead uses this page to watch reply pressure, stalled outreach, and handoff risk so follow-up does not depend on memory alone. In preview mode you can see the signal workflow; after sign-in, it works against your live conversations.'
       },
       'daily-momentum': {
-        title: 'Daily Momentum is where TODD scores the day',
-        message: 'TODD uses this page to compare goals, blockers, and the strongest next move available across the business. In preview mode you can see the operating-system layout; after sign-in, it reflects your real workday.'
+        title: 'Daily Momentum is where 16Ahead scores the day',
+        message: '16Ahead uses this page to compare goals, blockers, and the strongest next move available across the business. In preview mode you can see the operating-system layout; after sign-in, it reflects your real workday.'
       },
       'task-home': {
-        title: 'Moves shows how TODD turns priority into execution',
-        message: 'TODD uses this page to spot blocked work, overdue work, and the fastest route to relief. In preview mode you see the execution framework; after sign-in, it works against your live tasks.'
+        title: 'Moves shows how 16Ahead turns priority into execution',
+        message: '16Ahead uses this page to spot blocked work, overdue work, and the fastest route to relief. In preview mode you see the execution framework; after sign-in, it works against your live tasks.'
       },
       'document-home': {
-        title: 'Knowledge shows how TODD turns files into reusable proof',
-        message: 'TODD uses this page to surface stale assets, missing proof, and reusable business memory. In preview mode you can see the structure; after sign-in, it connects to your real documents.'
+        title: 'Knowledge shows how 16Ahead turns files into reusable proof',
+        message: '16Ahead uses this page to surface stale assets, missing proof, and reusable business memory. In preview mode you can see the structure; after sign-in, it connects to your real documents.'
       },
       'knowledge-base': {
         title: 'Knowledge Base turns repeated answers into reusable business memory',
-        message: 'TODD uses this page to keep questions, sourced answers, recommendations, and resources together so the right context can be found again. In preview mode you can see the workflow; after sign-in, it connects to your private knowledge library.'
+        message: '16Ahead uses this page to keep questions, sourced answers, recommendations, and resources together so the right context can be found again. In preview mode you can see the workflow; after sign-in, it connects to your private knowledge library.'
       },
       'survey-home': {
-        title: 'Customer Health shows how TODD turns questions into signal',
-        message: 'TODD uses this page to diagnose customer pain, treatment, relief, and proof from live responses. In preview mode you can see the framework; after sign-in, it works against real feedback.'
+        title: 'Customer Health shows how 16Ahead turns questions into signal',
+        message: '16Ahead uses this page to diagnose customer pain, treatment, relief, and proof from live responses. In preview mode you can see the framework; after sign-in, it works against real feedback.'
       },
       'social-outreach': {
-        title: 'Visibility shows how TODD turns content into follow-up signal',
-        message: 'TODD uses this page to create social drafts, capture engagement, and identify which responses deserve real follow-up. In preview mode you can see the workflow; after sign-in, it works against your connected social accounts and live audience signals.'
+        title: 'Visibility shows how 16Ahead turns content into follow-up signal',
+        message: '16Ahead uses this page to create social drafts, capture engagement, and identify which responses deserve real follow-up. In preview mode you can see the workflow; after sign-in, it works against your connected social accounts and live audience signals.'
       },
       'network-landing': {
-        title: 'Network is the relationship layer behind the rest of TODD',
-        message: 'This page shows why relationships come first. Once the network is connected, TODD can diagnose where trust is strong, where follow-up is weak, and where momentum should move next.'
+        title: 'Network is the relationship layer behind the rest of 16Ahead',
+        message: 'This page shows why relationships come first. Once the network is connected, 16Ahead can diagnose where trust is strong, where follow-up is weak, and where momentum should move next.'
       },
       'moves-landing': {
-        title: 'Moves is where TODD turns intention into completion',
-        message: 'This page shows how TODD tracks blocked work, overdue work, and the fastest path to relief. After sign-in, that same execution model works against your actual workload.'
+        title: 'Moves is where 16Ahead turns intention into completion',
+        message: 'This page shows how 16Ahead tracks blocked work, overdue work, and the fastest path to relief. After sign-in, that same execution model works against your actual workload.'
       },
       'pulse-landing': {
-        title: 'Pulse is how TODD turns feedback into business signal',
-        message: 'This page shows how TODD turns questions, responses, and patterns into usable customer signal. After sign-in, the same workflow interprets your real feedback instead of a product preview.'
+        title: 'Pulse is how 16Ahead turns feedback into business signal',
+        message: 'This page shows how 16Ahead turns questions, responses, and patterns into usable customer signal. After sign-in, the same workflow interprets your real feedback instead of a product preview.'
       }
     };
 
@@ -148,7 +148,7 @@ export class ToddGuestPreviewService {
       return this.decorateGuestPreviewCopy( {
         mode: 'guest_preview',
         title: `${title} is being shown in preview mode`,
-        message: `${description} TODD is focused on explaining the value of this page until the workspace is signed in and connected to real data.`
+        message: `${description} 16Ahead is focused on explaining the value of this page until the workspace is signed in and connected to real data.`
       }, page, normalizedRoute );
     }
 
@@ -156,14 +156,14 @@ export class ToddGuestPreviewService {
       return this.decorateGuestPreviewCopy( {
         mode: 'guest_preview',
         title: `${title} is being shown in preview mode`,
-        message: 'TODD is focused on explaining the value of this page first. After sign-in, the same page works against your real business data instead of a product preview.'
+        message: '16Ahead is focused on explaining the value of this page first. After sign-in, the same page works against your real business data instead of a product preview.'
       }, page, normalizedRoute );
     }
 
     return this.decorateGuestPreviewCopy( {
       mode: 'guest_preview',
-      title: 'TODD is showing the value of this page in preview mode',
-      message: 'Guests see the workflow and value story first. After sign-in, TODD uses the same page to work against real business data instead of a product preview.'
+      title: '16Ahead is showing the value of this page in preview mode',
+      message: 'Guests see the workflow and value story first. After sign-in, 16Ahead uses the same page to work against real business data instead of a product preview.'
     }, page, normalizedRoute );
   }
 
@@ -173,7 +173,7 @@ export class ToddGuestPreviewService {
 
   getAssistantPlaceholder ( context: ToddGuestPreviewContext ): string {
     if ( !this.isGuestPreviewContext( context ) ) {
-      return 'What do you want TODD to do next?';
+      return 'What do you want 16Ahead to do next?';
     }
 
     const title = String( ( context as any )?.title || '' ).trim();
@@ -363,9 +363,9 @@ export class ToddGuestPreviewService {
       home: 'Home',
       products: 'Products',
       help: 'Help',
-      todd: 'TODD'
+      todd: '16Ahead'
     };
-    return familyLabels[family] || 'TODD';
+    return familyLabels[family] || '16Ahead';
   }
 
   private getNormalizedPage ( context: ToddGuestPreviewContext ): string {

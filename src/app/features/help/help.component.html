@@ -1,18 +1,18 @@
 <!-- The shared Help template (taliferro-ui); Maya's own guide follows it. -->
 <app-product-pages page="help">
   <section class="pp-section" aria-labelledby="maya-does-title">
-    <p class="pp-kicker">What Maya does</p>
+    <p class="pp-kicker">What the Marketing Assistant does</p>
     <h2 id="maya-does-title">Advice, presentations, reports, and real work</h2>
-    <p>Maya is TODD’s marketing advisor. She reads your profile and your marketing plan before she answers, so her advice is about your business, not marketing in general.</p>
+    <p>The Marketing Assistant is 16Ahead’s marketing advisor. It reads your profile and your marketing plan before it answers, so its advice is about your business, not marketing in general.</p>
     <div class="pp-cards">
       <article *ngFor="let item of abilities"><h3>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
     </div>
   </section>
 
   <section class="pp-section" aria-labelledby="maya-work-title">
-    <p class="pp-kicker">Maya’s work page</p>
+    <p class="pp-kicker">The Marketing Assistant’s work page</p>
     <h2 id="maya-work-title">Approvals, questions, and jobs</h2>
-    <p>When you give Maya a job, everything she needs from you shows up on her <a routerLink="/work">work page</a>.</p>
+    <p>When you give the Marketing Assistant a job, everything it needs from you shows up on its <a routerLink="/work">work page</a>.</p>
     <dl class="pp-rows">
       <div *ngFor="let row of workPage"><dt>{{ row.term }}</dt><dd>{{ row.detail }}</dd></div>
     </dl>
@@ -28,7 +28,7 @@
 
   <section class="pp-section" aria-labelledby="maya-faq-title">
     <p class="pp-kicker">More questions</p>
-    <h2 id="maya-faq-title">What people ask about Maya</h2>
+    <h2 id="maya-faq-title">What people ask about the Marketing Assistant</h2>
     <div class="pp-cards">
       <article *ngFor="let item of questions"><h3>{{ item.q }}</h3><p>{{ item.a }}</p></article>
     </div>

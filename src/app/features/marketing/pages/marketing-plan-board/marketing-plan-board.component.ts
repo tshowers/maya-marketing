@@ -237,7 +237,7 @@ export class MarketingPlanBoardComponent implements OnInit, OnDestroy {
       await this.mayaPlan.ensureSteps( planId );
     } catch ( error: any ) {
       if ( !this.plan?.steps?.length ) {
-        this.deriveError = error?.error?.message || 'Maya couldn’t read your plan’s steps. Please try again later.';
+        this.deriveError = error?.error?.message || 'The Marketing Assistant couldn’t read your plan’s steps. Please try again later.';
       }
     } finally {
       this.deriving = false;

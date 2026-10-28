@@ -232,7 +232,7 @@ function toMarketingAuthority (
       authority?.senderIdentityMode === 'maya_branded' ?
         'maya_branded' :
         'tenant_user',
-    brandedSenderName: authority?.brandedSenderName || 'Maya',
+    brandedSenderName: authority?.brandedSenderName || 'Marketing Assistant',
     brandedSenderEmail: authority?.brandedSenderEmail || null,
     brandedReplyToEmail: authority?.brandedReplyToEmail || null
   };

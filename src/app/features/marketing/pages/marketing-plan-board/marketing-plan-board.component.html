@@ -27,7 +27,7 @@
         <strong>{{ row.title }}</strong>
         <span *ngIf="row.detail">{{ row.detail }}</span>
       </div>
-      <a *ngIf="row.state === 'stuck' && row.href" class="mp-btn mp-btn--pink" [href]="row.href" target="_blank" rel="noopener">{{ row.needsContact ? 'Pick contact' : 'Answer Maya' }}</a>
+      <a *ngIf="row.state === 'stuck' && row.href" class="mp-btn mp-btn--pink" [href]="row.href" target="_blank" rel="noopener">{{ row.needsContact ? 'Pick contact' : 'Answer the Marketing Assistant' }}</a>
     </li>
   </ul>
 </ng-template>
@@ -39,23 +39,23 @@
   </div>
 
   <section *ngIf="!loading && !isLoggedIn" class="mp-empty">
-    <h1>Sign in to see Maya’s plan</h1>
-    <p>Your plan, where Maya is in it, and what she needs from you.</p>
+    <h1>Sign in to see the Marketing Assistant’s plan</h1>
+    <p>Your plan, where the Marketing Assistant is in it, and what it needs from you.</p>
     <a class="mp-btn" routerLink="/get-started" [queryParams]="{ returnUrl: '/marketing-employee/plan' }">Sign in</a>
   </section>
 
   <p *ngIf="loading" class="mp-muted mp-body">Loading your plan…</p>
 
   <section *ngIf="!loading && isLoggedIn && !plan" class="mp-empty">
-    <h1>Maya needs a plan</h1>
-    <p>Paste or write your marketing plan in the chat and Maya will turn it into steps she works through.</p>
-    <a class="mp-btn" routerLink="/">Create a plan with Maya</a>
+    <h1>The Marketing Assistant needs a plan</h1>
+    <p>Paste or write your marketing plan in the chat and the Marketing Assistant will turn it into steps it works through.</p>
+    <a class="mp-btn" routerLink="/">Create a plan with the Marketing Assistant</a>
   </section>
 
   <section *ngIf="plan && !steps.length" class="mp-empty">
     <p class="mp-kicker">Marketing plan</p>
     <h1>{{ plan.title || 'Marketing plan' }}</h1>
-    <p *ngIf="deriving">Maya is reading your plan and splitting it into steps…</p>
+    <p *ngIf="deriving">The Marketing Assistant is reading your plan and splitting it into steps…</p>
     <p *ngIf="deriveError" class="mp-error" role="alert">{{ deriveError }}</p>
   </section>
 
@@ -124,7 +124,7 @@
                 <div *ngIf="rows.length" class="mp-panel">
                   <ng-container *ngTemplateOutlet="actionRows; context: { $implicit: rows }"></ng-container>
                 </div>
-                <p *ngIf="!rows.length" class="mp-muted mp-small">Maya’s daily planner adds this step’s work at 6 AM.</p>
+                <p *ngIf="!rows.length" class="mp-muted mp-small">The Marketing Assistant’s daily planner adds this step’s work at 6 AM.</p>
                 <button type="button" class="mp-link" (click)="completeCurrentStep()" [disabled]="saving">This step is finished</button>
               </ng-container>
             </div>
@@ -143,8 +143,8 @@
       </section>
       <section *ngIf="plan.owners" class="mp-card">
         <p class="mp-kicker">Who does what</p>
-        <div class="mp-goal"><strong>Maya</strong><span>{{ plan.owners.maya }}</span></div>
-        <div class="mp-goal"><strong>TODD</strong><span>{{ plan.owners.todd }}</span></div>
+        <div class="mp-goal"><strong>Marketing Assistant</strong><span>{{ plan.owners.maya }}</span></div>
+        <div class="mp-goal"><strong>16Ahead</strong><span>{{ plan.owners.todd }}</span></div>
         <div class="mp-goal"><strong>You</strong><span>{{ plan.owners.you }}</span></div>
       </section>
       <button type="button" class="mp-read" (click)="showWrittenPlan = !showWrittenPlan" [attr.aria-expanded]="showWrittenPlan">
@@ -224,7 +224,7 @@
         <ng-container *ngIf="rows.length; else noRows">
           <ng-container *ngTemplateOutlet="actionRows; context: { $implicit: rows }"></ng-container>
         </ng-container>
-        <ng-template #noRows><p class="mp-muted">Maya’s daily planner adds this step’s work at 6 AM.</p></ng-template>
+        <ng-template #noRows><p class="mp-muted">The Marketing Assistant’s daily planner adds this step’s work at 6 AM.</p></ng-template>
       </section>
       <section *ngIf="otherNeeds.length">
         <h2 class="mp-h2">What I need from you <span class="mp-badge">{{ otherNeeds.length }}</span></h2>

@@ -238,7 +238,7 @@ export class PublicMarketingDirectorService {
       { message, history, requirements },
       { headers }
     ).toPromise();
-    if ( !response?.response?.message ) throw new Error( 'Maya did not return a presentation response.' );
+    if ( !response?.response?.message ) throw new Error( 'The Marketing Assistant did not return a presentation response.' );
     return response.response;
   }
 

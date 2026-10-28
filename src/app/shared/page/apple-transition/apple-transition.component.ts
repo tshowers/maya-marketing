@@ -156,7 +156,7 @@ export class AppleTransitionComponent implements AfterViewInit, OnChanges, OnDes
       type: 'text',
       eyebrow: 'Outreach',
       heading: 'Start conversations that move work forward.',
-      body: 'Maya drafts thoughtful, individual emails and follows up on your behalf. Watch engagement and see what is landing before the work stalls.',
+      body: 'The Marketing Assistant drafts thoughtful, individual emails and follows up on your behalf. Watch engagement and see what is landing before the work stalls.',
       actions: [
         { label: 'Compose Email', route: '/compose-email', variant: 'primary' },
         { label: 'Open Signal Engine', route: '/signal-engine', variant: 'secondary' }
@@ -168,11 +168,11 @@ export class AppleTransitionComponent implements AfterViewInit, OnChanges, OnDes
       type: 'cards',
       eyebrow: 'Setup',
       heading: 'Here’s how to set up Outreach.',
-      body: 'Start with identity, then let Maya start drafting personalized outreach to your contacts.',
+      body: 'Start with identity, then let the Marketing Assistant start drafting personalized outreach to your contacts.',
       cards: [
         { eyebrow: '01', heading: 'Complete your email signature', body: 'Set up sender identity so every email looks professional and trustworthy.' },
-        { eyebrow: '02', heading: 'Import your contacts', body: 'Give Maya an audience to draft thoughtful outreach for.' },
-        { eyebrow: '03', heading: 'Review Maya\'s drafts', body: 'Approve, edit, or reject what Maya prepares in Signal Engine.' },
+        { eyebrow: '02', heading: 'Import your contacts', body: 'Give the Marketing Assistant an audience to draft thoughtful outreach for.' },
+        { eyebrow: '03', heading: 'Review the Marketing Assistant\'s drafts', body: 'Approve, edit, or reject what the Marketing Assistant prepares in Signal Engine.' },
         { eyebrow: '04', heading: 'Wait for provisioning', body: 'Build drafts while your sending domain gets approved.' }
       ]
     },
@@ -185,15 +185,15 @@ export class AppleTransitionComponent implements AfterViewInit, OnChanges, OnDes
       cards: [
         { heading: 'Compose', body: 'Write a focused outreach email or follow-up.', route: '/compose-email' },
         { heading: 'Catalyst', body: 'Review signals and find the next useful outreach move.', route: '/email-processor' },
-        { heading: 'Signal Engine', body: 'See what Maya drafted, what is queued to send, and what already went out.', route: '/signal-engine' }
+        { heading: 'Signal Engine', body: 'See what the Marketing Assistant drafted, what is queued to send, and what already went out.', route: '/signal-engine' }
       ]
     },
     {
       id: 'first-win',
       type: 'cta',
       eyebrow: 'First win',
-      heading: 'Let Maya draft the first email.',
-      body: 'Import a few contacts and Maya starts drafting thoughtful, individual outreach automatically - no campaign to build first.',
+      heading: 'Let the Marketing Assistant draft the first email.',
+      body: 'Import a few contacts and the Marketing Assistant starts drafting thoughtful, individual outreach automatically - no campaign to build first.',
       actions: [
         { label: 'Import Contacts', route: '/contact-import', variant: 'primary' }
       ],
@@ -206,7 +206,7 @@ export class AppleTransitionComponent implements AfterViewInit, OnChanges, OnDes
       heading: 'What you can do.',
       cards: [
         { eyebrow: 'Write', heading: 'Compose quickly', body: 'Create emails fast so follow-up and proposal motion do not sit in your head.' },
-        { eyebrow: 'Draft', heading: 'Let Maya draft', body: 'Maya prepares individual, thoughtful outreach and follow-up automatically.' },
+        { eyebrow: 'Draft', heading: 'Let the Marketing Assistant draft', body: 'The Marketing Assistant prepares individual, thoughtful outreach and follow-up automatically.' },
         { eyebrow: 'Measure', heading: 'Read the signal', body: 'Use opens, clicks, and silence to decide what should happen next.' }
       ]
     },

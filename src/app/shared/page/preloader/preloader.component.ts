@@ -19,7 +19,7 @@ export class PreloaderComponent implements OnInit {
   @Input() inline = false;
 
   ngOnInit (): void {
-    this.brandName = this.brandName || 'Maya';
+    this.brandName = this.brandName || 'Marketing Assistant';
     this.brandSubtext = this.brandSubtext || 'Marketing Director';
 
     if ( this.autoHideAfterMs && this.autoHideAfterMs > 0 ) {

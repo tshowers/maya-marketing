@@ -1,21 +1,21 @@
 <main class="wk-shell" data-cy="work-shell">
   <div class="wk-inner">
     <header class="wk-header">
-      <h1>Maya’s work</h1>
-      <p>Tell Maya what you need. She plans it, does the work, and asks you before anything is posted.</p>
-      <p class="wk-note"><a routerLink="/missions" data-cy="work-to-missions">Needs more than marketing? Plan it as a Mission</a>: Maya, TODD and you each take the steps that are yours.</p>
+      <h1>The Marketing Assistant’s work</h1>
+      <p>Tell the Marketing Assistant what you need. It plans it, does the work, and asks you before anything is posted.</p>
+      <p class="wk-note"><a routerLink="/missions" data-cy="work-to-missions">Needs more than marketing? Plan it as a Mission</a>: Marketing Assistant, 16Ahead and you each take the steps that are yours.</p>
     </header>
 
     <section *ngIf="isSignedIn === false" class="wk-card" data-cy="work-signed-out">
-      <h2>Sign in to work with Maya</h2>
-      <p class="wk-note">Maya’s work is saved to your TODD workspace.</p>
+      <h2>Sign in to work with the Marketing Assistant</h2>
+      <p class="wk-note">The Marketing Assistant’s work is saved to your 16Ahead workspace.</p>
       <button type="button" class="wk-button" (click)="signIn()" data-cy="work-sign-in">Sign in</button>
     </section>
 
     <ng-container *ngIf="isSignedIn">
       <section class="wk-card wk-ask" data-cy="work-ask">
         <form (ngSubmit)="start()">
-          <label class="wk-ask__label" for="wk-request">What should Maya do?</label>
+          <label class="wk-ask__label" for="wk-request">What should the Marketing Assistant do?</label>
           <textarea #requestInput id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
                     placeholder="e.g. Build a LinkedIn calendar for the rest of October"
                     [(ngModel)]="request" data-cy="work-request"></textarea>
@@ -24,12 +24,12 @@
               <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="useIdea( idea, requestInput )" [disabled]="isStarting">{{ idea }}</button>
             </div>
             <button type="submit" class="wk-button" [disabled]="!request.trim() || isStarting" data-cy="work-start">
-              {{ isStarting ? 'Starting…' : 'Give it to Maya' }}</button>
+              {{ isStarting ? 'Starting…' : 'Give it to the Marketing Assistant' }}</button>
           </div>
         </form>
         <p *ngIf="startedJobId" class="wk-started" role="status" data-cy="work-started">
-          Maya's on it. <a [href]="'#wk-job-' + startedJobId" (click)="$event.preventDefault(); scrollToJob( startedJobId )">See it at the top of Now</a>.
-          If she has a question or a concern, it shows up right here.</p>
+          The Marketing Assistant's on it. <a [href]="'#wk-job-' + startedJobId" (click)="$event.preventDefault(); scrollToJob( startedJobId )">See it at the top of Now</a>.
+          If it has a question or a concern, it shows up right here.</p>
       </section>
 
       <p *ngIf="errorMessage" class="wk-error" role="alert" data-cy="work-error">
@@ -40,8 +40,8 @@
       <section *ngFor="let job of decisionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
                [class.is-linked]="job.id === linkedJobId" data-cy="work-decision">
         <p class="wk-your-turn">Your call</p>
-        <h2>Maya has concerns</h2>
-        <p class="wk-lead">She paused this job before starting. Read why below, then pick one of the buttons at the bottom. Nothing happens until you choose.</p>
+        <h2>The Marketing Assistant has concerns</h2>
+        <p class="wk-lead">It paused this job before starting. Read why below, then pick one of the buttons at the bottom. Nothing happens until you choose.</p>
         <p class="wk-quote" [class.is-clamped]="!requestOpen[job.id]">“{{ job.request }}”</p>
         <button *ngIf="job.request.length > 240" type="button" class="wk-link-button" (click)="requestOpen[job.id] = !requestOpen[job.id]">
           {{ requestOpen[job.id] ? 'Show less' : 'Show your full request' }}</button>
@@ -52,7 +52,7 @@
         </ul>
         <p *ngIf="job.planFit?.recommendation" class="wk-recommendation"><strong>What I’d do instead:</strong> {{ job.planFit?.recommendation }}</p>
         <div class="wk-actions">
-          <button *ngIf="job.planFit?.recommendedRequest" type="button" class="wk-button" (click)="decidePlan( job, 'recommended' )" [disabled]="busy[job.id]" data-cy="work-decision-recommended">Do it your way, Maya</button>
+          <button *ngIf="job.planFit?.recommendedRequest" type="button" class="wk-button" (click)="decidePlan( job, 'recommended' )" [disabled]="busy[job.id]" data-cy="work-decision-recommended">Do it your way, the Marketing Assistant</button>
           <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'as_asked' )" [disabled]="busy[job.id]" data-cy="work-decision-as-asked">Go ahead as I asked</button>
           <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'cancel' )" [disabled]="busy[job.id]" data-cy="work-decision-cancel">Cancel</button>
         </div>
@@ -61,8 +61,8 @@
       <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
                [class.is-linked]="job.id === linkedJobId" data-cy="work-question">
         <p class="wk-your-turn">Your turn</p>
-        <h2>Maya has a question</h2>
-        <p class="wk-lead">Answer below and she picks the job back up.</p>
+        <h2>The Marketing Assistant has a question</h2>
+        <p class="wk-lead">Answer below and it picks the job back up.</p>
         <p class="wk-quote">“{{ job.request }}”</p>
         <ul class="wk-questions"><li *ngFor="let question of job.questions">{{ question }}</li></ul>
         <form class="wk-answer" (ngSubmit)="sendAnswer( job )">
@@ -104,9 +104,9 @@
           <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'past'" [attr.aria-selected]="tab === 'past'"
                   (click)="tab = 'past'" data-cy="work-tab-past">Past <span class="wk-tab__count">{{ pastJobs.length }}</span></button>
         </div>
-        <p class="wk-note">{{ tab === 'now' ? 'What Maya is working on, what’s waiting on you, and anything she finished in the last day.' : 'Everything older. Open a job to see what she made.' }}</p>
+        <p class="wk-note">{{ tab === 'now' ? 'What the Marketing Assistant is working on, what’s waiting on you, and anything it finished in the last day.' : 'Everything older. Open a job to see what it made.' }}</p>
         <p *ngIf="!loaded" class="wk-note">Loading…</p>
-        <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. Ask Maya for something above.</p>
+        <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. Ask the Marketing Assistant for something above.</p>
         <p *ngIf="loaded && jobs.length && !shownJobs.length" class="wk-note">
           {{ tab === 'now' ? 'Nothing going on right now. Finished jobs are under Past.' : 'Nothing older than a day yet.' }}</p>
 
@@ -210,9 +210,9 @@
       </section>
 
       <section class="wk-section" data-cy="work-settings">
-        <div class="wk-section__head"><h2>How hard Maya pushes back</h2></div>
-        <p class="wk-note">When something you ask for works against your marketing plan. She always tells you what it will cost.</p>
-        <div class="wk-levels" role="radiogroup" aria-label="How hard Maya pushes back">
+        <div class="wk-section__head"><h2>How hard the Marketing Assistant pushes back</h2></div>
+        <p class="wk-note">When something you ask for works against your marketing plan. It always tells you what it will cost.</p>
+        <div class="wk-levels" role="radiogroup" aria-label="How hard the Marketing Assistant pushes back">
           <button *ngFor="let option of pushbackOptions" type="button" role="radio" class="wk-level"
                   [class.is-selected]="pushbackLevel === option.id" [attr.aria-checked]="pushbackLevel === option.id"
                   (click)="setPushback( option.id )" [disabled]="pushbackLevel === null" [attr.data-cy]="'work-pushback-' + option.id">
@@ -220,7 +220,7 @@
             <span>{{ option.detail }}</span>
           </button>
         </div>
-        <p class="wk-meta">Social autopilot is {{ socialAutopilot ? 'on: Maya approves her own posts.' : 'off: you approve every post.' }}</p>
+        <p class="wk-meta">Social autopilot is {{ socialAutopilot ? 'on: the Marketing Assistant approves its own posts.' : 'off: you approve every post.' }}</p>
       </section>
     </ng-container>
   </div>

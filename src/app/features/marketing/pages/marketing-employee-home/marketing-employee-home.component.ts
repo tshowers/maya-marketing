@@ -25,7 +25,7 @@ import { MarketingEmployeeService, MayaQueueHealth, MayaRunStatusResponse, MayaR
 
 type StatusView = 'cols' | 'timeline';
 type RunState = 'done' | 'doing' | 'stopped' | 'waiting' | 'todo';
-type Owner = 'Maya' | 'TODD' | 'You';
+type Owner = 'Marketing Assistant' | '16Ahead' | 'You';
 
 /** One of the 10 pipeline steps, in plain words. */
 interface RunStep {
@@ -52,16 +52,16 @@ interface RunStepDefinition {
 
 /** The run record's step keys (mayaBatchRunner.service.js) mapped to the design's 10 steps. */
 const RUN_STEPS: RunStepDefinition[] = [
-  { id: 'start', title: 'Start the day', owner: 'Maya', keys: ['window_check', 'sender_resolution', 'task_sync'], plan: 'I check that I’m enabled, my sender is set, and the plan is loaded.', done: 'Checked that I’m enabled, my sender is set, and the plan is loaded.' },
-  { id: 'social', title: 'Social queue pass', owner: 'Maya', keys: ['social_queue'], plan: 'I draft the social posts for this week.', done: 'Queued this week’s social posts.' },
-  { id: 'batch', title: 'Choose the outreach batch', owner: 'Maya', keys: ['outreach_batch'], plan: 'I pick today’s people to write to.', done: 'Picked today’s outreach batch.' },
-  { id: 'drafts', title: 'Write first-pass drafts', owner: 'Maya', keys: ['outreach_drafting'], plan: 'I draft today’s outreach emails.', done: 'Drafted today’s outreach emails.' },
+  { id: 'start', title: 'Start the day', owner: 'Marketing Assistant', keys: ['window_check', 'sender_resolution', 'task_sync'], plan: 'I check that I’m enabled, my sender is set, and the plan is loaded.', done: 'Checked that I’m enabled, my sender is set, and the plan is loaded.' },
+  { id: 'social', title: 'Social queue pass', owner: 'Marketing Assistant', keys: ['social_queue'], plan: 'I draft the social posts for this week.', done: 'Queued this week’s social posts.' },
+  { id: 'batch', title: 'Choose the outreach batch', owner: 'Marketing Assistant', keys: ['outreach_batch'], plan: 'I pick today’s people to write to.', done: 'Picked today’s outreach batch.' },
+  { id: 'drafts', title: 'Write first-pass drafts', owner: 'Marketing Assistant', keys: ['outreach_drafting'], plan: 'I draft today’s outreach emails.', done: 'Drafted today’s outreach emails.' },
   { id: 'outbox', title: 'Outbox review', owner: 'You', keys: ['outbox_review'], plan: 'You approve or reject what I’ve drafted.', done: 'You reviewed today’s drafts.' },
-  { id: 'auto', title: 'Auto-send eligible items', owner: 'TODD', keys: ['auto_send'], plan: 'Items you’ve allowed to go without review are sent.', done: 'Sent the items allowed to go without review.' },
-  { id: 'hold', title: 'Hold approval-first items', owner: 'TODD', keys: ['approval_first_wait'], plan: 'Anything that needs your OK waits for you or its scheduled time.', done: 'Held approval-first items for you.' },
-  { id: 'proof', title: 'Record proof of sending', owner: 'TODD', keys: ['sent_proof'], plan: 'Each sent item is logged against the plan.', done: 'Logged what was sent.' },
-  { id: 'replies', title: 'Hand replies to TODD', owner: 'TODD', keys: ['signal_handoff'], plan: 'When someone replies or clicks, TODD takes over the follow-up.', done: 'Handed replies to TODD.' },
-  { id: 'review', title: 'Afternoon results review', owner: 'Maya', keys: ['afternoon_review'], plan: 'I compare today’s results with the plan and set tomorrow.', done: 'Reviewed today’s results against the plan.' },
+  { id: 'auto', title: 'Auto-send eligible items', owner: '16Ahead', keys: ['auto_send'], plan: 'Items you’ve allowed to go without review are sent.', done: 'Sent the items allowed to go without review.' },
+  { id: 'hold', title: 'Hold approval-first items', owner: '16Ahead', keys: ['approval_first_wait'], plan: 'Anything that needs your OK waits for you or its scheduled time.', done: 'Held approval-first items for you.' },
+  { id: 'proof', title: 'Record proof of sending', owner: '16Ahead', keys: ['sent_proof'], plan: 'Each sent item is logged against the plan.', done: 'Logged what was sent.' },
+  { id: 'replies', title: 'Hand replies to 16Ahead', owner: '16Ahead', keys: ['signal_handoff'], plan: 'When someone replies or clicks, 16Ahead takes over the follow-up.', done: 'Handed replies to 16Ahead.' },
+  { id: 'review', title: 'Afternoon results review', owner: 'Marketing Assistant', keys: ['afternoon_review'], plan: 'I compare today’s results with the plan and set tomorrow.', done: 'Reviewed today’s results against the plan.' },
 ];
 
 const VIEW_KEY = 'maya.statusView';
@@ -140,7 +140,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
-        this.errorMessage = 'Maya’s status isn’t available right now.';
+        this.errorMessage = 'The Marketing Assistant’s status isn’t available right now.';
       },
     } );
   }
@@ -276,7 +276,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
     // The review limit stops Maya before she writes; if the run didn't
     // record which step, it's the first of her own steps still open.
     if ( this.queueHealth?.blocked && !steps.some( step => step.state === 'stopped' ) ) {
-      const first = steps.find( step => step.owner === 'Maya' && step.state !== 'done' );
+      const first = steps.find( step => step.owner === 'Marketing Assistant' && step.state !== 'done' );
       if ( first ) {
         first.state = 'stopped';
         first.detail = `I hit the review limit. ${this.waitingDetail()} I’ll resume as soon as the queue is clear.`;

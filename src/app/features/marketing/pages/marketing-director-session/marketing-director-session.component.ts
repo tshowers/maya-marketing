@@ -36,6 +36,7 @@ import { BUILD_VERSION } from '../../../../version';
 import { MayaStatusReport } from '../../models/maya-status-report.models';
 import { MayaStatusReportService } from '../../services/maya-status-report.service';
 import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/maya-deck-preview.component';
+import { DemoVideoComponent } from '../../components/demo-video/demo-video.component';
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
 import { MayaJob, MayaJobsService } from '../../../../services/maya-jobs.service';
@@ -49,7 +50,7 @@ interface ReportOperationalData {
   engineState?: any;
 }
 
-const MAYA_SITE_URL = 'https://maya.taliferro.tech';
+const MAYA_SITE_URL = 'https://marketing.16ahead.com';
 
 /**
  * What happened to a chat request: a new job, an answer to an open one, one
@@ -58,18 +59,18 @@ const MAYA_SITE_URL = 'https://maya.taliferro.tech';
 type JobOutcome = 'started' | 'answered' | 'planning' | 'deciding';
 
 const JOB_OUTCOME_LABELS: Record<JobOutcome, string> = {
-  started: 'Started on Maya\'s work page - I\'ll tell you here when it needs you',
-  answered: 'Added your answer to the job Maya already has - I\'ll tell you here when it needs you',
-  planning: 'Maya is still planning this one',
-  deciding: 'Your turn: this job is waiting on your call before Maya goes on. Open it and pick one of her options - what you just said isn\'t added until you do',
+  started: 'Started on the Marketing Assistant\'s work page - I\'ll tell you here when it needs you',
+  answered: 'Added your answer to the job the Marketing Assistant already has - I\'ll tell you here when it needs you',
+  planning: 'The Marketing Assistant is still planning this one',
+  deciding: 'Your turn: this job is waiting on your call before the Marketing Assistant goes on. Open it and pick one of its options - what you just said isn\'t added until you do',
 };
 
 /** How long the chat follows a job it linked to, waiting for it to need the person. */
 const JOB_FOLLOW_POLL_MS = 5000;
 const JOB_FOLLOW_LIMIT_MS = 3 * 60 * 1000;
-const MOVES_SITE_URL = 'https://moves.taliferro.tech';
-const DOCS_SITE_URL = 'https://docs.taliferro.tech';
-const PULSE_SITE_URL = 'https://pulse.taliferro.tech';
+const MOVES_SITE_URL = 'https://moves.16ahead.com';
+const DOCS_SITE_URL = 'https://docs.16ahead.com';
+const PULSE_SITE_URL = 'https://pulse.16ahead.com';
 
 /** Maya has no editor of her own; documents open in the Docs app. */
 function docsEditorUrl ( documentId: string ): string {
@@ -90,7 +91,7 @@ const LEGACY_RECEIPT_ROUTES: Array<[RegExp, ( id: string ) => string]> = [
 @Component( {
   selector: 'app-marketing-director-session',
   standalone: true,
-  imports: [ AlsoFromUsComponent, SiteFooterComponent, CommonModule, FormsModule, RouterModule, MayaDeckPreviewComponent],
+  imports: [ AlsoFromUsComponent, SiteFooterComponent, CommonModule, FormsModule, RouterModule, MayaDeckPreviewComponent, DemoVideoComponent],
   templateUrl: './marketing-director-session.component.html',
   styleUrls: ['./marketing-director-session.component.css']
 } )
@@ -99,7 +100,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
 
   readonly avatarUrl = 'assets/marketing/marketing-director-avatar.png';
   readonly suiteImageUrl = 'assets/suite/todd-suite2.png';
-  readonly directorName = 'Maya';
+  readonly directorName = 'Marketing Assistant';
   readonly employeeId = DEFAULT_MARKETING_EMPLOYEE_ID;
   readonly buildVersion = BUILD_VERSION;
 
@@ -130,19 +131,19 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   presentationFiles: Array<{ name: string; type: string; size: number; content?: string; dataUrl?: string }> = [];
   presentationPreviewOpen = false;
   readonly appLinks = [
-    { label: 'Home', route: 'https://ask.taliferro.tech', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
-    { label: 'Find', route: 'https://find.taliferro.tech', image: 'assets/find/entities/find/logo-bw-icon.png', external: true },
-    { label: 'Email Signature', route: 'https://signature.taliferro.tech', image: 'assets/find/entities/email-signature-builder/logo-bw-icon.png', external: true },
-    { label: 'SayIt', route: 'https://sayit.taliferro.tech', image: 'assets/find/entities/sayit/logo-bw-icon.png', external: true },
-    { label: 'Ask TODD', route: 'https://ask.taliferro.tech', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
-    { label: 'Lead Vault', route: 'https://lead-vault.taliferro.tech', image: 'assets/find/entities/lead-vault/logo-bw-icon.png', external: true },
+    { label: 'Home', route: 'https://assistant.16ahead.com', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
+    { label: 'Find', route: 'https://find.16ahead.com', image: 'assets/find/entities/find/logo-bw-icon.png', external: true },
+    { label: 'Email Signature', route: 'https://signature.16ahead.com', image: 'assets/find/entities/email-signature-builder/logo-bw-icon.png', external: true },
+    { label: 'SayIt', route: 'https://sayit.16ahead.com', image: 'assets/find/entities/sayit/logo-bw-icon.png', external: true },
+    { label: 'General Assistant', route: 'https://assistant.16ahead.com', image: 'assets/find/entities/todd/logo-bw-icon.png', external: true },
+    { label: 'Lead Vault', route: 'https://lead-vault.16ahead.com', image: 'assets/find/entities/lead-vault/logo-bw-icon.png', external: true },
     { label: 'Music', route: 'https://music.taliferro.com', image: 'assets/find/entities/music/logo-bw-icon.png', external: true },
-    { label: 'Pulse', route: 'https://pulse.taliferro.tech', image: 'assets/find/entities/pulse/logo-bw-icon.png', external: true },
-    { label: 'Network', route: 'https://network.taliferro.tech', image: 'assets/find/entities/network/logo-bw-icon.png', external: true },
-    { label: 'Outreach', route: 'https://outreach.taliferro.tech', image: 'assets/find/entities/outreach/logo-bw-icon.png', external: true },
+    { label: 'Pulse', route: 'https://pulse.16ahead.com', image: 'assets/find/entities/pulse/logo-bw-icon.png', external: true },
+    { label: 'Network', route: 'https://network.16ahead.com', image: 'assets/find/entities/network/logo-bw-icon.png', external: true },
+    { label: 'Outreach', route: 'https://outreach.16ahead.com', image: 'assets/find/entities/outreach/logo-bw-icon.png', external: true },
     { label: 'Moves', route: MOVES_SITE_URL, image: 'assets/find/entities/moves/logo-bw-icon.png', external: true },
-    { label: 'Social', route: 'https://social.taliferro.tech', image: 'assets/find/entities/social/logo-bw-icon.png', external: true },
-    { label: 'Docs', route: 'https://docs.taliferro.tech', image: 'assets/find/entities/docs/logo-bw-icon.png', external: true }
+    { label: 'Social', route: 'https://social.16ahead.com', image: 'assets/find/entities/social/logo-bw-icon.png', external: true },
+    { label: 'Docs', route: 'https://docs.16ahead.com', image: 'assets/find/entities/docs/logo-bw-icon.png', external: true }
   ];
   private authContextSubscription?: Subscription;
   /** Jobs this chat is following until they need the person (see followJob). */
@@ -334,7 +335,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     const firstName = String( emailContext.recipientName || '' ).trim().split( /\s+/ )[0] || '';
     const greeting = firstName ? `Hi ${firstName}, ` : 'Hi, ';
     const subjectPhrase = emailContext.subject ? ` about "${emailContext.subject}"` : '';
-    return `${greeting}I'm Maya - I sent you an email${subjectPhrase} a little while ago. What's on your mind?`;
+    return `${greeting}I'm the Marketing Assistant - I sent you an email${subjectPhrase} a little while ago. What's on your mind?`;
   }
 
   async sendMessage ( presetPrompt?: string ): Promise<void> {
@@ -399,7 +400,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       const executedReceipt = await this.executeDirectorSystemActions( response.systemActions || [], normalizedPrompt );
       this.appendExecutionReceiptNotice( normalizedDirectorReply, createdReceipt || executedReceipt );
     } catch {
-      this.errorMessage = 'She could not answer that right now. Please try again in a moment.';
+      this.errorMessage = 'It could not answer that right now. Please try again in a moment.';
     } finally {
       this.sending = false;
       this.scrollLatestUserMessageIntoView();
@@ -430,7 +431,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       this.persistSessionMemory();
       await this.appendWorkspaceMessage( 'employee', response.message );
     } catch {
-      this.errorMessage = 'Maya could not start the presentation workflow right now. Please try again.';
+      this.errorMessage = 'The Marketing Assistant could not start the presentation workflow right now. Please try again.';
     } finally {
       this.sending = false;
       this.scrollLatestUserMessageIntoView();
@@ -465,7 +466,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     const deck = this.presentationDeck;
     if ( !deck || deck.slides.length < 8 || deck.slides.some( slide => !slide.purpose || !slide.narrativeRole || !slide.takeaway || !slide.headline || !slide.transitionToNextSlide ) ) {
-      this.errorMessage = 'Maya has not finished the presentation-quality review yet. Please continue the conversation before generating the deck.';
+      this.errorMessage = 'The Marketing Assistant has not finished the presentation-quality review yet. Please continue the conversation before generating the deck.';
       return;
     }
     this.presentationPreviewOpen = true;
@@ -509,10 +510,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
 
     const stamp = new Date();
     const lines = this.messages.map( message => {
-      const speaker = message.role === 'user' ? 'You' : 'Maya';
+      const speaker = message.role === 'user' ? 'You' : 'Marketing Assistant';
       return `${speaker}:\n${String( message.content || '' ).trim()}`;
     } );
-    const transcript = `Maya conversation transcript — ${stamp.toLocaleString()}\n\n${lines.join( '\n\n' )}\n`;
+    const transcript = `The Marketing Assistant conversation transcript — ${stamp.toLocaleString()}\n\n${lines.join( '\n\n' )}\n`;
 
     const blob = new Blob( [transcript], { type: 'text/plain;charset=utf-8' } );
     const url = URL.createObjectURL( blob );
@@ -557,10 +558,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       report.engagement = this.normalizeReportSection( report.engagement );
       report.pipeline = this.normalizeReportSection( report.pipeline );
       await this.mayaStatusReportService.download( report, true );
-      this.notificationService.show( 'Status Report Ready', 'Maya downloaded your Marketing Activity Status Report.', 'success' );
+      this.notificationService.show( 'Status Report Ready', 'The Marketing Assistant downloaded your Marketing Activity Status Report.', 'success' );
     } catch ( error ) {
       console.error( '[Maya Session] status report generation failed', error );
-      this.notificationService.show( 'Report Failed', 'Maya could not generate the status report right now.', 'error' );
+      this.notificationService.show( 'Report Failed', 'The Marketing Assistant could not generate the status report right now.', 'error' );
     } finally {
       this.statusReportGenerating = false;
     }
@@ -605,7 +606,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     const customerCount = contacts.filter( contact => ( contact as any )?.subscriber === true ).length;
     const networkMetrics = [
       { label: 'Visitor', value: String( visitorCount ), detail: `Returning ${visitorCount ? Math.round( returningVisitorCount / visitorCount * 100 ) : 0}%` },
-      { label: 'Contacted', value: String( Number( reportBucketCounts.waiting || 0 ) ), detail: 'Maya outreach threads' },
+      { label: 'Contacted', value: String( Number( reportBucketCounts.waiting || 0 ) ), detail: 'The Marketing Assistant outreach threads' },
       { label: 'Engaged', value: String( Number( reportBucketCounts.engaged || 0 ) ), detail: 'Active conversations' },
       { label: 'Qualified', value: String( Number( reportBucketCounts.watching || 0 ) ), detail: 'Warm follow-up' },
       { label: 'Opportunity', value: String( Number( reportBucketCounts.needs_you || 0 ) ), detail: 'Needs your attention' },
@@ -629,7 +630,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       { label: 'Sent', value: String( Number( pipelineCounts.sent || 0 ) ), detail: 'Sent threads' }
     ];
     const pipelineItems = [
-      ...( outcomes.mayaStatus ? [`Maya drafted ${Number( outcomes.mayaStatus.draftedSoFar || 0 )} of ${Number( outcomes.mayaStatus.totalPlanned || 0 )} planned items.`] : [] ),
+      ...( outcomes.mayaStatus ? [`The Marketing Assistant drafted ${Number( outcomes.mayaStatus.draftedSoFar || 0 )} of ${Number( outcomes.mayaStatus.totalPlanned || 0 )} planned items.`] : [] ),
       ...( outcomes.firstWaveExecution ? [`First wave: ${Number( outcomes.firstWaveExecution.draftsPendingCount || 0 )} approval pending, ${Number( outcomes.firstWaveExecution.outboxCount || 0 )} queued, ${Number( outcomes.firstWaveExecution.sentCount || 0 )} sent.`] : [] ),
       ...( outcomes.closeLoop ? [`Close loop: ${Number( outcomes.closeLoop.draftsPendingCount || 0 )} approval pending and ${Number( outcomes.closeLoop.sentCount || 0 )} sent.`] : [] )
     ];
@@ -637,25 +638,25 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       company: { name: companyName, logoUrl: String( ( company as any )?.logo || ( company as any )?.logoUrl || '' ).trim() || undefined, tagline: this.shortenText( String( company?.valueProp || '' ).trim(), 110 ) || undefined },
       preparedFor: { name: preparedName, company: companyName },
       reportingPeriod: { label: `Current snapshot - ${date}`, end: new Date().toISOString() },
-      executiveSummary: commentary[0] || ( allWork.length ? `Maya is tracking ${allWork.length} recorded marketing work item${allWork.length === 1 ? '' : 's'} across the current workspace.` : 'There is not enough recorded activity yet for a fuller marketing status assessment.' ),
+      executiveSummary: commentary[0] || ( allWork.length ? `The Marketing Assistant is tracking ${allWork.length} recorded marketing work item${allWork.length === 1 ? '' : 's'} across the current workspace.` : 'There is not enough recorded activity yet for a fuller marketing status assessment.' ),
       metrics: reportMetrics,
-      outreach: allWork.length ? { title: 'Outreach Activity', summary: 'Recorded Maya marketing work in the current workspace.', metrics: [
+      outreach: allWork.length ? { title: 'Outreach Activity', summary: 'Recorded the Marketing Assistant marketing work in the current workspace.', metrics: [
         ...( current ? [{ label: 'Current work', value: String( current ) }] : [] ),
         ...( approvals ? [{ label: 'Pending approvals', value: String( approvals ) }] : [] ),
         ...( completed ? [{ label: 'Completed work', value: String( completed ) }] : [] )
       ], items: allWork.slice( 0, 6 ).map( item => item.title ), commentary: commentary[1] || undefined } : undefined,
-      social: { title: 'Social Activity Today', summary: socialItems.length ? 'Social posts Maya created or updated today, including the destination platform and current status.' : 'Maya has no social posts recorded for today.', metrics: [
+      social: { title: 'Social Activity Today', summary: socialItems.length ? 'Social posts the Marketing Assistant created or updated today, including the destination platform and current status.' : 'The Marketing Assistant has no social posts recorded for today.', metrics: [
         { label: 'Posts today', value: String( socialPosts.length ), detail: 'Created, scheduled, or published' }
-      ], items: socialItems.length ? socialItems : ['No social post activity recorded today.'], commentary: socialItems.length ? 'These posts come from the shared Social workspace.' : 'Maya will show social activity here as soon as a post is created.' },
+      ], items: socialItems.length ? socialItems : ['No social post activity recorded today.'], commentary: socialItems.length ? 'These posts come from the shared Social workspace.' : 'The Marketing Assistant will show social activity here as soon as a post is created.' },
       network: { title: 'Networking Progress', summary: 'Network stage counts extracted from the saved contact records.', metrics: networkMetrics.slice( 0, 4 ), items: networkItems, commentary: 'Network remains the source of truth for relationship stage and momentum.' },
-      pipelineStatus: { title: 'Maya Pipeline Status', summary: 'The current Maya and TODD pipeline lanes extracted from the saved momentum state.', metrics: pipelineMetrics, items: pipelineItems.length ? pipelineItems : ['No pipeline status snapshot was available at generation time.'], commentary: 'This page reflects the same pipeline state shown in Network Pipeline Status.' },
-      engagement: { title: 'Audience Engagement', summary: engagementMetrics.length ? "Engagement metrics reported by Maya's connected workspace data." : 'No engagement activity has been recorded yet. Metrics will appear after outreach is approved and executed.', metrics: ( engagementMetrics.length ? engagementMetrics : [{ label: 'Engagement data', value: 'No data yet', detail: 'Available after outreach is executed.' }] ).slice( 0, 4 ), commentary: commentary[1] || 'Maya will track responses, clicks, replies, and meetings as activity is recorded.' },
-      pipeline: allWork.length ? { title: 'Pipeline Overview', summary: 'Current work and approval state available to Maya.', items: allWork.slice( 0, 8 ).map( item => `${item.title}${item.status ? ` - ${item.status}` : ''}` ), commentary: commentary[0] || undefined } : undefined,
+      pipelineStatus: { title: 'Marketing Assistant Pipeline Status', summary: 'The current the Marketing Assistant and 16Ahead pipeline lanes extracted from the saved momentum state.', metrics: pipelineMetrics, items: pipelineItems.length ? pipelineItems : ['No pipeline status snapshot was available at generation time.'], commentary: 'This page reflects the same pipeline state shown in Network Pipeline Status.' },
+      engagement: { title: 'Audience Engagement', summary: engagementMetrics.length ? "Engagement metrics reported by the Marketing Assistant's connected workspace data." : 'No engagement activity has been recorded yet. Metrics will appear after outreach is approved and executed.', metrics: ( engagementMetrics.length ? engagementMetrics : [{ label: 'Engagement data', value: 'No data yet', detail: 'Available after outreach is executed.' }] ).slice( 0, 4 ), commentary: commentary[1] || 'The Marketing Assistant will track responses, clicks, replies, and meetings as activity is recorded.' },
+      pipeline: allWork.length ? { title: 'Pipeline Overview', summary: 'Current work and approval state available to the Marketing Assistant.', items: allWork.slice( 0, 8 ).map( item => `${item.title}${item.status ? ` - ${item.status}` : ''}` ), commentary: commentary[0] || undefined } : undefined,
       channels,
       insights: commentary.length > 1 ? commentary.slice( 0, 3 ) : [],
       recommendations: Array.isArray( this.latestOutcome?.handoff?.nextActions ) ? this.latestOutcome!.handoff!.nextActions.filter( Boolean ).slice( 0, 5 ) : [],
-      dataSources: ['Maya marketing workspace', ...( this.hasActivePlan ? ['Active marketing plan'] : [] ), ...( this.latestOutcome ? ['Latest Maya outcome'] : [] )],
-      dataCoverage: allWork.length || metrics.length ? 'This report includes the records currently available to Maya at generation time.' : 'No substantive activity records were available at generation time.',
+      dataSources: ['The Marketing Assistant marketing workspace', ...( this.hasActivePlan ? ['Active marketing plan'] : [] ), ...( this.latestOutcome ? ['Latest the Marketing Assistant outcome'] : [] )],
+      dataCoverage: allWork.length || metrics.length ? 'This report includes the records currently available to the Marketing Assistant at generation time.' : 'No substantive activity records were available at generation time.',
       limitations: ['Unrecorded offline activity is not included.', ...( !channels.length ? ['No channel-level performance data was available.'] : [] )],
       mayaCommentary: commentary
     };
@@ -792,8 +793,8 @@ Pick one and I will keep moving:
         normalizedReply,
         '',
         'Execution Ownership',
-        '- Maya owns: target audience, positioning, campaign design, messaging, KPI targets, draft creation, and daily planning decisions.',
-        '- TODD owns: queueing, sending, publishing, scheduling, follow-up execution, live monitoring, and autonomous optimization.',
+        '- The Marketing Assistant owns: target audience, positioning, campaign design, messaging, KPI targets, draft creation, and daily planning decisions.',
+        '- 16Ahead owns: queueing, sending, publishing, scheduling, follow-up execution, live monitoring, and autonomous optimization.',
         '- Operator owns: strategic direction changes, exceptional overrides, and manual review only when autonomy is intentionally constrained.'
       ].join( '\n' );
       const preview = await this.employeePlanService.buildPreview(
@@ -804,7 +805,7 @@ Pick one and I will keep moving:
           sourceFileName: 'maya-session-master-plan'
         }
       );
-      const documentTitle = preview.title || 'Maya Master Marketing Plan';
+      const documentTitle = preview.title || 'Marketing Assistant Master Marketing Plan';
       const createdDocument = await this.mayaJobs.createRecord( 'document', {
         title: documentTitle,
         name: documentTitle,
@@ -812,8 +813,8 @@ Pick one and I will keep moving:
         recordKind: 'document',
         topic: 'Marketing Plan',
         author: this.currentContact?.company?.name || this.directorName,
-        summary: 'Master marketing plan created by Maya inside TODD.',
-        description: 'This document is the saved source of truth Maya should use for daily planning.',
+        summary: 'Master marketing plan created by the Marketing Assistant inside 16Ahead.',
+        description: 'This document is the saved source of truth the Marketing Assistant should use for daily planning.',
         htmlContent: this.toHtmlDocument( documentTitle, preview.rawText )
       } );
       const documentId = String( createdDocument?.id || '' ).trim();
@@ -891,20 +892,20 @@ Pick one and I will keep moving:
         ...this.messages,
         this.buildHtmlMessage(
           'director',
-          `I saved this as your master marketing plan inside TODD and created ${result.createdIds.length} starting action${result.createdIds.length === 1 ? '' : 's'}.`,
+          `I saved this as your master marketing plan inside 16Ahead and created ${result.createdIds.length} starting action${result.createdIds.length === 1 ? '' : 's'}.`,
           this.buildMasterPlanSavedHtmlMessage( documentTitle, documentRoute, result.createdIds.length )
         )
       ];
       this.persistSessionMemory();
       await this.appendWorkspaceMessage(
         'employee',
-        `I saved this as your master marketing plan inside TODD and created ${result.createdIds.length} starting action${result.createdIds.length === 1 ? '' : 's'}. ${documentRoute ? `Document: ${documentRoute}. ` : ''}Maya will own planning and drafting. TODD will own execution, monitoring, and optimization from here.`
+        `I saved this as your master marketing plan inside 16Ahead and created ${result.createdIds.length} starting action${result.createdIds.length === 1 ? '' : 's'}. ${documentRoute ? `Document: ${documentRoute}. ` : ''}the Marketing Assistant will own planning and drafting. 16Ahead will own execution, monitoring, and optimization from here.`
       );
-      this.notificationService.show( 'Master Plan Saved', 'Maya saved the master marketing plan and created the opening action set.', 'success' );
+      this.notificationService.show( 'Master Plan Saved', 'The Marketing Assistant saved the master marketing plan and created the opening action set.', 'success' );
       return true;
     } catch ( error ) {
       console.error( '[Maya Session] master plan save failed', error );
-      this.notificationService.show( 'Plan Save Failed', 'Maya outlined the plan, but TODD could not save it yet.', 'error' );
+      this.notificationService.show( 'Plan Save Failed', 'The Marketing Assistant outlined the plan, but 16Ahead could not save it yet.', 'error' );
       return false;
     }
   }
@@ -949,10 +950,10 @@ Pick one and I will keep moving:
         ? this.buildLoggedInPlanStarterPrompts()
         : this.buildLoggedInSetupStarterPrompts();
       this.composerPlaceholder = hasActivePlan
-        ? 'Ask Maya about your current marketing plan, campaign priorities, or what to fix first.'
+        ? 'Ask the Marketing Assistant about your current marketing plan, campaign priorities, or what to fix first.'
         : hasPaidWorkspaceAccess
-          ? 'Ask Maya to create your initial marketing plan, or paste in the plan you already have so she can analyze it.'
-          : 'Ask Maya to create your initial marketing plan, or paste in the plan you already have for analysis.';
+          ? 'Ask the Marketing Assistant to create your initial marketing plan, or paste in the plan you already have so it can analyze it.'
+          : 'Ask the Marketing Assistant to create your initial marketing plan, or paste in the plan you already have for analysis.';
     } else {
       this.starterPrompts = this.buildPublicStarterPrompts();
       this.composerPlaceholder = this.buildPublicPlaceholder();
@@ -1004,7 +1005,7 @@ Pick one and I will keep moving:
     this.messages = [introMessage];
     this.persistSessionMemory();
     await this.appendWorkspaceMessage( 'employee', introMessage.content );
-    this.notificationService.show( 'Session Reset', 'Maya cleared the planning conversation and started a fresh one.', 'success' );
+    this.notificationService.show( 'Session Reset', 'The Marketing Assistant cleared the planning conversation and started a fresh one.', 'success' );
   }
 
   private buildInitialDirectorMessage (): PublicMarketingDirectorMessage {
@@ -1018,7 +1019,7 @@ Pick one and I will keep moving:
 
     return this.buildMessage(
       'director',
-      'I’m Maya. Tell me what you sell, who you want to reach, and what feels stuck in your marketing. I’ll help you figure out what matters first.',
+      'I’m the Marketing Assistant. Tell me what you sell, who you want to reach, and what feels stuck in your marketing. I’ll help you figure out what matters first.',
       'director-intro'
     );
   }
@@ -1032,7 +1033,7 @@ Pick one and I will keep moving:
   ): PublicMarketingDirectorMessage {
     if ( hasActivePlan ) {
       const introCopy = hasPaidWorkspaceAccess
-        ? 'I can see the marketing plan is already moving. If something feels off, I can tell you what I’d tighten, what I’d cut, and what should move today inside TODD.'
+        ? 'I can see the marketing plan is already moving. If something feels off, I can tell you what I’d tighten, what I’d cut, and what should move today inside 16Ahead.'
         : 'I can see the marketing plan is already moving. Ask me about priorities, messaging, timelines, or paste in updated plan notes if you want a fresh read.';
       const planTitle = String( this.masterPlanSnapshot?.sourceFileName || this.masterPlanSnapshot?.title || 'current marketing plan' ).trim();
       const planRoute = String( this.masterPlanSnapshot?.sourceFileUrl || '' ).trim();
@@ -1066,8 +1067,8 @@ Pick one and I will keep moving:
       : '';
     const callToAction = hasPaidWorkspaceAccess
       ? hasSeenReminder
-        ? ' Do you want me to create it now inside TODD, or paste in the marketing plan you already have so I can analyze it and make recommendations?'
-        : ' Would you like me to create your initial marketing plan inside TODD, or paste in the marketing plan you already have so I can analyze it and make recommendations?'
+        ? ' Do you want me to create it now inside 16Ahead, or paste in the marketing plan you already have so I can analyze it and make recommendations?'
+        : ' Would you like me to create your initial marketing plan inside 16Ahead, or paste in the marketing plan you already have so I can analyze it and make recommendations?'
       : hasSeenReminder
         ? ' Do you want me to create it now, or paste in the marketing plan you already have so I can analyze it and make recommendations?'
         : ' Would you like me to create your initial marketing plan, or paste in the marketing plan you already have so I can analyze it and make recommendations?';
@@ -1142,7 +1143,7 @@ Pick one and I will keep moving:
   }
 
   private buildPublicPlaceholder (): string {
-    return 'Ask Maya about positioning, campaigns, messaging, or what to fix first.';
+    return 'Ask the Marketing Assistant about positioning, campaigns, messaging, or what to fix first.';
   }
 
   private appendExecutionReceiptNotice ( directorReply: string, createdReceipt: boolean ): void {
@@ -1160,7 +1161,7 @@ Pick one and I will keep moving:
       return;
     }
 
-    const receiptNote = 'Execution receipt: no document, move, survey, draft, or outreach job was created from that reply yet. When Maya actually creates something, this chat should say exactly what was created and where it landed.';
+    const receiptNote = 'Execution receipt: no document, move, survey, draft, or outreach job was created from that reply yet. When the Marketing Assistant actually creates something, this chat should say exactly what was created and where it landed.';
     this.messages = [
       ...this.messages,
       this.buildMessage( 'director', receiptNote )
@@ -1202,7 +1203,7 @@ Pick one and I will keep moving:
         }
       } catch ( error ) {
         const label = this.getActionLabel( action.type );
-        const failureMessage = `Execution receipt: Maya tried to create ${label}, but TODD could not finish it automatically.`;
+        const failureMessage = `Execution receipt: The Marketing Assistant tried to create ${label}, but 16Ahead could not finish it automatically.`;
         this.messages = [
           ...this.messages,
           this.buildMessage( 'director', failureMessage )
@@ -1240,7 +1241,7 @@ Pick one and I will keep moving:
       title,
       docsEditorUrl( documentId )
     );
-    await this.recordCompletedExecutionTask( title, docsEditorUrl( documentId ), action, 'Document created and saved by Maya.' );
+    await this.recordCompletedExecutionTask( title, docsEditorUrl( documentId ), action, 'Document created and saved by the Marketing Assistant.' );
     return true;
   }
 
@@ -1260,7 +1261,7 @@ Pick one and I will keep moving:
     if ( mayaDoesIt ) {
       const request = [
         userRequest.trim(),
-        `From my chat with Maya: ${title}`,
+        `From my chat with the Marketing Assistant: ${title}`,
         String( action.description || action.summary || '' ).trim(),
       ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
       const job = await this.startOrContinueJob( request, userRequest, `"${title}"` );
@@ -1320,7 +1321,7 @@ Pick one and I will keep moving:
     if ( !surveyId ) return false;
 
     await this.appendArtifactReceiptMessage( `Created survey${await this.viewOnlyNote( 'pulse', 'Pulse' )}`, title, `${PULSE_SITE_URL}/survey/${encodeURIComponent( surveyId )}` );
-    await this.recordCompletedExecutionTask( title, `${PULSE_SITE_URL}/survey/${encodeURIComponent( surveyId )}`, action, 'Survey created and saved by Maya.' );
+    await this.recordCompletedExecutionTask( title, `${PULSE_SITE_URL}/survey/${encodeURIComponent( surveyId )}`, action, 'Survey created and saved by the Marketing Assistant.' );
     return true;
   }
 
@@ -1354,7 +1355,7 @@ Pick one and I will keep moving:
       title,
       `${DOCS_SITE_URL}/knowledge/response-flow/${encodeURIComponent( responseFlowId )}`
     );
-    await this.recordCompletedExecutionTask( title, `${DOCS_SITE_URL}/knowledge/response-flow/${encodeURIComponent( responseFlowId )}`, action, 'Knowledge response flow created by Maya.' );
+    await this.recordCompletedExecutionTask( title, `${DOCS_SITE_URL}/knowledge/response-flow/${encodeURIComponent( responseFlowId )}`, action, 'Knowledge response flow created by the Marketing Assistant.' );
     return true;
   }
 
@@ -1374,7 +1375,7 @@ Pick one and I will keep moving:
 
     const request = [
       userRequest.trim(),
-      'Email brief from my chat with Maya:',
+      'Email brief from my chat with the Marketing Assistant:',
       subject ? `Subject idea: ${subject}` : '',
       audience ? `Audience: ${audience}` : '',
       text,
@@ -1384,7 +1385,7 @@ Pick one and I will keep moving:
     if ( !job ) return false;
     await this.appendArtifactReceiptMessage(
       job.outcome === 'started' ?
-        'Maya is planning the email now - I\'ll tell you here when it needs you. Nothing is sent until you choose how' :
+        'The Marketing Assistant is planning the email now - I\'ll tell you here when it needs you. Nothing is sent until you choose how' :
         JOB_OUTCOME_LABELS[job.outcome],
       job.outcome === 'started' ? subject || 'Your email' : job.title,
       job.route
@@ -1424,7 +1425,7 @@ Pick one and I will keep moving:
       this.followJob( started.id );
       return { outcome: 'started', route: this.jobRoute( started.id ), title: started.request.slice( 0, 120 ) };
     } catch ( error: any ) {
-      const reason = error?.error?.message || error?.message || 'TODD could not start it.';
+      const reason = error?.error?.message || error?.message || '16Ahead could not start it.';
       await this.appendReceiptTextMessage( `Execution receipt: I couldn't start ${what}. ${reason}` );
       return null;
     }
@@ -1472,20 +1473,20 @@ Pick one and I will keep moving:
       case 'awaiting_decision': {
         const concern = String( job.planFit?.reasoning || '' ).trim();
         return {
-          label: `Your turn: Maya paused before starting because this works against your marketing plan${concern ? ` - ${concern}` : '.'} ` +
-            'Open the job and choose: do it her way, go ahead as you asked, or cancel. Nothing happens until you choose',
+          label: `Your turn: The Marketing Assistant paused before starting because this works against your marketing plan${concern ? ` - ${concern}` : '.'} ` +
+            'Open the job and choose: do it its way, go ahead as you asked, or cancel. Nothing happens until you choose',
           link: 'Open the job and decide',
         };
       }
       case 'awaiting_user': {
         const questions = ( job.questions || [] ).filter( Boolean ).join( ' ' );
         return {
-          label: `Your turn: Maya has a question before she goes on${questions ? ` - ${questions}` : '.'} Answer here in the chat or on the job`,
+          label: `Your turn: The Marketing Assistant has a question before it goes on${questions ? ` - ${questions}` : '.'} Answer here in the chat or on the job`,
           link: 'Answer on the job',
         };
       }
       case 'awaiting_approval':
-        return { label: 'Your turn: Maya\'s drafts are ready. Approve or turn down each one under "Waiting for you"', link: 'Review the drafts' };
+        return { label: 'Your turn: Marketing Assistant\'s drafts are ready. Approve or turn down each one under "Waiting for you"', link: 'Review the drafts' };
       case 'done': {
         const email = job.steps.find( step => step.tool === 'email.create' && step.status === 'done' && step.output?.['documentId'] );
         if ( email ) {
@@ -1494,11 +1495,11 @@ Pick one and I will keep moving:
             link: String( email.output?.['subject'] || 'Open the email' ),
           };
         }
-        return { label: 'Done', link: job.summary || 'See what Maya did' };
+        return { label: 'Done', link: job.summary || 'See what the Marketing Assistant did' };
       }
       case 'failed':
       case 'stopped':
-        return { label: `Maya couldn't finish this one${job.statusDetail ? ` - ${job.statusDetail}` : ''}`, link: 'See the job' };
+        return { label: `The Marketing Assistant couldn't finish this one${job.statusDetail ? ` - ${job.statusDetail}` : ''}`, link: 'See the job' };
       default:
         return null;
     }
@@ -1533,7 +1534,7 @@ Pick one and I will keep moving:
         await this.appendReceiptTextMessage( `${label}: ${title}.` );
       }
     } catch ( error: any ) {
-      const reason = error?.error?.message || error?.message || 'TODD could not save it.';
+      const reason = error?.error?.message || error?.message || '16Ahead could not save it.';
       await this.appendReceiptTextMessage( `Execution receipt: I couldn't save your answer on "${title}". ${reason}` );
     }
     return true;
@@ -1587,7 +1588,7 @@ Pick one and I will keep moving:
     ].filter( Boolean ).join( '\n\n' );
 
     const completedTask: Task = {
-      title: `Maya completed: ${normalizedTitle}`,
+      title: `The Marketing Assistant completed: ${normalizedTitle}`,
       description,
       dueDate: new Date().toISOString(),
       progress: 100,
@@ -1806,7 +1807,7 @@ Pick one and I will keep moving:
         this.workspaceConversationId = await this.marketingEmployeeService.createConversation( this.tenantId, {
           employeeId: this.employeeId,
           employeeType: 'marketing',
-          title: 'Maya master marketing plan session'
+          title: 'The Marketing Assistant master marketing plan session'
         } );
       } else {
         const conversations = await firstValueFrom(
@@ -1821,7 +1822,7 @@ Pick one and I will keep moving:
           : await this.marketingEmployeeService.createConversation( this.tenantId, {
             employeeId: this.employeeId,
             employeeType: 'marketing',
-            title: 'Maya master marketing plan session'
+            title: 'The Marketing Assistant master marketing plan session'
           } );
       }
       this.workspaceConversationContextKey = contextKey;
@@ -1928,7 +1929,7 @@ Pick one and I will keep moving:
       ? `Saved plan: <a href="${safeRoute}">${safeTitle}</a><br /><br />`
       : '';
 
-    return `${documentLine}I saved this as your master marketing plan inside TODD and created ${safeCount} starting action${createdCount === 1 ? '' : 's'}.<br /><br />Maya owns planning and drafting. TODD owns execution, monitoring, and optimization from here.`;
+    return `${documentLine}I saved this as your master marketing plan inside 16Ahead and created ${safeCount} starting action${createdCount === 1 ? '' : 's'}.<br /><br />The Marketing Assistant owns planning and drafting. 16Ahead owns execution, monitoring, and optimization from here.`;
   }
 
   private ensureSentence ( value: string ): string {
@@ -2003,7 +2004,7 @@ Pick one and I will keep moving:
       ( _match, prefix, title, route ) => `${prefix}<a href="${route}">${title.trim()}</a>`
     ).replace(
       // Receipts for other TODD apps (Moves) carry a full link; open it in a new tab.
-      /\((https:\/\/[a-z0-9-]+\.taliferro\.tech\/[A-Za-z0-9\-._~!$&*+,;=:@?/%#]*)\)/g,
+      /\((https:\/\/(?:[a-z0-9-]+\.taliferro\.tech|(?:[a-z0-9-]+\.)?16ahead\.(?:com|store))\/[A-Za-z0-9\-._~!$&*+,;=:@?/%#]*)\)/g,
       ( _match, url ) => `(<a href="${url}" target="_blank" rel="noopener">${url}</a>)`
     );
   }

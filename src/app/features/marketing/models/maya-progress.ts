@@ -8,8 +8,8 @@ import { MayaQueueHealth } from '../services/marketing-employee.service';
 import { MarketingEmployeeActionRecord, MarketingPlanRecord, MarketingPlanStep } from './marketing-employee.models';
 
 /** Other TODD apps the pages send people to. */
-export const MOVES_URL = 'https://moves.taliferro.tech';
-export const OUTREACH_URL = 'https://outreach.taliferro.tech';
+export const MOVES_URL = 'https://moves.16ahead.com';
+export const OUTREACH_URL = 'https://outreach.16ahead.com';
 /** Maya's review tasks in Moves; from=maya sends a signed-out visitor to sign in instead of the sample team. */
 export const MAYA_TASKS_URL = `${MOVES_URL}/app/maya?from=maya`;
 
@@ -195,7 +195,7 @@ export function planSentence ( steps: StepView[], rows: ActionRow[], needs: Maya
 
 /**
  * "What I need from you": blocked work, the review backlog when it has
- * stopped Maya, and unconfirmed dates. Empty when nothing needs the user.
+ * stopped the Marketing Assistant, and unconfirmed dates. Empty when nothing needs the user.
  */
 export function buildNeeds ( input: {
   blockedRows: ActionRow[];
@@ -213,7 +213,7 @@ export function buildNeeds ( input: {
         ? `Pick contacts for ${blocked.length === 1 ? blocked[0].title : `${blocked.length} items`}`
         : blocked.length === 1 ? `Help with ${blocked[0].title}` : `Help with ${blocked.length} stuck items`,
       detail: blocked.length === 1 ? blocked[0].detail : `${names}${blocked.length > 2 ? ` and ${blocked.length - 2} more` : ''} are on hold until you answer.`,
-      primaryLabel: contacts ? ( blocked.length === 1 ? 'Choose contact' : 'Choose contacts' ) : 'Answer Maya',
+      primaryLabel: contacts ? ( blocked.length === 1 ? 'Choose contact' : 'Choose contacts' ) : 'Answer the Marketing Assistant',
       primaryHref: blocked[0].href || `${MOVES_URL}/moves`,
     } );
   }
@@ -241,7 +241,7 @@ export function buildNeeds ( input: {
       id: 'dates',
       title: 'Set dates for the plan',
       detail: 'Your plan doesn’t give dates for each step, so the ones shown are my proposal. Keep them and I’ll hold myself to them.',
-      primaryLabel: 'Use Maya’s dates',
+      primaryLabel: 'Use the Marketing Assistant’s dates',
       primaryHref: null,
       secondaryLabel: 'Set my own',
       secondaryHref: null,

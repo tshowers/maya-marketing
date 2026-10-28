@@ -31,7 +31,7 @@ export class GuidedTourService {
       title: "Welcome to the Match Maker Tour",
       instruction: `
     <p class="text-left mb-3">
-      Match Maker is TODD's AI-powered engine for connecting the right people, companies, or resources — based on logic you define.
+      Match Maker is 16Ahead's AI-powered engine for connecting the right people, companies, or resources — based on logic you define.
     </p>
     <p class="text-left">
       You decide what kind of match you want to make:
@@ -53,7 +53,7 @@ export class GuidedTourService {
       title: "Fully Customizable",
       instruction: `
     <p class="text-left mt-3">
-      Match Maker is fully configurable — but the magic is in how TODD evaluates each match, scores them, and explains <strong>why</strong> it made those choices.
+      Match Maker is fully configurable — but the magic is in how 16Ahead evaluates each match, scores them, and explains <strong>why</strong> it made those choices.
     </p>
     <p class="text-left">
       Whether you're running a business center, managing funding pipelines, or coordinating outreach, Match Maker helps you move faster — with clarity.
@@ -65,9 +65,9 @@ export class GuidedTourService {
     {
       route: '/match-maker',
       queryParams: { step: '1' },
-      title: 'An example walkthrough: How would an Investor Use TODD?',
+      title: 'An example walkthrough: How would an Investor Use 16Ahead?',
       instruction: `
-      <p class="mb-3">An investor uses TODD to find diverse, early-stage companies aligned with their investment objective.</p>
+      <p class="mb-3">An investor uses 16Ahead to find diverse, early-stage companies aligned with their investment objective.</p>
         `,
       summary: `<p class="text-left"><strong>Step 1: Identify the Interested Party</strong>
         </p>`
@@ -104,10 +104,10 @@ export class GuidedTourService {
   private useCaseSteps: TourStep[] = [
     {
       route: '',
-      title: 'Why TODD Exists',
+      title: 'Why 16Ahead Exists',
       instruction: `
-        <p class="text-left">Most tools store data. TODD creates momentum.</p>
-        <p class="text-left">Before stacks and reports, work is messy — scattered contacts, half-started deals, missed follow-ups. TODD is a Momentum System built for that stage. Not to record it. To move it.</p>
+        <p class="text-left">Most tools store data. 16Ahead creates momentum.</p>
+        <p class="text-left">Before stacks and reports, work is messy — scattered contacts, half-started deals, missed follow-ups. 16Ahead is a Momentum System built for that stage. Not to record it. To move it.</p>
       `,
       summary: 'Tired of staring at stale lists?',
       image: '/assets/images/orm.png'
@@ -117,16 +117,16 @@ export class GuidedTourService {
       title: 'Not CRM. Not Outreach. A Momentum System.',
       instruction: `
         <p class="text-left">CRMs take notes. Outreach tools blast messages.</p>
-        <p class="text-left">TODD is a Momentum System — it acts across apps to draft, nudge, validate, and route work so you keep moving.</p>
+        <p class="text-left">16Ahead is a Momentum System — it acts across apps to draft, nudge, validate, and route work so you keep moving.</p>
       `,
       summary: 'Why juggle five tools to start one conversation?',
       image: '/assets/images/reseller-telecom.webp'
     },
     {
       route: '',
-      title: 'What TODD Actually Does',
+      title: 'What 16Ahead Actually Does',
       instruction: `
-      <p class="text-left">Outreach shouldn’t feel like juggling knives. TODD handles the prep and the next moves so you handle the conversation.</p>
+      <p class="text-left">Outreach shouldn’t feel like juggling knives. 16Ahead handles the prep and the next moves so you handle the conversation.</p>
         <ul class="text-left">
           <li>Enriches and reconfigures contact & company data</li>
           <li>Validates emails and flags risk before you send</li>
@@ -141,7 +141,7 @@ export class GuidedTourService {
     },
     {
       route: '',
-      title: 'TODD in Plain English',
+      title: '16Ahead in Plain English',
       instruction: `
         <p class="text-left">CRMs assume you’ve already got clean leads. A Momentum System assumes you’re still hunting, cleaning, validating, matching, and following up — and it does that work with you.</p>
       `,
@@ -151,16 +151,16 @@ export class GuidedTourService {
     {
       title: 'Matchmaking Primes with Subs for State Contracts',
       instruction: `
-      <p>A Business Center uses TODD to match large prime contractors with qualified DBE/MBE subs based on project needs, location, and certification — helping meet equity goals for public sector contracts.</p>
+      <p>A Business Center uses 16Ahead to match large prime contractors with qualified DBE/MBE subs based on project needs, location, and certification — helping meet equity goals for public sector contracts.</p>
       <ul>
         <li><strong>Step 1:</strong> Enter the prime's name and website</li>
         <li><strong>Step 2:</strong> Drop a pin near the project location</li>
         <li><strong>Step 3:</strong> Choose match filters like certification, capability, and region</li>
-        <li><strong>Step 4:</strong> TODD returns a scored list of potential subs with justification</li>
+        <li><strong>Step 4:</strong> 16Ahead returns a scored list of potential subs with justification</li>
         <li><strong>Step 5:</strong> Export the list or begin outreach for Meet the Primes</li>
       </ul>
     `,
-      summary: "Because equity goals don’t fulfill themselves. TODD finds certified subs that actually fit.",
+      summary: "Because equity goals don’t fulfill themselves. 16Ahead finds certified subs that actually fit.",
       image: "/assets/images/contact-profile.webp"
 
     },
@@ -168,7 +168,7 @@ export class GuidedTourService {
       title: 'Prepping for Outreach Without the Headache',
       instruction: `
       <p>A business wants to email 200 leads, but their contact data is a mess.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Auto-detects and merges duplicates</li>
         <li>Fills in missing info from public sources</li>
@@ -177,7 +177,7 @@ export class GuidedTourService {
         <li>Preps the campaign list in under an hour</li>
       </ul>
     `,
-      summary: "You shouldn’t need an ops team to send 200 emails. TODD makes messy lists usable and campaigns feel effortless.",
+      summary: "You shouldn’t need an ops team to send 200 emails. 16Ahead makes messy lists usable and campaigns feel effortless.",
       image: "/assets/images/contacts-in-california.webp"
 
     },
@@ -185,7 +185,7 @@ export class GuidedTourService {
       title: 'Following Up Without Losing Momentum',
       instruction: `
       <p>A small team is managing dozens of conversations and losing track of follow-ups.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Watches email replies and contact activity</li>
         <li>Creates tasks when conversations stall</li>
@@ -193,7 +193,7 @@ export class GuidedTourService {
         <li>Builds a daily follow-up list automatically</li>
       </ul>
     `,
-      summary: "Missed follow-ups = missed deals. TODD watches the gaps so nothing promising falls through.",
+      summary: "Missed follow-ups = missed deals. 16Ahead watches the gaps so nothing promising falls through.",
       image: "/assets/images/compose-email.webp"
 
 
@@ -202,7 +202,7 @@ export class GuidedTourService {
       title: 'Turning Notes Into Next Steps',
       instruction: `
       <p>A founder captures meeting notes but forgets to turn them into tasks.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Analyzes notes in real time</li>
         <li>Tags the type of meeting (e.g. update, issue, opportunity)</li>
@@ -210,7 +210,7 @@ export class GuidedTourService {
         <li>Links tasks to the right contacts or projects</li>
       </ul>
     `,
-      summary: "Forget one action item, and the whole meeting was a waste. TODD turns scribbles into next steps—automatically.",
+      summary: "Forget one action item, and the whole meeting was a waste. 16Ahead turns scribbles into next steps—automatically.",
       image: "/assets/images/tasks.webp"
 
     },
@@ -218,7 +218,7 @@ export class GuidedTourService {
       title: 'Cleaning Up a Legacy Contact List',
       instruction: `
       <p>An org uploads contacts from spreadsheets and old CRMs—it's chaos.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Standardizes and reconfigures fields</li>
         <li>Fills in missing info using enrichment</li>
@@ -226,7 +226,7 @@ export class GuidedTourService {
         <li>Flags outdated or unreachable records</li>
       </ul>
     `,
-      summary: "Outdated CRMs and CSVs aren’t leads. TODD turns contact chaos into qualified targets.",
+      summary: "Outdated CRMs and CSVs aren’t leads. 16Ahead turns contact chaos into qualified targets.",
       image: "/assets/images/contact-list.webp"
 
     },
@@ -234,14 +234,14 @@ export class GuidedTourService {
       title: 'Finding the Right Person to Talk To',
       instruction: `
       <p>A team wants to reach out to a company but doesn't know who to start with.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Uses Match Maker to find decision-makers</li>
         <li>Surfaces shared affiliations and warm leads</li>
         <li>Suggests what to say and when to say it</li>
       </ul>
     `,
-      summary: "One name. That’s all you need to get in. TODD tells you who’s behind the curtain.",
+      summary: "One name. That’s all you need to get in. 16Ahead tells you who’s behind the curtain.",
       image: "/assets/images/pipeline.webp"
 
     },
@@ -249,7 +249,7 @@ export class GuidedTourService {
       title: 'Running a Campaign Without Burning Out',
       instruction: `
       <p>A solo operator needs to run a full email campaign and handle replies.</p>
-      <p><strong>What TODD Does:</strong></p>
+      <p><strong>What 16Ahead Does:</strong></p>
       <ul>
         <li>Writes campaign emails by tone and intent</li>
         <li>Queues messages and shows real-time open stats</li>
@@ -257,7 +257,7 @@ export class GuidedTourService {
         <li>Schedules follow-ups at the right time</li>
       </ul>
     `,
-      summary: "You shouldn’t burn out trying to sound strategic. TODD drafts, times, and tracks the entire thing—so you can focus on the wins.",
+      summary: "You shouldn’t burn out trying to sound strategic. 16Ahead drafts, times, and tracks the entire thing—so you can focus on the wins.",
       image: "/assets/images/todd-on-laptop.webp"
 
     }
@@ -271,10 +271,10 @@ export class GuidedTourService {
       title: "Start with Your Contacts",
       instruction: `
 <h2 class="text-left">Step 1: Load Your People</h2>
-<p class="text-left">TODD needs to know who you're working with. Import a spreadsheet or pull from a CRM if you have one.</p>
-<p class="text-left">TODD will clean, merge, and prep the list automatically <b>after import</b>.</p>
+<p class="text-left">16Ahead needs to know who you're working with. Import a spreadsheet or pull from a CRM if you have one.</p>
+<p class="text-left">16Ahead will clean, merge, and prep the list automatically <b>after import</b>.</p>
 `,
-      summary: "Next: Control what TODD focuses on",
+      summary: "Next: Control what 16Ahead focuses on",
     },
     {
       route: '/settings',
@@ -282,17 +282,17 @@ export class GuidedTourService {
       instruction: `
 <h2 class="text-left">Step 2: Trim the Fat</h2>
 <p class="text-left">Only turn on the features you need. Outreach, tasks, surveys, messaging—you pick.</p>
-<p class="text-left">TODD adapts to your workflow, not the other way around.</p>
+<p class="text-left">16Ahead adapts to your workflow, not the other way around.</p>
 `,
-      summary: "Next: Let TODD learn your goals",
+      summary: "Next: Let 16Ahead learn your goals",
     },
     {
       route: '/update-profile',
-      title: "Tell TODD Who You Are",
+      title: "Tell 16Ahead Who You Are",
       instruction: `
 <h2 class="text-left">Step 3: Set Your Profile</h2>
 <p class="text-left">What do you offer? Who are you trying to reach?</p>
-<p class="text-left">This is how TODD tailors outreach, filters contacts, and scores your pipeline.</p>
+<p class="text-left">This is how 16Ahead tailors outreach, filters contacts, and scores your pipeline.</p>
 `,
       summary: "Next: Unlock messaging tools",
     },
@@ -310,14 +310,14 @@ export class GuidedTourService {
       route: '/',
       title: "Ask for Anything",
       instruction: `
-<h2 class="text-left">Step 5: Talk to TODD</h2>
+<h2 class="text-left">Step 5: Talk to 16Ahead</h2>
 <p class="text-left">Type things like:</p>
 <ul>
   <li class="text-left"><i>"Find subs with DBE certification in Washington"</i></li>
   <li class="text-left"><i>"Email everyone I met this week"</i></li>
   <li class="text-left"><i>"Which contacts need a follow-up?"</i></li>
 </ul>
-<p class="text-left">TODD understands, filters, and acts—no clicking around.</p>
+<p class="text-left">16Ahead understands, filters, and acts—no clicking around.</p>
 `,
       summary: "Next: Create surveys, tasks, and more",
     },
@@ -326,7 +326,7 @@ export class GuidedTourService {
       title: "Collect, Track, Deliver",
       instruction: `
 <h2 class="text-left">Step 6: Run Your Ops</h2>
-<p class="text-left">Use TODD to:</p>
+<p class="text-left">Use 16Ahead to:</p>
 <ul>
   <li class="text-left">Create surveys to gather intel or feedback</li>
   <li class="text-left">Assign tasks to follow up or deliver work</li>
@@ -340,19 +340,19 @@ export class GuidedTourService {
       route: '/help',
       title: "You’re Good to Go",
       instruction: `
-<h2 class="text-left">TODD’s Set Up and Running</h2>
-<p class="text-left">You’ve told TODD who you are, what you want, and who you’re working with.</p>
+<h2 class="text-left">16Ahead’s Set Up and Running</h2>
+<p class="text-left">You’ve told 16Ahead who you are, what you want, and who you’re working with.</p>
 <p class="text-left">From here, you can:</p>
 <ul class="text-left">
   <li class="text-left">Send targeted messages</li>
   <li class="text-left">Draft proposals and track deliverables</li>
   <li class="text-left">Create Moves (tasks) and follow-up sequences</li>
   <li class="text-left">Use MatchMaker for partners, subs, or buyers</li>
-  <li class="text-left">Ask TODD to handle the grunt work</li>
+  <li class="text-left">Ask the General Assistant to handle the grunt work</li>
 </ul>
 <p class="text-left">Need help? <a href="https://calendly.com/ty-showers/30min" target="_blank">Book a live walkthrough</a></p>
 `,
-      summary: "TODD works. You just point it.",
+      summary: "16Ahead works. You just point it.",
     },
 
 

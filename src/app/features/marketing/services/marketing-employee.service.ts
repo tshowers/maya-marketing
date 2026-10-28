@@ -888,7 +888,7 @@ export class MarketingEmployeeService {
     const modeLabel = reviewMode.replace( /_/g, ' ' );
     return [
       String( existingReasoning || '' ).trim(),
-      `Paused during Maya review because the plan shifted into ${modeLabel}.`,
+      `Paused during the Marketing Assistant review because the plan shifted into ${modeLabel}.`,
       nextAction ? `Current next move: ${nextAction}` : ''
     ].filter( Boolean ).join( ' ' );
   }
@@ -900,7 +900,7 @@ export class MarketingEmployeeService {
     reviewMode: MarketingDailyPlanReviewMode
   ): string {
     const modeLabel = reviewMode.replace( /_/g, ' ' );
-    return `Maya ran a ${modeLabel} review and created ${createdCount}, updated ${updatedCount}, and paused ${pausedCount} daily-plan action${createdCount + updatedCount + pausedCount === 1 ? '' : 's'}.`;
+    return `The Marketing Assistant ran a ${modeLabel} review and created ${createdCount}, updated ${updatedCount}, and paused ${pausedCount} daily-plan action${createdCount + updatedCount + pausedCount === 1 ? '' : 's'}.`;
   }
 
   private expandPlanWithExecutionTasks (
@@ -960,17 +960,17 @@ export class MarketingEmployeeService {
       segmentId: template.segmentId || null,
       angleId: template.angleId || null,
       title: lane === 'outbox'
-        ? `TODD execute ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`
-        : `TODD schedule ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`,
+        ? `16Ahead execute ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`
+        : `16Ahead schedule ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`,
       description: lane === 'outbox'
-        ? 'TODD owns the live email lane once Maya has the draft batch ready.'
-        : 'TODD owns the publish and queue lane once Maya has the social draft ready.',
+        ? '16Ahead owns the live email lane once the Marketing Assistant has the draft batch ready.'
+        : '16Ahead owns the publish and queue lane once the Marketing Assistant has the social draft ready.',
       channel: template.channel,
       status: autonomous ? 'approved' : 'needs_approval',
       priority: template.priority,
       reasoning: lane === 'outbox'
-        ? 'This is the execution lane for Maya’s email plan. TODD should queue and send once the batch is ready.'
-        : 'This is the execution lane for Maya’s social plan. TODD should queue and schedule the approved posts.',
+        ? 'This is the execution lane for the Marketing Assistant’s email plan. 16Ahead should queue and send once the batch is ready.'
+        : 'This is the execution lane for the Marketing Assistant’s social plan. 16Ahead should queue and schedule the approved posts.',
       contentDraft: '',
       scheduledFor: null,
       sourcePlanId: template.sourcePlanId || null,
@@ -1080,7 +1080,7 @@ export class MarketingEmployeeService {
         channel: strategy.primaryChannel,
         priority: 'high' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: `Maya is prioritizing ${strategy.focusLabel} for ${strategy.primaryAudience}. The working angle is "${strategy.primaryAngle}" and the plan is measured by ${strategy.primaryKpi}.`,
+        reasoning: `The Marketing Assistant is prioritizing ${strategy.focusLabel} for ${strategy.primaryAudience}. The working angle is "${strategy.primaryAngle}" and the plan is measured by ${strategy.primaryKpi}.`,
         contentDraft: `Goal: ${strategy.primaryGoal}\nAudience segment: ${strategy.primaryAudience}\nCampaign: ${strategy.primaryCampaign}\nAngle: ${strategy.primaryAngle}\nTheme: ${strategy.primaryTheme}\nPrimary KPI: ${strategy.primaryKpi}\nTimeline: ${strategy.timeline}\nVoice: ${strategy.tone}`,
         approvalRequired: true,
       },
@@ -1091,7 +1091,7 @@ export class MarketingEmployeeService {
         channel: strategy.secondaryChannel,
         priority: 'high' as MarketingActionPriority,
         status: 'needs_approval' as MarketingActionStatus,
-        reasoning: `This email gives Maya a direct message for ${strategy.secondaryAudience} while keeping the campaign aligned to ${strategy.secondaryGoal}.`,
+        reasoning: `This email gives the Marketing Assistant a direct message for ${strategy.secondaryAudience} while keeping the campaign aligned to ${strategy.secondaryGoal}.`,
         contentDraft: `Subject angle: ${strategy.secondaryAngle}\nAudience: ${strategy.secondaryAudience}\nCampaign: ${strategy.secondaryCampaign}\nGoal: ${strategy.secondaryGoal}\nTheme: ${strategy.secondaryTheme}\nVoice: ${strategy.tone}`,
         approvalRequired: true,
       },
@@ -1102,7 +1102,7 @@ export class MarketingEmployeeService {
         channel: 'analysis',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: `Maya needs a tight explanation of why this segment-angle combination should win before scaling more volume.`,
+        reasoning: `The Marketing Assistant needs a tight explanation of why this segment-angle combination should win before scaling more volume.`,
         contentDraft: `Campaign: ${strategy.primaryCampaign}\nSegment: ${strategy.primaryAudience}\nPrimary angle: ${strategy.primaryAngle}\nSecondary angle: ${strategy.secondaryAngle}\nPrimary KPI: ${strategy.primaryKpi}\nFind the strongest proof points and the largest objection still unresolved.`,
         approvalRequired: false,
       },
@@ -1113,7 +1113,7 @@ export class MarketingEmployeeService {
         channel: 'campaign',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: `A checkpoint lets Maya explain exactly what strategy is running and whether the current angle is earning more execution.`,
+        reasoning: `A checkpoint lets the Marketing Assistant explain exactly what strategy is running and whether the current angle is earning more execution.`,
         contentDraft: `Focus: ${strategy.focusLabel}\nPrimary campaign: ${strategy.primaryCampaign}\nPrimary audience: ${strategy.primaryAudience}\nPrimary angle: ${strategy.primaryAngle}\nKPI: ${strategy.primaryKpi}\nWhat is the current bottleneck and what should change next?`,
         approvalRequired: false,
       }
@@ -1137,7 +1137,7 @@ export class MarketingEmployeeService {
         channel: 'Email',
         priority: 'high' as MarketingActionPriority,
         status: 'needs_approval' as MarketingActionStatus,
-        reasoning: `Warm inbound has the highest urgency because the buyer already raised a hand. Maya is focusing on ${strategy.primaryAudience} with the angle "${strategy.primaryAngle}".`,
+        reasoning: `Warm inbound has the highest urgency because the buyer already raised a hand. The Marketing Assistant is focusing on ${strategy.primaryAudience} with the angle "${strategy.primaryAngle}".`,
         contentDraft: `Goal: rescue neglected inbound interest.\nAudience: ${strategy.primaryAudience}\nCampaign: ${strategy.primaryCampaign}\nAngle: ${strategy.primaryAngle}\nPrimary KPI: ${strategy.primaryKpi}\nTimeline: ${strategy.timeline}\nVoice: ${strategy.tone}`,
         approvalRequired: true,
       },
@@ -1148,7 +1148,7 @@ export class MarketingEmployeeService {
         channel: 'analysis',
         priority: 'high' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'Maya needs to know whether the neglect is coming from form fills, referrals, or other warm channels.',
+        reasoning: 'The Marketing Assistant needs to know whether the neglect is coming from form fills, referrals, or other warm channels.',
         contentDraft: `List untouched inbound pockets, response lag, and likely rescue priority for ${strategy.primaryAudience} and ${strategy.secondaryAudience}.\nPrimary angle: ${strategy.primaryAngle}\nSecondary angle: ${strategy.secondaryAngle}`,
         approvalRequired: false,
       },
@@ -1159,7 +1159,7 @@ export class MarketingEmployeeService {
         channel: 'Campaign',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'When warm inbound is being missed, Maya should correct handling before increasing outbound volume.',
+        reasoning: 'When warm inbound is being missed, the Marketing Assistant should correct handling before increasing outbound volume.',
         contentDraft: `Summarize what work should pause, what should continue, and what should move first to rescue warm inbound.\nSegment: ${strategy.primaryAudience}\nAngle: ${strategy.primaryAngle}\nKPI: ${strategy.primaryKpi}`,
         approvalRequired: false,
       }
@@ -1183,7 +1183,7 @@ export class MarketingEmployeeService {
         channel: strategy.primaryChannel,
         priority: 'high' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: `The plan is behind target, so Maya should reduce friction and create the next shippable asset for ${strategy.primaryAudience}.`,
+        reasoning: `The plan is behind target, so the Marketing Assistant should reduce friction and create the next shippable asset for ${strategy.primaryAudience}.`,
         contentDraft: `Goal: recover send pace.\nAudience: ${strategy.primaryAudience}\nAngle: ${strategy.primaryAngle}\nTheme: ${strategy.primaryTheme}\nCampaign: ${strategy.primaryCampaign}\nPrimary KPI: ${strategy.primaryKpi}\nTimeline: ${strategy.timeline}\nVoice: ${strategy.tone}`,
         approvalRequired: true,
       },
@@ -1205,7 +1205,7 @@ export class MarketingEmployeeService {
         channel: 'Campaign',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'Maya should be explicit about what is preventing the team from reaching the plan target.',
+        reasoning: 'The Marketing Assistant should be explicit about what is preventing the team from reaching the plan target.',
         contentDraft: `List the main send bottleneck, what to unblock first, and how to recover the remaining send gap this cycle.\nSegment: ${strategy.primaryAudience}\nAngle: ${strategy.primaryAngle}\nKPI: ${strategy.primaryKpi}`,
         approvalRequired: false,
       }
@@ -1229,7 +1229,7 @@ export class MarketingEmployeeService {
         channel: 'Email',
         priority: 'high' as MarketingActionPriority,
         status: 'needs_approval' as MarketingActionStatus,
-        reasoning: `Booking-intent clicks and replies mean the next job is conversion, not more broad awareness. Maya is leaning on "${strategy.primaryAngle}" to move ${strategy.primaryAudience}.`,
+        reasoning: `Booking-intent clicks and replies mean the next job is conversion, not more broad awareness. The Marketing Assistant is leaning on "${strategy.primaryAngle}" to move ${strategy.primaryAudience}.`,
         contentDraft: `Goal: convert existing engagement into meetings.\nAudience: ${strategy.primaryAudience}\nCampaign: ${strategy.secondaryCampaign}\nAngle: ${strategy.primaryAngle}\nTheme: ${strategy.secondaryTheme}\nPrimary KPI: ${strategy.primaryKpi}\nVoice: ${strategy.tone}`,
         approvalRequired: true,
       },
@@ -1240,7 +1240,7 @@ export class MarketingEmployeeService {
         channel: 'analysis',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'Maya should know whether the drop-off is message fit, friction, or weak follow-up handling.',
+        reasoning: 'The Marketing Assistant should know whether the drop-off is message fit, friction, or weak follow-up handling.',
         contentDraft: `Analyze replies, booking-intent clicks, and the gap to meetings for ${strategy.primaryAudience} and ${strategy.secondaryAudience}.\nPrimary angle: ${strategy.primaryAngle}\nSecondary angle: ${strategy.secondaryAngle}`,
         approvalRequired: false,
       },
@@ -1251,7 +1251,7 @@ export class MarketingEmployeeService {
         channel: 'Campaign',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'Maya should tighten the path from interest to booked conversation before expanding reach.',
+        reasoning: 'The Marketing Assistant should tighten the path from interest to booked conversation before expanding reach.',
         contentDraft: `Summarize the current conversion drag on ${strategy.primaryGoal} and ${strategy.secondaryGoal}.\nSegment: ${strategy.primaryAudience}\nAngle: ${strategy.primaryAngle}\nKPI: ${strategy.primaryKpi}\nTimeline: ${strategy.timeline}`,
         approvalRequired: false,
       }
@@ -1275,7 +1275,7 @@ export class MarketingEmployeeService {
         channel: 'Campaign',
         priority: 'high' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'If approvals are the bottleneck, Maya should reduce ambiguity and clear the queue.',
+        reasoning: 'If approvals are the bottleneck, the Marketing Assistant should reduce ambiguity and clear the queue.',
         contentDraft: `List the top blocked approvals, what decision is required, and what can move once they are cleared.\nCurrent segment: ${strategy.primaryAudience}\nCurrent angle: ${strategy.primaryAngle}\nKPI: ${strategy.primaryKpi}`,
         approvalRequired: false,
       },
@@ -1293,11 +1293,11 @@ export class MarketingEmployeeService {
       {
         type: 'research' as MarketingActionType,
         title: 'Capture approval objections and missing proof',
-        description: 'Document what keeps causing hesitation so Maya can reduce recurring approval drag.',
+        description: 'Document what keeps causing hesitation so the Marketing Assistant can reduce recurring approval drag.',
         channel: 'analysis',
         priority: 'medium' as MarketingActionPriority,
         status: 'draft' as MarketingActionStatus,
-        reasoning: 'Maya should learn why approvals stall instead of simply pushing more drafts.',
+        reasoning: 'The Marketing Assistant should learn why approvals stall instead of simply pushing more drafts.',
         contentDraft: `Summarize recurring approval objections, proof gaps, and the smallest change that would speed approval.\nCurrent campaign: ${strategy.primaryCampaign}\nAudience: ${strategy.primaryAudience}\nAngle: ${strategy.primaryAngle}`,
         approvalRequired: false,
       }

@@ -1,40 +1,40 @@
 <!-- The shared About template (taliferro-ui); Maya's own story follows it. -->
 <app-product-pages page="about">
   <section class="pp-section" aria-labelledby="maya-method-title">
-    <p class="pp-kicker">How Maya works</p>
+    <p class="pp-kicker">How the Marketing Assistant works</p>
     <h2 id="maya-method-title">A marketing director, not a chatbot</h2>
-    <p>Most AI tools wait for instructions and point you at another app. Maya works the way a marketing director would: she decides whether the work should happen, plans it, and does it.</p>
+    <p>Most AI tools wait for instructions and point you at another app. The Marketing Assistant works the way a marketing director would: it decides whether the work should happen, plans it, and does it.</p>
     <div class="pp-cards">
       <article *ngFor="let item of method"><h3><span class="pp-num">{{ item.step }}</span>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
     </div>
   </section>
 
   <section class="pp-section" aria-labelledby="maya-principles-title">
-    <p class="pp-kicker">What she believes</p>
-    <h2 id="maya-principles-title">Her principles</h2>
+    <p class="pp-kicker">What it believes</p>
+    <h2 id="maya-principles-title">Its principles</h2>
     <div class="pp-cards">
       <article *ngFor="let item of principles"><h3>{{ item.title }}</h3><p>{{ item.copy }}</p></article>
     </div>
   </section>
 
   <section class="pp-section" aria-labelledby="maya-tools-title">
-    <p class="pp-kicker">Works with the TODD tools</p>
+    <p class="pp-kicker">Works with the 16Ahead tools</p>
     <h2 id="maya-tools-title">One advisor, every tool</h2>
-    <p>Instead of sending you from app to app, Maya coordinates the TODD tools for you.</p>
+    <p>Instead of sending you from app to app, the Marketing Assistant coordinates the 16Ahead tools for you.</p>
     <dl class="pp-rows">
       <div *ngFor="let tool of tools"><dt><a [href]="tool.url">{{ tool.name }}</a></dt><dd>{{ tool.copy }}</dd></div>
     </dl>
   </section>
 
   <section class="pp-section" aria-labelledby="maya-where-title">
-    <p class="pp-kicker">Where she works</p>
+    <p class="pp-kicker">Where it works</p>
     <h2 id="maya-where-title">In your browser and on your iPhone</h2>
-    <p>Ask Maya for advice free in any browser. Creating documents, decks and status reports comes with the Maya app on iPhone and iPad, and one subscription unlocks it on the web too. <a routerLink="/pricing">See pricing</a>.</p>
+    <p>Ask the Marketing Assistant for advice free in any browser. Creating documents, decks and status reports comes with the Marketing Assistant app on iPhone and iPad, and one subscription unlocks it on the web too. <a routerLink="/pricing">See pricing</a>.</p>
   </section>
 
   <section class="pp-section" aria-labelledby="maya-who-title">
-    <p class="pp-kicker">Who makes her</p>
-    <h2 id="maya-who-title">Built by Taliferro Tech, as part of TODD</h2>
-    <p>Maya is made by Taliferro Tech in Seattle. She is part of TODD, a Momentum System that turns scattered information across relationships, growth, knowledge, execution and feedback into clear next moves.</p>
+    <p class="pp-kicker">Who makes it</p>
+    <h2 id="maya-who-title">Built by Taliferro Tech, as part of 16Ahead</h2>
+    <p>The Marketing Assistant is made by Taliferro Tech in Seattle. It is part of 16Ahead, a Momentum System that turns scattered information across relationships, growth, knowledge, execution and feedback into clear next moves.</p>
   </section>
 </app-product-pages>

@@ -388,9 +388,9 @@ export class EmailSentComponent implements OnInit, OnDestroy {
     if ( messageType === 'maya_send' || sendAuthority === 'maya' || String( email?.signalOrigin || '' ).trim().toLowerCase() === 'maya' || String( ( email as any )?.sourceSystem || '' ).trim().toLowerCase() === 'maya' ) {
       return {
         key: 'maya',
-        label: 'Maya',
+        label: 'Marketing Assistant',
         tone: 'neutral',
-        reason: sendReasonLabel || 'Sent by Maya.'
+        reason: sendReasonLabel || 'Sent by the Marketing Assistant.'
       };
     }
 

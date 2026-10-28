@@ -3,7 +3,7 @@ import { MenuAppConfig } from '@taliferro/ui/platform/universal-menu.model';
 /** Maya's part of the universal menu: what you can do in Maya. */
 export const PLATFORM_MENU_CONFIG: MenuAppConfig = {
   app: 'maya',
-  name: 'Maya',
+  name: 'Marketing Assistant',
   items: [
     { label: 'Home', icon: 'home', route: '/' },
     { label: 'Status', icon: 'chart', route: '/marketing-employee', keywords: 'report progress' },

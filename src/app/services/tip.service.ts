@@ -35,7 +35,7 @@ export class TipService {
     // Knowledge Base / Response Flow
     {
       id: 'kb-rf-1',
-      text: 'Write questions the way users actually ask them. TODD searches better when the wording feels real, not formal.',
+      text: 'Write questions the way users actually ask them. 16Ahead searches better when the wording feels real, not formal.',
       category: 'documents',
       page: 'response-flow',
     },
@@ -83,7 +83,7 @@ export class TipService {
     },
     {
       id: 'kb-rf-9',
-      text: 'If a question keeps showing up in email or meetings, give it a Response Flow so TODD can answer it the same way every time.',
+      text: 'If a question keeps showing up in email or meetings, give it a Response Flow so 16Ahead can answer it the same way every time.',
       category: 'documents',
       page: 'response-flow',
     },
@@ -128,7 +128,7 @@ export class TipService {
     // Tasks / Moves
     {
       id: 'tasks-1',
-      text: 'Archive old moves that are no longer relevant. A clean board makes TODD feel lighter.',
+      text: 'Archive old moves that are no longer relevant. A clean board makes 16Ahead feel lighter.',
       category: 'tasks',
     },
     {
@@ -153,29 +153,29 @@ export class TipService {
     },
     {
       id: 'tasks-6',
-      text: 'If TODD keeps showing the same name in your suggestions, it’s a signal. Either move them forward—or archive.',
+      text: 'If 16Ahead keeps showing the same name in your suggestions, it’s a signal. Either move them forward—or archive.',
       category: 'tasks',
     },
 
     // Contacts
     {
       id: 'contacts-1',
-      text: 'Tag contacts by role or segment so TODD can surface better suggestions later.',
+      text: 'Tag contacts by role or segment so 16Ahead can surface better suggestions later.',
       category: 'contacts',
     },
     {
       id: 'contacts-2',
-      text: 'Before you email someone, skim their past interactions in TODD for tone and timing clues.',
+      text: 'Before you email someone, skim their past interactions in 16Ahead for tone and timing clues.',
       category: 'contacts',
     },
     {
       id: 'contacts-3',
-      text: 'Every warm contact should have a next step. If TODD shows “No Moves,” add one before you leave the screen.',
+      text: 'Every warm contact should have a next step. If 16Ahead shows “No Moves,” add one before you leave the screen.',
       category: 'contacts',
     },
     {
       id: 'contacts-4',
-      text: 'Use status to mark where the relationship really is, not where you wish it was. TODD can’t help if the data is aspirational.',
+      text: 'Use status to mark where the relationship really is, not where you wish it was. 16Ahead can’t help if the data is aspirational.',
       category: 'contacts',
     },
     {
@@ -190,12 +190,12 @@ export class TipService {
     },
     {
       id: 'contacts-7',
-      text: 'Don’t chase everyone. Use TODD to focus on contacts who open, click, or reply. Warm beats wide.',
+      text: 'Don’t chase everyone. Use 16Ahead to focus on contacts who open, click, or reply. Warm beats wide.',
       category: 'contacts',
     },
     {
       id: 'contacts-8',
-      text: 'Use tags like “Champion”, “Evaluator”, or “Blocker”. It helps TODD—and you—remember who actually moves things.',
+      text: 'Use tags like “Champion”, “Evaluator”, or “Blocker”. It helps 16Ahead—and you—remember who actually moves things.',
       category: 'contacts',
     },
     {
@@ -212,27 +212,27 @@ export class TipService {
     // Email / Outreach
     {
       id: 'email-1',
-      text: 'Draft inside TODD first so you keep the thread, then send via your preferred client.',
+      text: 'Draft inside 16Ahead first so you keep the thread, then send via your preferred client.',
       category: 'email',
     },
     {
       id: 'email-2',
-      text: 'Short, specific asks get more replies. TODD can help you rewrite long emails down.',
+      text: 'Short, specific asks get more replies. 16Ahead can help you rewrite long emails down.',
       category: 'email',
     },
     {
       id: 'email-3',
-      text: 'Before you send anything, check TODD for the last thing they responded to. Match that tone and length.',
+      text: 'Before you send anything, check 16Ahead for the last thing they responded to. Match that tone and length.',
       category: 'email',
     },
     {
       id: 'email-4',
-      text: 'One clear ask per email. If TODD can’t summarize your ask in one line, it’s probably too complicated.',
+      text: 'One clear ask per email. If 16Ahead can’t summarize your ask in one line, it’s probably too complicated.',
       category: 'email',
     },
     {
       id: 'email-5',
-      text: 'Use TODD to batch follow-ups for one segment at a time. Same role, tuned message, better hit rate.',
+      text: 'Use 16Ahead to batch follow-ups for one segment at a time. Same role, tuned message, better hit rate.',
       category: 'email',
     },
     {
@@ -243,7 +243,7 @@ export class TipService {
     // Documents
     {
       id: 'documents-1',
-      text: 'Keep drafts in TODD until they’re stable. It saves you from hunting through your desktop later.',
+      text: 'Keep drafts in 16Ahead until they’re stable. It saves you from hunting through your desktop later.',
       category: 'documents',
     },
 
@@ -261,7 +261,7 @@ export class TipService {
 
     {
       id: 'documents-4',
-      text: 'When you upload a file, add a note explaining why it matters. TODD can surface it faster later.',
+      text: 'When you upload a file, add a note explaining why it matters. 16Ahead can surface it faster later.',
       category: 'documents',
     },
 
@@ -285,7 +285,7 @@ export class TipService {
 
     {
       id: 'documents-8',
-      text: 'Delete outdated drafts. A clean document list helps TODD show the useful stuff first.',
+      text: 'Delete outdated drafts. A clean document list helps 16Ahead show the useful stuff first.',
       category: 'documents',
     },
 
@@ -297,13 +297,13 @@ export class TipService {
 
     {
       id: 'documents-10',
-      text: 'Upload key PDFs to TODD before meetings. Quick access beats searching email threads.',
+      text: 'Upload key PDFs to 16Ahead before meetings. Quick access beats searching email threads.',
       category: 'documents',
     },
 
     {
       id: 'documents-11',
-      text: 'Add keywords that describe the document’s role. TODD’s search gets smarter with each one.',
+      text: 'Add keywords that describe the document’s role. 16Ahead’s search gets smarter with each one.',
       category: 'documents',
     },
 
@@ -326,7 +326,7 @@ export class TipService {
     },
     {
       id: 'surveys-3',
-      text: 'Mix multiple-choice for trends with one open text question for nuance TODD can analyze later.',
+      text: 'Mix multiple-choice for trends with one open text question for nuance 16Ahead can analyze later.',
       category: 'surveys',
     },
     {
