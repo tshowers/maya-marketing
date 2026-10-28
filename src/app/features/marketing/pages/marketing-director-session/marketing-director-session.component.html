@@ -3,7 +3,8 @@
   <main class="maya-main">
     <section class="maya-conversation" [class.maya-conversation--started]="hasUserMessages">
       <div class="maya-welcome" *ngIf="!hasUserMessages">
-        <img class="maya-avatar" src="assets/find/entities/maya/logo-icon.png" alt="Marketing Assistant" />
+        <img class="maya-avatar brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="Marketing Assistant" />
+        <img class="maya-avatar brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="Marketing Assistant" />
         <h1 class="maya-hello">Hi, I'm the Marketing Assistant.</h1>
         <p class="maya-intro">I can see your marketing plan in 16Ahead. Ask me what to tighten, cut, or move today.</p>
         <maya-demo-video></maya-demo-video>
@@ -31,7 +32,7 @@
 
       <div #directorMessagesContainer class="maya-messages" *ngIf="hasUserMessages">
         <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'">
-          <img *ngIf="message.role !== 'user'" class="maya-message__avatar" src="assets/find/entities/maya/logo-icon.png" alt="Marketing Assistant" />
+          <ng-container *ngIf="message.role !== 'user'"><img class="maya-message__avatar brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="Marketing Assistant" /><img class="maya-message__avatar brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="Marketing Assistant" /></ng-container>
           <div class="maya-message__body">
             <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
             <div class="maya-why-callout" *ngIf="message.role === 'director' && message.why">
@@ -45,7 +46,7 @@
           </div>
         </article>
         <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="The Marketing Assistant is thinking">
-          <img class="maya-message__avatar" src="assets/find/entities/maya/logo-icon.png" alt="" />
+          <img class="maya-message__avatar brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="" /><img class="maya-message__avatar brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="" />
           <div class="maya-thinking"><span class="maya-thinking__label">The Marketing Assistant is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
         </article>
         <aside class="maya-presentation-ready" *ngIf="presentationMode && presentationState === 'READY_TO_GENERATE'">

@@ -20,10 +20,11 @@ export class MayaStatusReportService {
     const height = pdf.internal.pageSize.getHeight();
     const cover = await this.loadImage(this.imageService.selectCover(report.company.name));
     const accent = await this.loadImage(this.imageService.selectAccent(report.company.name));
-    const avatar = await this.loadImage('assets/find/entities/maya/logo-icon.png');
+    // The cover and closing pages are navy, so they take the dark mark.
+    const avatarOnDark = await this.loadImage('assets/brand/products/png/dark/03-marketing-assistant.png');
     const logo = await this.loadImage(report.company.logoUrl);
 
-    await this.cover(pdf, report, cover, avatar, logo, width, height, confidential);
+    await this.cover(pdf, report, cover, avatarOnDark, logo, width, height, confidential);
     this.page(pdf, report, 'Executive Summary', confidential, accent);
     this.summary(pdf, report, undefined, width);
     if (report.outreach) { this.page(pdf, report, 'Outreach Activity', confidential); this.section(pdf, report.outreach, undefined, width); }
@@ -36,7 +37,7 @@ export class MayaStatusReportService {
     if (report.insights.length) { this.page(pdf, report, 'Key Insights', confidential); this.listPage(pdf, report.insights, 'What the available data is telling us.', undefined, width); }
     if (report.recommendations.length) { this.page(pdf, report, 'Recommended Next Steps', confidential); this.listPage(pdf, report.recommendations, 'Prioritized actions based on the current evidence.', undefined, width); }
     this.page(pdf, report, 'Report Details', confidential, accent); this.details(pdf, report, width);
-    this.page(pdf, report, 'Closing', confidential); await this.closing(pdf, report, avatar, logo, accent, width, height);
+    this.page(pdf, report, 'Closing', confidential); await this.closing(pdf, report, avatarOnDark, logo, accent, width, height);
 
     pdf.save(`maya-marketing-activity-status-${this.slug(report.company.name)}.pdf`);
   }
@@ -125,7 +126,7 @@ export class MayaStatusReportService {
 
   private details(pdf: jsPDF, report: MayaStatusReport, width: number): void { pdf.setTextColor(this.navy); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.text('Reporting Period', 42, 136); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(11); pdf.text(report.reportingPeriod.label, 42, 158); pdf.setFont('helvetica', 'bold'); pdf.text('Data Sources', 42, 204); this.bullets(pdf, report.dataSources, 42, 230, width - 84); pdf.setFont('helvetica', 'bold'); pdf.text('Data Coverage', 42, 390); pdf.setFont('helvetica', 'normal'); this.wrap(pdf, report.dataCoverage, 42, 412, width - 84, 16); if (report.limitations.length) { pdf.setFont('helvetica', 'bold'); pdf.text('Limitations', 42, 490); this.bullets(pdf, report.limitations, 42, 516, width - 84); } }
 
-  private async closing(pdf: jsPDF, report: MayaStatusReport, avatar: string | undefined, logo: string | undefined, accent: string | undefined, width: number, height: number): Promise<void> { pdf.setFillColor(this.navy); pdf.rect(0, 0, width, height, 'F'); if (accent) pdf.addImage(await this.cropImage(accent, width * .43, height), 'PNG', width * .57, 0, width * .43, height, undefined, 'FAST'); pdf.setFillColor(this.navy); pdf.triangle(0, 0, width * .7, 0, 0, height, 'F'); if (avatar) pdf.addImage(avatar, 'PNG', 52, 180, 110, 110, undefined, 'FAST'); pdf.setTextColor('#ffffff'); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(26); pdf.text('Thank you', 196, 218); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(14); pdf.text("Questions? I'm here to help.", 196, 250); pdf.setFont('helvetica', 'bold'); pdf.text('Maya', 196, 286); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(11); pdf.text('Your Marketing Director', 196, 306); this.brand(pdf, report.company, logo, 42, height - 86, '#ffffff', 360); }
+  private async closing(pdf: jsPDF, report: MayaStatusReport, avatar: string | undefined, logo: string | undefined, accent: string | undefined, width: number, height: number): Promise<void> { pdf.setFillColor(this.navy); pdf.rect(0, 0, width, height, 'F'); if (accent) pdf.addImage(await this.cropImage(accent, width * .43, height), 'PNG', width * .57, 0, width * .43, height, undefined, 'FAST'); pdf.setFillColor(this.navy); pdf.triangle(0, 0, width * .7, 0, 0, height, 'F'); if (avatar) pdf.addImage(avatar, 'PNG', 52, 180, 110, 110, undefined, 'FAST'); pdf.setTextColor('#ffffff'); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(26); pdf.text('Thank you', 196, 218); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(14); pdf.text("Questions? I'm here to help.", 196, 250); pdf.setFont('helvetica', 'bold'); pdf.text('Marketing Assistant', 196, 286); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(11); pdf.text('Your Marketing Director', 196, 306); this.brand(pdf, report.company, logo, 42, height - 86, '#ffffff', 360); }
 
   private metricCards(pdf: jsPDF, metrics: MayaStatusReportMetric[], x: number, y: number, width: number): void { const cardWidth = (width - 100) / 2; metrics.slice(0, 4).forEach((metric, index) => { const col = index % 2; const row = Math.floor(index / 2); const left = x + col * (cardWidth + 16); const top = y + row * 96; const value = String(metric.value || ''); pdf.setTextColor(this.blue); pdf.setFont('helvetica', 'bold'); pdf.setFontSize(value.length > 24 ? 14 : 21); const valueLines = pdf.splitTextToSize(value, cardWidth - 28) as string[]; pdf.setFillColor(this.pale); pdf.roundedRect(left, top, cardWidth, 80, 8, 8, 'F'); pdf.text(valueLines.slice(0, 2), left + 14, top + 27); pdf.setTextColor(this.navy); pdf.setFontSize(9); pdf.text(this.shortenText(metric.label, 48), left + 14, top + 54); if (metric.detail) { pdf.setTextColor(this.gray); pdf.setFontSize(8); pdf.text(this.shortenText(metric.detail, 54), left + 14, top + 69); } }); }
 

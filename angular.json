@@ -28,6 +28,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "../../taliferro-ui/brand/products",
+                "output": "assets/brand/products"
               }
             ],
             "styles": [

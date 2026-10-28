@@ -79,7 +79,8 @@ const VIEW_KEY = 'maya.statusView';
   styleUrls: ['./marketing-employee-home.component.css']
 } )
 export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
-  readonly avatarUrl = 'assets/find/entities/maya/logo-icon.png';
+  readonly avatarUrl = 'assets/brand/products/svg/light/03-marketing-assistant.svg';
+  readonly avatarDarkUrl = 'assets/brand/products/svg/dark/03-marketing-assistant.svg';
   readonly today = todayKey();
   readonly dateLabel = longDate().toUpperCase();
   readonly movesUrl = MAYA_TASKS_URL;

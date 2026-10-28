@@ -18,7 +18,7 @@ import { AppUpdateService } from './services/app-update.service';
     <!-- Maya header (design 11a/11b). Help and About draw their own. -->
     <header class="maya-head" *ngIf="showHeader">
       <a class="maya-head__brand" routerLink="/">
-        <span class="maya-head__avatar"><img src="assets/find/entities/maya/logo-icon.png" alt="" /></span>
+        <span class="maya-head__avatar"><img class="brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="" /><img class="brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="" /></span>
         <span class="maya-head__title">Marketing Assistant <span>Marketing advice</span></span>
       </a>
       <nav class="maya-head__actions" aria-label="Marketing Assistant">

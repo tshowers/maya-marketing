@@ -24,9 +24,7 @@
 .maya-avatar {
   width: 96px;
   height: 96px;
-  object-fit: cover;
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px var(--t-green);
+  object-fit: contain;
 }
 
 .maya-hello { margin: 22px 0 8px; font-size: 56px; font-weight: 700; line-height: 1.02; letter-spacing: -.045em; }
@@ -157,7 +155,7 @@
 .maya-messages { display: flex; flex-direction: column; gap: 22px; width: min(100%, 820px); margin: 0 auto; padding: 16px 0 190px; }
 
 .maya-message { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; line-height: 1.55; }
-.maya-message__avatar { flex: none; width: 30px; height: 30px; margin-top: -2px; object-fit: cover; border-radius: 50%; }
+.maya-message__avatar { flex: none; width: 30px; height: 30px; margin-top: -2px; object-fit: contain; }
 .maya-message__body { min-width: 0; flex: 1; }
 .maya-message-content { min-width: 0; overflow-x: hidden; white-space: pre-wrap; }
 

@@ -42,7 +42,7 @@
     <header>
       <p class="ms-kicker">Status · {{ dateLabel }}</p>
       <h1 class="ms-h1">{{ headline }}</h1>
-      <p *ngIf="sentence" class="ms-maya"><img [src]="avatarUrl" alt="" />{{ sentence }}</p>
+      <p *ngIf="sentence" class="ms-maya"><img class="brand-mark--light" [src]="avatarUrl" alt="" /><img class="brand-mark--dark" [src]="avatarDarkUrl" alt="" />{{ sentence }}</p>
     </header>
 
     <section *ngIf="queueHealth?.blocked" class="ms-blocker" data-cy="status-blocker">

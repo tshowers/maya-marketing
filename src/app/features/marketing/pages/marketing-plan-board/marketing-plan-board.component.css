@@ -17,7 +17,7 @@
 .mp-kicker { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .mp-head h1, .mp-thead h1, .mp-empty h1 { margin: 10px 0 14px; font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
 .mp-maya { display: flex; gap: 12px; margin: 0; max-width: 720px; font-size: 17px; line-height: 1.55; }
-.mp-maya img { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; object-fit: cover; }
+.mp-maya img { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; }
 .mp-muted { color: var(--muted); }
 .mp-small { font-size: 14px; }
 .mp-error { color: var(--t-pink-fg); font-weight: 600; }

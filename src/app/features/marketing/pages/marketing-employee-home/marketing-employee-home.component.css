@@ -14,7 +14,7 @@
 .ms-kicker { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .ms-h1 { margin: 10px 0 14px; font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
 .ms-maya { display: flex; gap: 12px; max-width: 720px; margin: 0; font-size: 17px; line-height: 1.55; }
-.ms-maya img { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; object-fit: cover; }
+.ms-maya img { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; }
 
 .ms-btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--text); color: var(--bg) !important; font: 700 14px/1 var(--font); text-decoration: none; white-space: nowrap; cursor: pointer; }
 .ms-btn:hover { filter: brightness(1.25); }

@@ -1913,14 +1913,10 @@ nav.main-nav .todd-command-scroll>.nav-item:has(.nav-pin-label) {
   flex: none;
   width: 36px;
   height: 36px;
-  overflow: hidden;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 1px var(--surface2);
 }
 
-/* The art has its own blue ring; crop just inside it. */
-.maya-head__avatar img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.18); }
+/* The dial mark brings its own ring of ticks; no frame or crop. */
+.maya-head__avatar img { width: 100%; height: 100%; object-fit: contain; }
 
 .maya-head__title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; }
 .maya-head__title span { font-weight: 500; color: var(--muted); }

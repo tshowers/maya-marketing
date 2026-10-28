@@ -60,7 +60,8 @@ const VIEW_KEY = 'maya.planView';
   styleUrl: './marketing-plan-board.component.css'
 } )
 export class MarketingPlanBoardComponent implements OnInit, OnDestroy {
-  readonly avatarUrl = 'assets/find/entities/maya/logo-icon.png';
+  readonly avatarUrl = 'assets/brand/products/svg/light/03-marketing-assistant.svg';
+  readonly avatarDarkUrl = 'assets/brand/products/svg/dark/03-marketing-assistant.svg';
   readonly today = todayKey();
 
   view: PlanView = 'list';

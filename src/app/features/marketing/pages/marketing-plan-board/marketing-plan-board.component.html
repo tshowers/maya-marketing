@@ -71,7 +71,7 @@
           </span>
         </p>
         <h1>{{ plan.title || 'Marketing plan' }}</h1>
-        <p class="mp-maya"><img [src]="avatarUrl" alt="" />{{ sentence }}</p>
+        <p class="mp-maya"><img class="brand-mark--light" [src]="avatarUrl" alt="" /><img class="brand-mark--dark" [src]="avatarDarkUrl" alt="" />{{ sentence }}</p>
       </header>
 
       <div class="mp-progress">
@@ -160,7 +160,7 @@
       <div>
         <p class="mp-kicker">Marketing plan</p>
         <h1>{{ plan.title || 'Marketing plan' }}</h1>
-        <p class="mp-maya"><img [src]="avatarUrl" alt="" />{{ sentence }}</p>
+        <p class="mp-maya"><img class="brand-mark--light" [src]="avatarUrl" alt="" /><img class="brand-mark--dark" [src]="avatarDarkUrl" alt="" />{{ sentence }}</p>
       </div>
       <div class="mp-stats">
         <div><span>Steps done</span><strong>{{ doneCount }} of {{ steps.length }}</strong></div>

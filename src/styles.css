@@ -6,6 +6,19 @@
 
 html, body { min-height: 100%; }
 
+/* The product mark (design_handoff_16ahead_logos 03) comes as a light/dark
+ * pair: each spot renders both and the theme hides one. The light set's
+ * black ticks vanish on dark, and inverting it turns the blue tick orange.
+ * Same theme selectors as tokens.css. */
+@media not (prefers-color-scheme: dark) {
+  :root:not(.dark):not([data-theme="dark"]) .brand-mark--dark { display: none !important; }
+}
+:root.light .brand-mark--dark, :root[data-theme="light"] .brand-mark--dark { display: none !important; }
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) .brand-mark--light { display: none !important; }
+}
+:root.dark .brand-mark--light, :root[data-theme="dark"] .brand-mark--light { display: none !important; }
+
 /* Maya uses the Find family tokens (tokens.css). Her pages were written
  * against TODD's older variables; point those at the tokens so every route
  * shares one palette and follows dark mode with no per-page dark blocks. */
