@@ -124,7 +124,7 @@ export class WorkComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit (): void {
-    this.title.setTitle( "The Marketing Assistant's work — Marketing Assistant | Taliferro Tech" );
+    this.title.setTitle( "The Marketing Assistant's work — Marketing Assistant | 16Ahead" );
     // Maya's chat links here with ?job=<id> after starting a job.
     const linkedJob = this.route.snapshot.queryParamMap.get( 'job' );
     if ( linkedJob ) {

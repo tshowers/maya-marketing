@@ -143,12 +143,12 @@ export function applyVisitContextToAd (
   const interest = context.interestLabel;
 
   if ( context.isKnownEmailJourney ) {
-    next.subheading = interest !== 'TODD'
+    next.subheading = interest !== '16Ahead'
       ? `You clicked through from an email because ${interest} matters right now. This page picks up that conversation and shows how 16Ahead helps the work keep moving.`
       : 'You clicked through from an email for a reason. This page picks up that conversation and shows how 16Ahead helps work keep moving.';
     next.bullet1 = 'Continue the conversation without losing context.';
     next.bullet2 = 'See the next move without more admin work.';
-    next.finalAppeal = interest !== 'TODD' ? `See how 16Ahead supports ${interest}` : 'See what 16Ahead can move for you';
+    next.finalAppeal = interest !== '16Ahead' ? `See how 16Ahead supports ${interest}` : 'See what 16Ahead can move for you';
     next.finalAppealSub = 'If you are not ready to buy, book a meeting and we will walk through the real fit together.';
     return next;
   }
@@ -156,15 +156,15 @@ export function applyVisitContextToAd (
   switch ( context.source ) {
     case 'instagram':
     case 'threads':
-      next.heading = interest !== 'TODD'
+      next.heading = interest !== '16Ahead'
         ? `${interest} should feel lighter, not heavier`
         : 'Work should feel lighter, not heavier';
       next.subheading = `You came from ${context.sourceLabel}. Here is the short version: 16Ahead reduces the chasing, checking, and remembering that slows work down.`;
-      next.finalAppeal = interest !== 'TODD' ? `See ${interest} in motion` : 'See 16Ahead in motion';
+      next.finalAppeal = interest !== '16Ahead' ? `See ${interest} in motion` : 'See 16Ahead in motion';
       next.finalAppealSub = 'Watch the flow, ask a quick question, or book a short walkthrough.';
       break;
     case 'linkedin':
-      next.heading = interest !== 'TODD'
+      next.heading = interest !== '16Ahead'
         ? `${interest} needs operating clarity`
         : 'Operations need more clarity, not more software';
       next.subheading = 'You came from LinkedIn, so let’s keep it practical. 16Ahead connects signals, follow-up, and next actions so progress does not depend on memory.';

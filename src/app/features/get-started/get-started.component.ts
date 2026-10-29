@@ -77,7 +77,7 @@ export class GetStartedComponent implements OnInit {
   ) { }
 
   ngOnInit (): void {
-    this.title.setTitle( 'Get started — Marketing Assistant | Taliferro Tech' );
+    this.title.setTitle( 'Get started — Marketing Assistant | 16Ahead' );
     this.returnUrl = this.route.snapshot.queryParamMap.get( 'returnUrl' ) || '/';
     this.draft = this.onboarding.load();
     if ( !this.draft.timezone ) this.draft.timezone = this.onboarding.detectTimezone();

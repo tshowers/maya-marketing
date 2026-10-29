@@ -27,7 +27,7 @@
           <button type="button" *ngIf="hasStuckWork" (click)="sendMessage('Let\'s work through what you\'re stuck on, one task at a time.')">Work through what’s stuck</button>
           <button type="button" *ngFor="let item of ['Sharpen my message', 'Create a presentation', 'Clarify my offer']" (click)="sendMessage(item === 'Create a presentation' ? 'I want to create a presentation with the Marketing Assistant.' : item)">{{ item }}</button>
         </div>
-        <p class="tt-made-by tt-made-by--center"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-mark-128.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
+        <p class="tt-made-by tt-made-by--center"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img class="brand-mark--light" src="assets/brand/products/png/light/01-16ahead-64.png" alt="" /><img class="brand-mark--dark" src="assets/brand/products/png/dark/01-16ahead-64.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </div>
 
       <div #directorMessagesContainer class="maya-messages" *ngIf="hasUserMessages">
