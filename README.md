@@ -1,8 +1,8 @@
-![Maya banner](src/assets/maya-readme-banner.png)
+![the Marketing Assistant banner](src/assets/maya-readme-banner.png)
 
-# Maya
+# the Marketing Assistant
 
-Maya is the AI marketing director web app, live at [maya.taliferro.tech](https://maya.taliferro.tech). It is a standalone Angular 19 app extracted from the Taliferro Tech frontend. It shares the Taliferro Tech backend, Firebase project (`taliferrotech`), Firestore data, sign-in and API contracts with the other TODD products. It has no backend of its own.
+The Marketing Assistant is the AI marketing director web app, live at [marketing.16ahead.com](https://marketing.16ahead.com). It is a standalone Angular 19 app extracted from the Taliferro Tech frontend. It shares the Taliferro Tech backend, Firebase project (`taliferrotech`), Firestore data, sign-in and API contracts with the other 16Ahead products. It has no backend of its own.
 
 ## Prerequisites
 
@@ -35,25 +35,25 @@ Then fill in the values. Ask a Taliferro Tech admin for them. The Firebase ones 
 | --- | --- |
 | `firebaseConfig` | The shared Taliferro Tech Firebase web app (Auth, Firestore, Storage, Functions). |
 | `backendURL` | The Taliferro Tech API (`https://api.taliferro.tech/api`). Almost every service calls it. |
-| `apiKey` | Bearer key for the API's public endpoints. Signed-out visitors use it to get Maya's free advice. |
+| `apiKey` | Bearer key for the API's public endpoints. Signed-out visitors use it to get the Marketing Assistant's free advice. |
 | `taliferroTenantId` | The Taliferro Tech tenant. Guests read its data, and its owner sees admin items. |
-| `PLATFORM_URL` | `http://localhost:4200` in development, `https://todd.taliferro.tech` in production. |
+| `PLATFORM_URL` | `http://localhost:4200` in development, `https://app.16ahead.com` in production. |
 | `RECAPTCHA_KEY` | reCAPTCHA site key. |
 
 In `environment.prod.ts`, set `production: true`. The production build swaps in that file (see `angular.json`).
 
 ### Backend APIs
 
-Maya has no backend of its own. Everything goes through `backendURL` to the Taliferro Tech backend, which is `todd-backend` in the [taliferrotech](https://github.com/taliferro-tech/taliferrotech) monorepo.
+The Marketing Assistant has no backend of its own. Everything goes through `backendURL` to the Taliferro Tech backend, which is `todd-backend` in the [taliferrotech](https://github.com/taliferro-tech/taliferrotech) monorepo.
 
-The API reference is the hand-written OpenAPI in that monorepo, under `frontend/src/assets/api/*.yaml`. Use those files, not the stale copy in this repo's `src/assets/api/`. The ones Maya uses most:
+The API reference is the hand-written OpenAPI in that monorepo, under `frontend/src/assets/api/*.yaml`. Use those files, not the stale copy in this repo's `src/assets/api/`. The ones the Marketing Assistant uses most:
 
-- `marketing.yaml`: Maya's advice, status reports and decks (`/marketing-director/*`), her jobs (`/maya/jobs`), the marketing employee, and Image and Email Creator
+- `marketing.yaml`: The Marketing Assistant's advice, status reports and decks (`/marketing-director/*`), her jobs (`/maya/jobs`), the marketing employee, and Image and Email Creator
 - `ai-backend.yaml`: the other AI endpoints
 - `missions.yaml`, `momentum.yaml`: missions, action plans and integrations
 - `account-admin-billing.yaml`, `core-system.yaml`: profile, tenant and entitlements
 
-Every operation has an `x-maya` tag (`direct`, `approval`, `internal` or `never`). That tag decides what Maya may call on her own. When you add an endpoint, tag it. The design is in [MAYA-ORCHESTRATION-DESIGN.md](MAYA-ORCHESTRATION-DESIGN.md).
+Every operation has an `x-maya` tag (`direct`, `approval`, `internal` or `never`). That tag decides what the Marketing Assistant may call on her own. When you add an endpoint, tag it. The design is in [MAYA-ORCHESTRATION-DESIGN.md](MAYA-ORCHESTRATION-DESIGN.md).
 
 ## Run it locally
 
@@ -62,15 +62,15 @@ npm install
 npm start
 ```
 
-Open `http://localhost:4200/`. You can ask for advice without signing in. Sign in with a TODD account to see the employee pages. Google Analytics is turned off on localhost.
+Open `http://localhost:4200/`. You can ask for advice without signing in. Sign in with a 16Ahead account to see the employee pages. Google Analytics is turned off on localhost.
 
 ## Routes
 
 | Route | Page |
 | --- | --- |
-| `/` | Maya session (advice). Prerendered. |
+| `/` | Marketing Assistant session (advice). Prerendered. |
 | `/help`, `/about` | Help and About. Prerendered for search engines. |
-| `/work` | Maya's jobs, approvals and questions |
+| `/work` | The Marketing Assistant's jobs, approvals and questions |
 | `/marketing-employee`, `/marketing-employee/plan` | Status and plan board (signed in) |
 | `/profile` | Company profile |
 | `/pricing` | What's free and what comes with the app |
