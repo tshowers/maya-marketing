@@ -19,7 +19,7 @@ import { AppUpdateService } from './services/app-update.service';
     <header class="maya-head" *ngIf="showHeader">
       <a class="maya-head__brand" routerLink="/">
         <span class="maya-head__avatar"><img class="brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="" /><img class="brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="" /></span>
-        <span class="maya-head__title">Marketing Assistant <span>Marketing advice</span></span>
+        <span class="maya-head__title">16Ahead <span>Marketing Assistant</span></span>
       </a>
       <nav class="maya-head__actions" aria-label="Marketing Assistant">
         <button type="button" class="maya-pill" *ngIf="isChatHome && chat.hasConversation" (click)="chat.newChat()" title="New chat">
