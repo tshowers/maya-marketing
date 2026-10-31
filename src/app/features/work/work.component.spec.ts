@@ -1,5 +1,5 @@
 import { CHAT_BRIEF_MARKER, jobPath } from '../../services/maya-jobs.service';
-import { emailCreatorEditUrl } from './work.component';
+import { emailCreatorEditUrl, jobAudience } from './work.component';
 
 describe( 'emailCreatorEditUrl', () => {
   it( 'opens the Docs email in Email Creator', () => {
@@ -26,5 +26,16 @@ describe( 'CHAT_BRIEF_MARKER', () => {
     const asked = 'Agencies/consultant';
     expect( `${asked}\nEmail brief from my chat with the Marketing Assistant:\nSubject idea: Revive`.replace( CHAT_BRIEF_MARKER, '' ) ).toBe( asked );
     expect( `${asked}\nEmail brief from my chat with Maya:\nSubject idea: Revive`.replace( CHAT_BRIEF_MARKER, '' ) ).toBe( asked );
+  } );
+} );
+
+describe( 'jobAudience', () => {
+  it( 'is who the brief says the email was written for, for Catalyst', () => {
+    expect( jobAudience( { brief: { goal: '', audience: '  Agencies/consultants  ', deliverables: [], constraints: [] } } ) ).toBe( 'Agencies/consultants' );
+  } );
+
+  it( 'is empty without a brief', () => {
+    expect( jobAudience( { brief: null } ) ).toBe( '' );
+    expect( jobAudience( null ) ).toBe( '' );
   } );
 } );

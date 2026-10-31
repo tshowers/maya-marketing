@@ -130,8 +130,11 @@ export class MayaJobsService {
       `${environment.backendURL}/email-creator/handoff/check`, { subject, html }, { headers: await this.headers() } ) );
   }
 
-  /** Hands a finished email to Catalyst or the Email Composer, the same way Email Creator does. Returns the page to open. */
-  async handOffEmail ( request: { target: EmailSendTarget; subject: string; preheader: string; html: string; fills: Record<string, string>; } ): Promise<string> {
+  /**
+   * Hands a finished email to Catalyst or the Email Composer, the same way Email Creator does. Returns the page to open.
+   * `audience` (who it was written for) lets Catalyst preselect the matching contacts.
+   */
+  async handOffEmail ( request: { target: EmailSendTarget; subject: string; preheader: string; html: string; fills: Record<string, string>; audience?: string; } ): Promise<string> {
     const response = await firstValueFrom( this.http.post<{ id: string; url: string }>(
       `${environment.backendURL}/email-creator/handoff`, request, { headers: await this.headers() } ) );
     return response.url;

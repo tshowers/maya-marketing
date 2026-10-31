@@ -41,6 +41,7 @@ import { DemoVideoComponent } from '../../components/demo-video/demo-video.compo
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
 import { CHAT_BRIEF_MARKER, MayaJob, MayaJobsService, jobPath } from '../../../../services/maya-jobs.service';
+import { HeldJob, asksQuestion, heldJobNotice, planDirectorActions, withAnswers } from '../../models/held-job';
 import { AlsoFromUsComponent } from '../../../../shared/also-from-us/also-from-us.component';
 
 interface ReportOperationalData {
@@ -156,6 +157,8 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   private authContextSubscription?: Subscription;
   /** Jobs this chat is following until they need the person (see followJob). */
   private readonly jobFollowTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  /** A job held back from a reply that asked a question, until the person answers (see held-job.ts). */
+  private heldJob: HeldJob | null = null;
   private readonly revisitStoragePrefix = 'maya-session-plan-reminder';
   private readonly sessionStoragePrefix = 'maya-session-memory';
   private tenantId = '';
@@ -420,8 +423,14 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       this.persistSessionMemory();
       await this.appendWorkspaceMessage( 'employee', [normalizedDirectorReply, ...choices.map( choice => `${ choice.question } (${ choice.options.join( ' / ' ) })` )].join( '\n' ) );
       const createdReceipt = await this.maybePersistMasterPlan( normalizedPrompt, response.reply );
-      const executedReceipt = await this.executeDirectorSystemActions( response.systemActions || [], normalizedPrompt );
-      this.appendExecutionReceiptNotice( normalizedDirectorReply, createdReceipt || executedReceipt );
+      // A reply that asks something doesn't start a job; it waits for the answer.
+      const plan = this.canExecuteSystemActions() ?
+        planDirectorActions( response.systemActions || [], normalizedPrompt, asksQuestion( normalizedDirectorReply, choices ), this.heldJob ) :
+        { run: response.systemActions || [], request: normalizedPrompt, answers: [], hold: null };
+      this.heldJob = plan.hold;
+      if ( plan.hold ) await this.appendReceiptTextMessage( heldJobNotice( plan.hold ) );
+      const executedReceipt = await this.executeDirectorSystemActions( plan.run, plan.request, plan.answers );
+      this.appendExecutionReceiptNotice( normalizedDirectorReply, createdReceipt || executedReceipt || !!plan.hold );
     } catch {
       this.errorMessage = 'It could not answer that right now. Please try again in a moment.';
     } finally {
@@ -1027,6 +1036,7 @@ Pick one and I will keep moving:
     this.workspaceConversationId = '';
     this.workspaceConversationContextKey = '';
     this.messages = [];
+    this.heldJob = null;
     this.prompt = '';
     this.errorMessage = '';
     this.hasUserMessages = false;
@@ -1213,8 +1223,14 @@ Pick one and I will keep moving:
     void this.appendWorkspaceMessage( 'employee', receiptNote );
   }
 
-  private async executeDirectorSystemActions ( actions: PublicMarketingDirectorSystemAction[], userRequest: string ): Promise<boolean> {
-    if ( !this.isLoggedInWorkspaceUser || !this.hasPaidWorkspaceAccess || !this.tenantId || !this.userId || !Array.isArray( actions ) || actions.length === 0 ) {
+  /** Whether this session can run the chat's system actions at all. */
+  private canExecuteSystemActions (): boolean {
+    return this.isLoggedInWorkspaceUser && this.hasPaidWorkspaceAccess && !!this.tenantId && !!this.userId;
+  }
+
+  /** answers: what the person said since a held job's question, folded into its brief. */
+  private async executeDirectorSystemActions ( actions: PublicMarketingDirectorSystemAction[], userRequest: string, answers: string[] = [] ): Promise<boolean> {
+    if ( !this.canExecuteSystemActions() || !Array.isArray( actions ) || actions.length === 0 ) {
       return false;
     }
 
@@ -1227,7 +1243,7 @@ Pick one and I will keep moving:
             createdAnything = await this.executeCreateDocumentAction( action ) || createdAnything;
             break;
           case 'create_move':
-            createdAnything = await this.executeCreateMoveAction( action, userRequest ) || createdAnything;
+            createdAnything = await this.executeCreateMoveAction( action, userRequest, answers ) || createdAnything;
             break;
           case 'create_survey':
             createdAnything = await this.executeCreateSurveyAction( action ) || createdAnything;
@@ -1236,7 +1252,7 @@ Pick one and I will keep moving:
             createdAnything = await this.executeCreateResponseFlowAction( action ) || createdAnything;
             break;
           case 'send_email':
-            createdAnything = await this.executeSendEmailAction( action, userRequest ) || createdAnything;
+            createdAnything = await this.executeSendEmailAction( action, userRequest, answers ) || createdAnything;
             break;
           case 'resolve_blocker':
             createdAnything = await this.executeResolveBlockerAction( action ) || createdAnything;
@@ -1295,21 +1311,23 @@ Pick one and I will keep moving:
    * move, linked to that job; Moves shows "See Maya's progress" for it.
    * The person's own work only becomes a move when they have Moves.
    */
-  private async executeCreateMoveAction ( action: PublicMarketingDirectorSystemAction, userRequest: string ): Promise<boolean> {
+  private async executeCreateMoveAction ( action: PublicMarketingDirectorSystemAction, userRequest: string, answers: string[] = [] ): Promise<boolean> {
     const title = String( action.title || '' ).trim();
     if ( !title ) return false;
 
     const mayaDoesIt = /maya/i.test( String( action.ownerLabel || '' ) );
     let jobRoute = '';
     if ( mayaDoesIt ) {
-      const request = [
+      const request = withAnswers( [
         userRequest.trim(),
         `From my chat with the Marketing Assistant: ${title}`,
         String( action.description || action.summary || '' ).trim(),
-      ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
-      const job = await this.startOrContinueJob( request, userRequest, `"${title}"` );
+      ].filter( Boolean ).join( '\n' ), answers );
+      const job = await this.startOrContinueJob( request, answers[answers.length - 1] || userRequest, `"${title}"` );
       if ( job && job.outcome !== 'started' ) {
-        // A follow-up to work Maya already has: no second job, no second move.
+        // A follow-up to work Maya already has: no second job, no second move,
+        // and no second "still planning" when this reply already linked it.
+        if ( job.outcome === 'planning' && this.linkedSinceLastUserMessage( job.route ) ) return true;
         await this.appendArtifactReceiptMessage( JOB_OUTCOME_LABELS[job.outcome], job.title, job.route );
         return true;
       }
@@ -1410,21 +1428,21 @@ Pick one and I will keep moving:
    * go first, so "all my contacts" reaches the planner as the audience
    * rather than being treated as an address.
    */
-  private async executeSendEmailAction ( action: PublicMarketingDirectorSystemAction, userRequest: string ): Promise<boolean> {
+  private async executeSendEmailAction ( action: PublicMarketingDirectorSystemAction, userRequest: string, answers: string[] = [] ): Promise<boolean> {
     const subject = String( action.subject || action.title || '' ).trim();
     const text = String( action.text || action.body || action.description || '' ).trim();
     const audience = String( action.to || '' ).trim();
     if ( !subject && !text ) return false;
 
-    const request = [
+    const request = withAnswers( [
       userRequest.trim(),
       'Email brief from my chat with the Marketing Assistant:',
       subject ? `Subject idea: ${subject}` : '',
       audience ? `Audience: ${audience}` : '',
       text,
-    ].filter( Boolean ).join( '\n' ).slice( 0, 4000 );
+    ].filter( Boolean ).join( '\n' ), answers );
 
-    const job = await this.startOrContinueJob( request, userRequest, subject ? `the email "${subject}"` : 'the email' );
+    const job = await this.startOrContinueJob( request, answers[answers.length - 1] || userRequest, subject ? `the email "${subject}"` : 'the email' );
     if ( !job ) return false;
     // A reply can carry more than one email action; once this message has
     // linked the job, saying "still planning" again only repeats it.
@@ -1555,9 +1573,10 @@ Pick one and I will keep moving:
     return jobPath( jobId );
   }
 
-  /** What the person asked, without the brief the chat appended. */
+  /** The email's subject when the chat gave one, else what the person asked, without the brief the chat appended. */
   private jobTitle ( job: MayaJob ): string {
-    return ( job.request.replace( CHAT_BRIEF_MARKER, '' ).trim() || job.request ).slice( 0, 120 );
+    const subject = /^Subject idea: (.+)$/m.exec( job.request )?.[1]?.trim();
+    return ( subject || job.request.replace( CHAT_BRIEF_MARKER, '' ).trim() || job.request ).slice( 0, 120 );
   }
 
   /** Whether a message since the person's last one already links to this job. */
@@ -1956,6 +1975,7 @@ Pick one and I will keep moving:
     this.historyOpen = false;
     if ( !conversationId || conversationId === this.workspaceConversationId ) return;
     this.messages = [];
+    this.heldJob = null;
     this.prompt = '';
     this.errorMessage = '';
     this.watchWorkspaceConversation( conversationId );

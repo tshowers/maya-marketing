@@ -212,7 +212,7 @@
                     <a class="wk-button" routerLink="/pricing">See plans</a>
                   </ng-container>
                   <ng-container *ngIf="panel.canSend && panel.openUrl">
-                    <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                    <p>Ready. Your name, title, company and signature are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
                     <a class="wk-button" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()" data-cy="work-send-open">Open {{ targetNames[panel.target] }}</a>
                   </ng-container>
                   <ng-container *ngIf="panel.canSend && !panel.openUrl">

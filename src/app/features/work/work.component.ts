@@ -16,6 +16,15 @@ export function emailCreatorEditUrl ( documentId: string ): string {
   return `https://emails.16ahead.com/?mayaEmail=${encodeURIComponent( documentId )}`;
 }
 
+/**
+ * Who the job's email was written for ("Agencies/consultants"), from the
+ * Marketing Assistant's brief. Catalyst preselects the contacts who match,
+ * or says the list doesn't (Ty, 2026-10-31).
+ */
+export function jobAudience ( job: Pick<MayaJob, 'brief'> | null | undefined ): string {
+  return String( job?.brief?.audience || '' ).trim().slice( 0, 300 );
+}
+
 /** One thing waiting on the user, from any job. */
 interface ApprovalItem {
   job: MayaJob;
@@ -30,6 +39,8 @@ interface EmailResult {
   subject: string;
   preheader: string;
   fillIns: string[];
+  /** Who it was written for; goes to Catalyst with the email. */
+  audience: string;
 }
 
 /** Sending a finished email, the same two choices Email Creator offers. */
@@ -332,6 +343,7 @@ export class WorkComponent implements OnInit, OnDestroy {
         subject: String( step.output!['subject'] || 'Email from the Marketing Assistant' ),
         preheader: String( step.output!['preheader'] || '' ),
         fillIns: Array.isArray( step.output!['fillIns'] ) ? step.output!['fillIns'] : [],
+        audience: jobAudience( job ),
       } ) );
   }
 
@@ -394,6 +406,7 @@ export class WorkComponent implements OnInit, OnDestroy {
     try {
       panel.openUrl = await this.api.handOffEmail( {
         target: panel.target, subject: email.subject, preheader: email.preheader, html: await this.loadHtml( email ), fills: panel.values,
+        ...( panel.target === 'catalyst' && email.audience ? { audience: email.audience } : {} ),
       } );
     } catch ( error: any ) {
       panel.error = error?.error?.message || error?.message || 'Something went wrong.';
