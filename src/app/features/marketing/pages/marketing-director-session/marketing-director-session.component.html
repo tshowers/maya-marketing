@@ -106,7 +106,7 @@
           <p class="maya-history__note" *ngIf="!historyLoading && !historyItems.length">No past conversations yet.</p>
           <button type="button" class="maya-history__item" *ngFor="let item of historyItems" [class.is-current]="item.isCurrent" (click)="openPastConversation(item.id)">
             <span class="maya-history__date">{{ item.updatedAt ? (item.updatedAt | date:'MMM d, h:mm a') : '' }}{{ item.isCurrent ? ' · Open now' : '' }}</span>
-            <span class="maya-history__preview">{{ item.preview || 'Just started' }}</span>
+            <span class="maya-history__preview">{{ item.preview }}</span>
           </button>
         </aside>
       </div>

@@ -1916,11 +1916,11 @@ Pick one and I will keep moving:
       const items = await Promise.all( sessions.map( async conversation => ( {
         id: String( conversation.id ),
         updatedAt: String( conversation.updatedAt || conversation.createdAt || '' ),
-        preview: await this.marketingEmployeeService.getLatestUserMessage( this.tenantId, String( conversation.id ) ).catch( () => '' ),
+        preview: ( await this.marketingEmployeeService.getLatestUserMessage( this.tenantId, String( conversation.id ) ).catch( () => '' ) || '' ).trim(),
         isCurrent: conversation.id === this.workspaceConversationId
       } ) ) );
-      // A conversation where nothing was asked is just a greeting; leave it out.
-      this.historyItems = items.filter( item => item.preview || item.isCurrent );
+      // A conversation where nothing was asked has no name to show; leave it out, even the open one.
+      this.historyItems = items.filter( item => item.preview );
     } catch {
       this.historyItems = [];
     } finally {

@@ -281,7 +281,7 @@
 .maya-history__head h2 { margin: 0; font-size: 18px; }
 .maya-history__close { border: 0; background: transparent; color: var(--muted); font-size: 1.6rem; line-height: 1; cursor: pointer; }
 .maya-history__note { color: var(--muted); font-size: 14px; }
-.maya-history__item { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 12px 14px; border: 1px solid transparent; border-radius: 14px; background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.maya-history__item { display: flex; flex: none; flex-direction: column; gap: 4px; width: 100%; padding: 12px 14px; border: 1px solid transparent; border-radius: 14px; background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .maya-history__item:hover, .maya-history__item.is-current { background: color-mix(in srgb, var(--text) 7%, transparent); }
 .maya-history__item.is-current { border-color: var(--t-green-fg); }
 .maya-history__date { color: var(--muted); font-size: 12px; }
