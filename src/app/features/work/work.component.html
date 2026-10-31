@@ -2,8 +2,12 @@
   <div class="wk-inner">
     <header class="wk-header">
       <h1>The Marketing Assistant’s work</h1>
-      <p>Tell the Marketing Assistant what you need. It plans it, does the work, and asks you before anything is posted.</p>
-      <p class="wk-note"><a routerLink="/missions" data-cy="work-to-missions">Needs more than marketing? Plan it as a Mission</a>: Marketing Assistant, 16Ahead and you each take the steps that are yours.</p>
+      <nav class="wk-tabs wk-views" aria-label="The Marketing Assistant’s work">
+        <a class="wk-tab" routerLink="/work" [class.is-selected]="view === 'ask'" [attr.aria-current]="view === 'ask' ? 'page' : null"
+           data-cy="work-view-ask">Ask</a>
+        <a class="wk-tab" routerLink="/work/jobs" [class.is-selected]="view !== 'ask'" [attr.aria-current]="view === 'jobs' ? 'page' : null"
+           data-cy="work-view-jobs">Jobs <span *ngIf="needsYouJobs.length" class="wk-count" data-cy="work-needs-you-count">{{ needsYouJobs.length }}</span></a>
+      </nav>
     </header>
 
     <section *ngIf="isSignedIn === false" class="wk-card" data-cy="work-signed-out">
@@ -13,215 +17,243 @@
     </section>
 
     <ng-container *ngIf="isSignedIn">
-      <section class="wk-card wk-ask" data-cy="work-ask">
-        <form (ngSubmit)="start()">
-          <label class="wk-ask__label" for="wk-request">What should the Marketing Assistant do?</label>
-          <textarea #requestInput id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
-                    placeholder="e.g. Build a LinkedIn calendar for the rest of October"
-                    [(ngModel)]="request" data-cy="work-request"></textarea>
-          <div class="wk-ask__row">
-            <div class="wk-chips" aria-label="Ideas">
-              <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="useIdea( idea, requestInput )" [disabled]="isStarting">{{ idea }}</button>
-            </div>
-            <button type="submit" class="wk-button" [disabled]="!request.trim() || isStarting" data-cy="work-start">
-              {{ isStarting ? 'Starting…' : 'Give it to the Marketing Assistant' }}</button>
-          </div>
-        </form>
-        <p *ngIf="startedJobId" class="wk-started" role="status" data-cy="work-started">
-          The Marketing Assistant's on it. <a [href]="'#wk-job-' + startedJobId" (click)="$event.preventDefault(); scrollToJob( startedJobId )">See it at the top of Now</a>.
-          If it has a question or a concern, it shows up right here.</p>
-      </section>
-
       <p *ngIf="errorMessage" class="wk-error" role="alert" data-cy="work-error">
         {{ errorMessage }}
         <a *ngIf="needsPurchase" routerLink="/pricing">See plans</a>
       </p>
 
-      <section *ngFor="let job of decisionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
-               [class.is-linked]="job.id === linkedJobId" data-cy="work-decision">
-        <p class="wk-your-turn">Your call</p>
-        <h2>The Marketing Assistant has concerns</h2>
-        <p class="wk-lead">It paused this job before starting. Read why below, then pick one of the buttons at the bottom. Nothing happens until you choose.</p>
-        <p class="wk-quote" [class.is-clamped]="!requestOpen[job.id]">“{{ job.request }}”</p>
-        <button *ngIf="job.request.length > 240" type="button" class="wk-link-button" (click)="requestOpen[job.id] = !requestOpen[job.id]">
-          {{ requestOpen[job.id] ? 'Show less' : 'Show your full request' }}</button>
-        <p class="wk-verdict">{{ verdictLabel( job.planFit ) }}<span *ngIf="job.planFit?.planReference"> · {{ job.planFit?.planReference }}</span></p>
-        <p>{{ job.planFit?.reasoning }}</p>
-        <ul *ngIf="job.planFit?.ramifications?.length" class="wk-ramifications">
-          <li *ngFor="let item of job.planFit?.ramifications">{{ item.detail }}</li>
-        </ul>
-        <p *ngIf="job.planFit?.recommendation" class="wk-recommendation"><strong>What I’d do instead:</strong> {{ job.planFit?.recommendation }}</p>
-        <div class="wk-actions">
-          <button *ngIf="job.planFit?.recommendedRequest" type="button" class="wk-button" (click)="decidePlan( job, 'recommended' )" [disabled]="busy[job.id]" data-cy="work-decision-recommended">Do it your way, the Marketing Assistant</button>
-          <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'as_asked' )" [disabled]="busy[job.id]" data-cy="work-decision-as-asked">Go ahead as I asked</button>
-          <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'cancel' )" [disabled]="busy[job.id]" data-cy="work-decision-cancel">Cancel</button>
-        </div>
-      </section>
-
-      <section *ngFor="let job of questionJobs; trackBy: trackById" class="wk-card wk-card--attention" [id]="'wk-attn-' + job.id"
-               [class.is-linked]="job.id === linkedJobId" data-cy="work-question">
-        <p class="wk-your-turn">Your turn</p>
-        <h2>The Marketing Assistant has a question</h2>
-        <p class="wk-lead">Answer below and it picks the job back up.</p>
-        <p class="wk-quote">“{{ job.request }}”</p>
-        <ul class="wk-questions"><li *ngFor="let question of job.questions">{{ question }}</li></ul>
-        <form class="wk-answer" (ngSubmit)="sendAnswer( job )">
-          <input class="wk-input" [name]="'answer-' + job.id" [(ngModel)]="answers[job.id]" placeholder="Your answer" data-cy="work-answer" />
-          <button type="submit" class="wk-button" [disabled]="!( answers[job.id] || '' ).trim() || busy[job.id]">Send</button>
-        </form>
-      </section>
-
-      <section class="wk-section" data-cy="work-approvals">
-        <div class="wk-section__head">
-          <h2>Waiting for you</h2>
-          <span class="wk-count" *ngIf="approvals.length">{{ approvals.length }}</span>
-        </div>
-        <p *ngIf="loaded && !approvals.length" class="wk-note">Nothing needs your approval right now.</p>
-
-        <article *ngFor="let item of approvals; trackBy: trackApproval" class="wk-card wk-approval" data-cy="work-approval">
-          <img *ngIf="item.preview?.['imageSrc']" class="wk-approval__image" [src]="item.preview?.['imageSrc']" alt="" loading="lazy" />
-          <div class="wk-approval__body">
-            <p class="wk-meta">
-              <strong>{{ platformLabel( item.preview?.['platform'] || 'social' ) }}</strong>
-              <span *ngIf="item.preview?.['accountLabel']"> · {{ item.preview?.['accountLabel'] }}</span>
-              <span *ngIf="item.preview?.['plannedForDate']"> · {{ shortDate( item.preview?.['plannedForDate'] ) }}</span>
-            </p>
-            <p class="wk-post">{{ item.preview?.['content'] || 'Draft ready - open Social to read it.' }}</p>
-            <p class="wk-from">From: “{{ item.job.request }}”</p>
-            <div class="wk-actions">
-              <button type="button" class="wk-button" (click)="decide( item, 'approve' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-approve">Approve</button>
-              <button type="button" class="wk-button wk-button--ghost" (click)="decide( item, 'reject' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-reject">Not this one</button>
+      <!-- Ask: what to do, and how hard it pushes back when that works against the plan. -->
+      <ng-container *ngIf="view === 'ask'">
+        <p class="wk-lead-note">Tell the Marketing Assistant what you need. It plans it, does the work, and asks you before anything is posted.</p>
+        <section class="wk-card wk-ask" data-cy="work-ask">
+          <form (ngSubmit)="start()">
+            <label class="wk-ask__label" for="wk-request">What should the Marketing Assistant do?</label>
+            <textarea #requestInput id="wk-request" class="wk-input" name="request" rows="3" maxlength="4000"
+                      placeholder="e.g. Build a LinkedIn calendar for the rest of October"
+                      [(ngModel)]="request" data-cy="work-request"></textarea>
+            <div class="wk-ask__row">
+              <div class="wk-chips" aria-label="Ideas">
+                <button *ngFor="let idea of suggestions" type="button" class="wk-chip" (click)="useIdea( idea, requestInput )" [disabled]="isStarting">{{ idea }}</button>
+              </div>
+              <button type="submit" class="wk-button" [disabled]="!request.trim() || isStarting" data-cy="work-start">
+                {{ isStarting ? 'Starting…' : 'Give it to the Marketing Assistant' }}</button>
             </div>
+          </form>
+
+          <div class="wk-pushback" data-cy="work-settings">
+            <p class="wk-pushback__label" id="wk-pushback-label">If this works against your marketing plan</p>
+            <div class="wk-levels" role="radiogroup" aria-labelledby="wk-pushback-label">
+              <button *ngFor="let option of pushbackOptions" type="button" role="radio" class="wk-level"
+                      [class.is-selected]="pushbackLevel === option.id" [attr.aria-checked]="pushbackLevel === option.id"
+                      (click)="setPushback( option.id )" [disabled]="pushbackLevel === null" [attr.data-cy]="'work-pushback-' + option.id">
+                <strong>{{ option.label }}</strong>
+                <span>{{ option.detail }}</span>
+              </button>
+            </div>
+            <p class="wk-meta">It always tells you what it will cost. Social autopilot is {{ socialAutopilot ? 'on: the Marketing Assistant approves its own posts.' : 'off: you approve every post.' }}</p>
           </div>
-        </article>
-      </section>
+        </section>
+      </ng-container>
 
-      <section class="wk-section" data-cy="work-jobs">
-        <div class="wk-section__head"><h2>Jobs</h2></div>
-        <div class="wk-tabs" role="tablist" aria-label="Jobs">
-          <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'now'" [attr.aria-selected]="tab === 'now'"
-                  (click)="tab = 'now'" data-cy="work-tab-now">Now <span class="wk-tab__count">{{ currentJobs.length }}</span></button>
-          <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'past'" [attr.aria-selected]="tab === 'past'"
-                  (click)="tab = 'past'" data-cy="work-tab-past">Past <span class="wk-tab__count">{{ pastJobs.length }}</span></button>
-        </div>
-        <p class="wk-note">{{ tab === 'now' ? 'What the Marketing Assistant is working on, what’s waiting on you, and anything it finished in the last day.' : 'Everything older. Open a job to see what it made.' }}</p>
-        <p *ngIf="!loaded" class="wk-note">Loading…</p>
-        <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. Ask the Marketing Assistant for something above.</p>
-        <p *ngIf="loaded && jobs.length && !shownJobs.length" class="wk-note">
-          {{ tab === 'now' ? 'Nothing going on right now. Finished jobs are under Past.' : 'Nothing older than a day yet.' }}</p>
-
-        <article *ngFor="let job of shownJobs; trackBy: trackById" class="wk-card wk-job" [id]="'wk-job-' + job.id"
-                 [class.is-linked]="job.id === linkedJobId" data-cy="work-job">
-          <button type="button" class="wk-job__head" (click)="expanded[job.id] = !expanded[job.id]" [attr.aria-expanded]="!!expanded[job.id]">
+      <!-- Jobs: every job as a row; open one to see it on its own. -->
+      <ng-container *ngIf="view === 'jobs'">
+        <section *ngIf="needsYouJobs.length" class="wk-section wk-section--first" data-cy="work-needs-you">
+          <div class="wk-section__head"><h2>Waiting for you</h2></div>
+          <a *ngFor="let job of needsYouJobs; trackBy: trackById" class="wk-card wk-row wk-row--attention" [routerLink]="['/work/jobs', job.id]" data-cy="work-needs-you-job">
             <span class="wk-job__heading">
               <span class="wk-job__title">{{ jobTitle( job ) }}</span>
               <span class="wk-meta">Asked {{ shortDateTime( job.createdAt ) }}</span>
             </span>
+            <span class="wk-status" [attr.data-tone]="statusTone( job )">{{ statusLabel( job ) }}</span>
+          </a>
+        </section>
+
+        <section class="wk-section" [class.wk-section--first]="!needsYouJobs.length" data-cy="work-jobs">
+          <div class="wk-tabs" role="tablist" aria-label="Jobs">
+            <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'now'" [attr.aria-selected]="tab === 'now'"
+                    (click)="tab = 'now'" data-cy="work-tab-now">Now <span class="wk-tab__count">{{ currentJobs.length }}</span></button>
+            <button type="button" role="tab" class="wk-tab" [class.is-selected]="tab === 'past'" [attr.aria-selected]="tab === 'past'"
+                    (click)="tab = 'past'" data-cy="work-tab-past">Past <span class="wk-tab__count">{{ pastJobs.length }}</span></button>
+          </div>
+          <p class="wk-note">{{ tab === 'now' ? 'What the Marketing Assistant is working on, what’s waiting on you, and anything it finished in the last day.' : 'Everything older. Open a job to see what it made.' }}</p>
+          <p *ngIf="!loaded" class="wk-note">Loading…</p>
+          <p *ngIf="loaded && !jobs.length" class="wk-note">No jobs yet. <a routerLink="/work">Ask the Marketing Assistant for something</a>.</p>
+          <p *ngIf="loaded && jobs.length && !shownJobs.length" class="wk-note">
+            {{ tab === 'now' ? 'Nothing going on right now. Finished jobs are under Past.' : 'Nothing older than a day yet.' }}</p>
+
+          <a *ngFor="let job of shownJobs; trackBy: trackById" class="wk-card wk-row" [routerLink]="['/work/jobs', job.id]" data-cy="work-job">
+            <span class="wk-job__heading">
+              <span class="wk-job__title">{{ jobTitle( job ) }}</span>
+              <span class="wk-meta">Asked {{ shortDateTime( job.createdAt ) }}</span>
+              <span *ngIf="job.summary" class="wk-row__summary">{{ job.summary }}</span>
+            </span>
             <span class="wk-status" [attr.data-tone]="statusTone( job )">
               <span *ngIf="isActive( job )" class="wk-spinner" aria-hidden="true"></span>{{ statusLabel( job ) }}</span>
-          </button>
-          <p *ngIf="job.summary" class="wk-note">{{ job.summary }}</p>
-          <ng-container *ngIf="tab === 'now' || expanded[job.id]">
-          <p *ngIf="job.decision?.acknowledgement" class="wk-acknowledgement">{{ job.decision?.acknowledgement }}</p>
-          <p *ngIf="!job.decision && job.planFit?.action === 'proceed' && (job.planFit?.verdict === 'conflicts' || job.planFit?.verdict === 'adjacent')" class="wk-acknowledgement">
-            {{ verdictLabel( job.planFit ) }}: {{ job.planFit?.reasoning }}
-            <span *ngFor="let item of job.planFit?.ramifications"> {{ item.detail }}</span>
-          </p>
-          <p *ngIf="progress( job ).total" class="wk-meta">
-            {{ progress( job ).done }} of {{ progress( job ).total }} steps
-            <span *ngIf="job.estimate?.socialPosts"> · {{ job.estimate?.socialPosts }} post{{ job.estimate?.socialPosts === 1 ? '' : 's' }}</span>
-            <span *ngIf="job.estimate?.emails"> · {{ job.estimate?.emails }} email{{ job.estimate?.emails === 1 ? '' : 's' }}</span>
-            <span *ngIf="job.estimate?.images"> · up to {{ job.estimate?.images }} new image{{ job.estimate?.images === 1 ? '' : 's' }}</span>
-            <span *ngIf="approvalCount( job )"> · {{ approvalCount( job ) }} waiting for you</span>
-          </p>
-          <p *ngIf="job.status === 'failed' || job.status === 'waiting' || job.status === 'stopped'" class="wk-note">{{ job.statusDetail }}</p>
+          </a>
+        </section>
+      </ng-container>
 
-          <div *ngFor="let email of emails( job ); trackBy: trackEmail" class="wk-email" data-cy="work-email">
-            <p class="wk-email__subject">{{ email.subject }}</p>
-            <p *ngIf="email.preheader" class="wk-meta">{{ email.preheader }}</p>
-            <p *ngIf="email.fillIns.length" class="wk-email__fill">Fill in before sending: {{ email.fillIns.join( ', ' ) }}</p>
-            <div class="wk-actions">
-              <button type="button" class="wk-button wk-button--ghost" (click)="togglePreview( email )" [disabled]="busy[email.documentId]" data-cy="work-email-preview">
-                {{ previewOpen[email.documentId] ? 'Hide preview' : 'Preview' }}</button>
-              <button type="button" class="wk-button wk-button--ghost" (click)="downloadHtml( email )" data-cy="work-email-download">Download HTML</button>
-              <a class="wk-button wk-button--ghost wk-button--link" [href]="editUrl( email.documentId )" target="_blank" rel="noopener"
-                 data-cy="work-email-edit">Edit in Email Creator</a>
+      <!-- One job, and everything it needs from you. -->
+      <ng-container *ngIf="view === 'job'">
+        <a routerLink="/work/jobs" class="wk-back" data-cy="work-back">← All jobs</a>
+        <p *ngIf="!job && !jobMissing" class="wk-note">Loading…</p>
+        <section *ngIf="!job && jobMissing" class="wk-card" data-cy="work-job-missing">
+          <h2>We couldn’t find that job</h2>
+          <p class="wk-note">It may have been removed, or it belongs to another workspace.</p>
+        </section>
+
+        <ng-container *ngIf="job as job">
+          <article class="wk-card wk-job" data-cy="work-job-detail">
+            <div class="wk-job__head">
+              <span class="wk-job__heading">
+                <span class="wk-job__title wk-job__title--full">{{ jobTitle( job ) }}</span>
+                <span class="wk-meta">Asked {{ shortDateTime( job.createdAt ) }}</span>
+              </span>
+              <span class="wk-status" [attr.data-tone]="statusTone( job )">
+                <span *ngIf="isActive( job )" class="wk-spinner" aria-hidden="true"></span>{{ statusLabel( job ) }}</span>
             </div>
-            <div class="wk-send" aria-label="Send with Outreach">
-              <p class="wk-send__title">Send it with Outreach</p>
-              <div class="wk-send__choices">
-                <button type="button" class="wk-send__choice" (click)="openSend( email, 'catalyst' )" [disabled]="sendPanel?.working" data-cy="work-email-catalyst">
-                  <strong>Send to many - Catalyst</strong>
-                  <span>Personalized for each contact, paced and tracked.</span>
-                </button>
-                <button type="button" class="wk-send__choice" (click)="openSend( email, 'composer' )" [disabled]="sendPanel?.working" data-cy="work-email-composer">
-                  <strong>Send to one - Email Composer</strong>
-                  <span>One recipient, reviewed before it goes.</span>
-                </button>
+            <p *ngIf="job.summary" class="wk-note">{{ job.summary }}</p>
+            <p *ngIf="hasMoreRequest( job )" class="wk-quote" [class.is-clamped]="!requestOpen[job.id]">“{{ job.request }}”</p>
+            <button *ngIf="hasMoreRequest( job ) && job.request.length > 240" type="button" class="wk-link-button" (click)="requestOpen[job.id] = !requestOpen[job.id]">
+              {{ requestOpen[job.id] ? 'Show less' : 'Show your full request' }}</button>
+
+            <!-- Its concerns, before starting. -->
+            <div *ngIf="job.status === 'awaiting_decision'" class="wk-attention" data-cy="work-decision">
+              <p class="wk-your-turn">Your call</p>
+              <h2>The Marketing Assistant has concerns</h2>
+              <p class="wk-lead">It paused this job before starting. Read why, then pick one of the buttons. Nothing happens until you choose.</p>
+              <p class="wk-verdict">{{ verdictLabel( job.planFit ) }}<span *ngIf="job.planFit?.planReference"> · {{ job.planFit?.planReference }}</span></p>
+              <p>{{ job.planFit?.reasoning }}</p>
+              <ul *ngIf="job.planFit?.ramifications?.length" class="wk-ramifications">
+                <li *ngFor="let item of job.planFit?.ramifications">{{ item.detail }}</li>
+              </ul>
+              <p *ngIf="job.planFit?.recommendation" class="wk-recommendation"><strong>What I’d do instead:</strong> {{ job.planFit?.recommendation }}</p>
+              <div class="wk-actions">
+                <button *ngIf="job.planFit?.recommendedRequest" type="button" class="wk-button" (click)="decidePlan( job, 'recommended' )" [disabled]="busy[job.id]" data-cy="work-decision-recommended">Do it your way, the Marketing Assistant</button>
+                <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'as_asked' )" [disabled]="busy[job.id]" data-cy="work-decision-as-asked">Go ahead as I asked</button>
+                <button type="button" class="wk-button wk-button--ghost" (click)="decidePlan( job, 'cancel' )" [disabled]="busy[job.id]" data-cy="work-decision-cancel">Cancel</button>
               </div>
-              <div *ngIf="sendPanel?.documentId === email.documentId && sendPanel as panel" class="wk-send__panel" data-cy="work-send-panel">
-                <p *ngIf="panel.canSend === null && panel.working" class="wk-note">Checking…</p>
-                <ng-container *ngIf="panel.canSend === false">
-                  <p>Sending needs the Outreach app subscription. Downloading stays free.</p>
-                  <a class="wk-button" routerLink="/pricing">See plans</a>
-                </ng-container>
-                <ng-container *ngIf="panel.canSend && panel.openUrl">
-                  <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
-                  <a class="wk-button" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()" data-cy="work-send-open">Open {{ targetNames[panel.target] }}</a>
-                </ng-container>
-                <ng-container *ngIf="panel.canSend && !panel.openUrl">
-                  <ng-container *ngIf="panel.fillIns.length">
-                    <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
-                    <label *ngFor="let item of panel.fillIns" class="wk-send__fill">
-                      <span>{{ item.label }}</span>
-                      <input class="wk-input" type="text" [name]="'fill-' + item.token" [(ngModel)]="panel.values[item.token]" />
-                    </label>
-                  </ng-container>
+            </div>
+
+            <!-- Its questions. -->
+            <div *ngIf="job.status === 'awaiting_user'" class="wk-attention" data-cy="work-question">
+              <p class="wk-your-turn">Your turn</p>
+              <h2>The Marketing Assistant has a question</h2>
+              <p class="wk-lead">Answer here and it picks the job back up.</p>
+              <ul class="wk-questions"><li *ngFor="let question of job.questions">{{ question }}</li></ul>
+              <form class="wk-answer" (ngSubmit)="sendAnswer( job )">
+                <input class="wk-input" [name]="'answer-' + job.id" [(ngModel)]="answers[job.id]" placeholder="Your answer" data-cy="work-answer" />
+                <button type="submit" class="wk-button" [disabled]="!( answers[job.id] || '' ).trim() || busy[job.id]">Send</button>
+              </form>
+            </div>
+
+            <p *ngIf="job.decision?.acknowledgement" class="wk-acknowledgement">{{ job.decision?.acknowledgement }}</p>
+            <p *ngIf="!job.decision && job.planFit?.action === 'proceed' && (job.planFit?.verdict === 'conflicts' || job.planFit?.verdict === 'adjacent')" class="wk-acknowledgement">
+              {{ verdictLabel( job.planFit ) }}: {{ job.planFit?.reasoning }}
+              <span *ngFor="let item of job.planFit?.ramifications"> {{ item.detail }}</span>
+            </p>
+            <p *ngIf="progress( job ).total" class="wk-meta">
+              {{ progress( job ).done }} of {{ progress( job ).total }} steps
+              <span *ngIf="job.estimate?.socialPosts"> · {{ job.estimate?.socialPosts }} post{{ job.estimate?.socialPosts === 1 ? '' : 's' }}</span>
+              <span *ngIf="job.estimate?.emails"> · {{ job.estimate?.emails }} email{{ job.estimate?.emails === 1 ? '' : 's' }}</span>
+              <span *ngIf="job.estimate?.images"> · up to {{ job.estimate?.images }} new image{{ job.estimate?.images === 1 ? '' : 's' }}</span>
+            </p>
+            <p *ngIf="job.status === 'failed' || job.status === 'waiting' || job.status === 'stopped'" class="wk-note">{{ job.statusDetail }}</p>
+
+            <!-- Drafts waiting for a yes or no. -->
+            <div *ngIf="jobApprovals.length" class="wk-attention" data-cy="work-approvals">
+              <p class="wk-your-turn">Your turn</p>
+              <h2>Waiting for your approval</h2>
+              <article *ngFor="let item of jobApprovals; trackBy: trackApproval" class="wk-approval" data-cy="work-approval">
+                <img *ngIf="item.preview?.['imageSrc']" class="wk-approval__image" [src]="item.preview?.['imageSrc']" alt="" loading="lazy" />
+                <div class="wk-approval__body">
+                  <p class="wk-meta">
+                    <strong>{{ platformLabel( item.preview?.['platform'] || 'social' ) }}</strong>
+                    <span *ngIf="item.preview?.['accountLabel']"> · {{ item.preview?.['accountLabel'] }}</span>
+                    <span *ngIf="item.preview?.['plannedForDate']"> · {{ shortDate( item.preview?.['plannedForDate'] ) }}</span>
+                  </p>
+                  <p class="wk-post">{{ item.preview?.['content'] || 'Draft ready - open Social to read it.' }}</p>
                   <div class="wk-actions">
-                    <button type="button" class="wk-button" (click)="prepareSend( email )" [disabled]="panel.working || !fillsComplete( panel )" data-cy="work-send-continue">
-                      {{ panel.working ? 'Preparing…' : 'Continue to ' + targetNames[panel.target] }}</button>
-                    <button type="button" class="wk-button wk-button--ghost" (click)="closeSend()" [disabled]="panel.working">Cancel</button>
+                    <button type="button" class="wk-button" (click)="decide( item, 'approve' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-approve">Approve</button>
+                    <button type="button" class="wk-button wk-button--ghost" (click)="decide( item, 'reject' )" [disabled]="busy[item.job.id + '/' + item.step.id]" data-cy="work-reject">Not this one</button>
                   </div>
-                </ng-container>
-                <p *ngIf="panel.error" class="wk-error" role="alert">{{ panel.error }}</p>
+                </div>
+              </article>
+              <button *ngIf="jobApprovals.length > 1" type="button" class="wk-button" (click)="approveAll( job )">Approve all {{ jobApprovals.length }}</button>
+            </div>
+
+            <div *ngFor="let email of jobEmails; trackBy: trackEmail" class="wk-email" data-cy="work-email">
+              <p class="wk-email__subject">{{ email.subject }}</p>
+              <p *ngIf="email.preheader" class="wk-meta">{{ email.preheader }}</p>
+              <p *ngIf="email.fillIns.length" class="wk-email__fill">Fill in before sending: {{ email.fillIns.join( ', ' ) }}</p>
+              <div class="wk-actions">
+                <button type="button" class="wk-button wk-button--ghost" (click)="togglePreview( email )" [disabled]="busy[email.documentId]" data-cy="work-email-preview">
+                  {{ previewOpen[email.documentId] ? 'Hide preview' : 'Preview' }}</button>
+                <button type="button" class="wk-button wk-button--ghost" (click)="downloadHtml( email )" data-cy="work-email-download">Download HTML</button>
+                <a class="wk-button wk-button--ghost wk-button--link" [href]="editUrl( email.documentId )" target="_blank" rel="noopener"
+                   data-cy="work-email-edit">Edit in Email Creator</a>
+              </div>
+              <div class="wk-send" aria-label="Send with Outreach">
+                <p class="wk-send__title">Send it with Outreach</p>
+                <div class="wk-send__choices">
+                  <button type="button" class="wk-send__choice" (click)="openSend( email, 'catalyst' )" [disabled]="sendPanel?.working" data-cy="work-email-catalyst">
+                    <strong>Send to many - Catalyst</strong>
+                    <span>Personalized for each contact, paced and tracked.</span>
+                  </button>
+                  <button type="button" class="wk-send__choice" (click)="openSend( email, 'composer' )" [disabled]="sendPanel?.working" data-cy="work-email-composer">
+                    <strong>Send to one - Email Composer</strong>
+                    <span>One recipient, reviewed before it goes.</span>
+                  </button>
+                </div>
+                <div *ngIf="sendPanel?.documentId === email.documentId && sendPanel as panel" class="wk-send__panel" data-cy="work-send-panel">
+                  <p *ngIf="panel.canSend === null && panel.working" class="wk-note">Checking…</p>
+                  <ng-container *ngIf="panel.canSend === false">
+                    <p>Sending needs the Outreach app subscription. Downloading stays free.</p>
+                    <a class="wk-button" routerLink="/pricing">See plans</a>
+                  </ng-container>
+                  <ng-container *ngIf="panel.canSend && panel.openUrl">
+                    <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                    <a class="wk-button" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()" data-cy="work-send-open">Open {{ targetNames[panel.target] }}</a>
+                  </ng-container>
+                  <ng-container *ngIf="panel.canSend && !panel.openUrl">
+                    <ng-container *ngIf="panel.fillIns.length">
+                      <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
+                      <label *ngFor="let item of panel.fillIns" class="wk-send__fill">
+                        <span>{{ item.label }}</span>
+                        <input class="wk-input" type="text" [name]="'fill-' + item.token" [(ngModel)]="panel.values[item.token]" />
+                      </label>
+                    </ng-container>
+                    <div class="wk-actions">
+                      <button type="button" class="wk-button" (click)="prepareSend( email )" [disabled]="panel.working || !fillsComplete( panel )" data-cy="work-send-continue">
+                        {{ panel.working ? 'Preparing…' : 'Continue to ' + targetNames[panel.target] }}</button>
+                      <button type="button" class="wk-button wk-button--ghost" (click)="closeSend()" [disabled]="panel.working">Cancel</button>
+                    </div>
+                  </ng-container>
+                  <p *ngIf="panel.error" class="wk-error" role="alert">{{ panel.error }}</p>
+                </div>
+              </div>
+              <iframe *ngIf="previewOpen[email.documentId]" class="wk-email__frame" sandbox="" [srcdoc]="previews[email.documentId]"
+                      [title]="'Preview of ' + email.subject"></iframe>
+            </div>
+
+            <div class="wk-job__detail">
+              <ol class="wk-steps" *ngIf="job.steps.length">
+                <li *ngFor="let step of job.steps" [attr.data-status]="step.status">
+                  <span>{{ stepLabel( step ) }}</span>
+                  <span class="wk-steps__state">{{ stepState( step ) }}</span>
+                </li>
+              </ol>
+              <p *ngIf="job.planner" class="wk-meta">Planned with {{ job.planner.provider === 'anthropic' ? 'Claude' : 'OpenAI' }}</p>
+              <div class="wk-actions">
+                <button *ngIf="job.status === 'stopped'" type="button" class="wk-button" (click)="resume( job )" [disabled]="busy[job.id]">Continue</button>
+                <button *ngIf="canCancel( job )" type="button" class="wk-button wk-button--ghost" (click)="cancel( job )" [disabled]="busy[job.id]">Cancel job</button>
               </div>
             </div>
-            <iframe *ngIf="previewOpen[email.documentId]" class="wk-email__frame" sandbox="" [srcdoc]="previews[email.documentId]"
-                    [title]="'Preview of ' + email.subject"></iframe>
-          </div>
-          </ng-container>
-
-          <div *ngIf="expanded[job.id]" class="wk-job__detail">
-            <p *ngIf="hasMoreRequest( job )" class="wk-quote">“{{ job.request }}”</p>
-            <ol class="wk-steps" *ngIf="job.steps.length">
-              <li *ngFor="let step of job.steps" [attr.data-status]="step.status">
-                <span>{{ stepLabel( step ) }}</span>
-                <span class="wk-steps__state">{{ stepState( step ) }}</span>
-              </li>
-            </ol>
-            <p *ngIf="job.planner" class="wk-meta">Planned with {{ job.planner.provider === 'anthropic' ? 'Claude' : 'OpenAI' }}</p>
-            <div class="wk-actions">
-              <button *ngIf="approvalCount( job ) > 1" type="button" class="wk-button" (click)="approveAll( job )">Approve all {{ approvalCount( job ) }}</button>
-              <button *ngIf="job.status === 'stopped'" type="button" class="wk-button" (click)="resume( job )" [disabled]="busy[job.id]">Continue</button>
-              <button *ngIf="canCancel( job )" type="button" class="wk-button wk-button--ghost" (click)="cancel( job )" [disabled]="busy[job.id]">Cancel job</button>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="wk-section" data-cy="work-settings">
-        <div class="wk-section__head"><h2>How hard the Marketing Assistant pushes back</h2></div>
-        <p class="wk-note">When something you ask for works against your marketing plan. It always tells you what it will cost.</p>
-        <div class="wk-levels" role="radiogroup" aria-label="How hard the Marketing Assistant pushes back">
-          <button *ngFor="let option of pushbackOptions" type="button" role="radio" class="wk-level"
-                  [class.is-selected]="pushbackLevel === option.id" [attr.aria-checked]="pushbackLevel === option.id"
-                  (click)="setPushback( option.id )" [disabled]="pushbackLevel === null" [attr.data-cy]="'work-pushback-' + option.id">
-            <strong>{{ option.label }}</strong>
-            <span>{{ option.detail }}</span>
-          </button>
-        </div>
-        <p class="wk-meta">Social autopilot is {{ socialAutopilot ? 'on: the Marketing Assistant approves its own posts.' : 'off: you approve every post.' }}</p>
-      </section>
+          </article>
+        </ng-container>
+      </ng-container>
     </ng-container>
+
+    <p *ngIf="view === 'ask'" class="wk-note"><a routerLink="/missions" data-cy="work-to-missions">Needs more than marketing? Plan it as a Mission</a>: Marketing Assistant, 16Ahead and you each take the steps that are yours.</p>
   </div>
 </main>

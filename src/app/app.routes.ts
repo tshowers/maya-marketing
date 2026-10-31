@@ -25,6 +25,19 @@ export const routes: Routes = [
     // Maya's work: give her a job, approve what's waiting, follow progress
     // (MAYA-ORCHESTRATION-DESIGN.md, gap 6).
     path: 'work',
+    data: { view: 'ask' },
+    loadComponent: () => import('./features/work/work.component').then((m) => m.WorkComponent),
+  },
+  {
+    // Every job, the ones waiting on the person first.
+    path: 'work/jobs',
+    data: { view: 'jobs' },
+    loadComponent: () => import('./features/work/work.component').then((m) => m.WorkComponent),
+  },
+  {
+    // One job on its own: what Maya's chat and Today link to.
+    path: 'work/jobs/:id',
+    data: { view: 'job' },
     loadComponent: () => import('./features/work/work.component').then((m) => m.WorkComponent),
   },
   {

@@ -61,6 +61,14 @@ export interface MayaJob {
 /** Where a finished email goes: Catalyst (many contacts) or the Email Composer (one). */
 export type EmailSendTarget = 'catalyst' | 'composer';
 
+/** The page for one job. Maya's chat, Today and the jobs list all link here. */
+export function jobPath ( jobId: string ): string {
+  return `/work/jobs/${encodeURIComponent( jobId )}`;
+}
+
+/** Where a chat request's own words end and the brief Maya's chat added begins. */
+export const CHAT_BRIEF_MARKER = /\s*(Email brief from my chat with (?:Maya|the Marketing Assistant):|From my chat with (?:Maya|the Marketing Assistant):)[\s\S]*$/;
+
 /** Something TODD wasn't told that the user must fill in before sending. */
 export interface EmailFillIn {
   token: string;

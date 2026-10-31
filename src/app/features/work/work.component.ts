@@ -5,7 +5,7 @@ import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MayaAuthService } from '../../services/maya-auth.service';
-import { EmailFillIn, EmailSendTarget, MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel } from '../../services/maya-jobs.service';
+import { EmailFillIn, EmailSendTarget, MayaJob, MayaJobStep, MayaJobsService, MayaPlanFit, PushbackLevel, CHAT_BRIEF_MARKER, jobPath } from '../../services/maya-jobs.service';
 
 /**
  * Opens an email Maya designed in Email Creator to revise it there. Email
@@ -48,18 +48,22 @@ interface SendPanel {
 
 const ACTIVE_STATUSES = new Set( ['queued', 'running'] );
 const CLOSED_STATUSES = new Set( ['done', 'failed', 'cancelled'] );
+const NEEDS_YOU_STATUSES = new Set( ['awaiting_user', 'awaiting_decision', 'awaiting_approval', 'stopped'] );
 /** A closed job stays under "Now" this long, so a finished email is still at hand to send. */
 const RECENT_MS = 24 * 60 * 60 * 1000;
-/** Where a chat request's own words end and the brief Maya's chat added begins. */
-const CHAT_BRIEF_MARKER = /\s*(Email brief from my chat with Maya:|From my chat with Maya:)[\s\S]*$/;
 const FAST_POLL_MS = 5000;
 const SLOW_POLL_MS = 30000;
 
+/** Which part of the work page a route shows. */
+export type WorkView = 'ask' | 'jobs' | 'job';
+
 /**
- * Maya's work: ask her to do something, see one list of everything waiting
- * on you across all her jobs (approving there does the action - the post is
- * scheduled, nothing else to open), and follow each job's progress.
- * Backed by /api/maya/jobs (MAYA-ORCHESTRATION-DESIGN.md, gaps 3 and 6).
+ * Maya's work, in three routes (Ty, 2026-10-30): /work is Ask (what to do,
+ * and how hard she pushes back), /work/jobs lists every job with the ones
+ * waiting on you first, and /work/jobs/:id is one job on its own, with its
+ * concerns, questions, approvals and finished emails. The old ?job= links
+ * redirect to the job's page. Backed by /api/maya/jobs
+ * (MAYA-ORCHESTRATION-DESIGN.md, gaps 3 and 6).
  */
 @Component( {
   selector: 'app-work',
@@ -92,25 +96,28 @@ export class WorkComponent implements OnInit, OnDestroy {
   isStarting = false;
   answers: Record<string, string> = {};
   busy: Record<string, boolean> = {};
-  expanded: Record<string, boolean> = {};
   pushbackLevel: PushbackLevel | null = null;
   socialAutopilot = false;
   previews: Record<string, SafeHtml> = {};
   previewOpen: Record<string, boolean> = {};
   sendPanel: SendPanel | null = null;
-  /** The job Maya's chat linked to (?job=), highlighted and scrolled to once loaded. */
-  linkedJobId = '';
+  view: WorkView = 'ask';
+  /** The job /work/jobs/:id shows. */
+  jobId = '';
+  /** Set when that job isn't in the list and couldn't be loaded on its own. */
+  jobMissing = false;
+  /** A job opened by id that's older than the list goes back (kept so its page still works). */
+  private openedJob: MayaJob | null = null;
   /** Decision cards whose full request is showing. */
   requestOpen: Record<string, boolean> = {};
   /** Jobs list tab: what's going on now, or finished work. */
   tab: 'now' | 'past' = 'now';
-  /** The job just started from this page, confirmed under the ask box. */
-  startedJobId = '';
   readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
   readonly editUrl = emailCreatorEditUrl;
   private emailHtml: Record<string, string> = {};
 
   private authSubscription?: Subscription;
+  private paramSubscription?: Subscription;
   private pollTimer?: ReturnType<typeof setTimeout>;
   private destroyed = false;
 
@@ -125,12 +132,20 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   ngOnInit (): void {
     this.title.setTitle( "The Marketing Assistant's work — Marketing Assistant | 16Ahead" );
-    // Maya's chat links here with ?job=<id> after starting a job.
+    // Links from before jobs had their own page (/work?job=<id>) open the job's page.
     const linkedJob = this.route.snapshot.queryParamMap.get( 'job' );
     if ( linkedJob ) {
-      this.expanded[linkedJob] = true;
-      this.linkedJobId = linkedJob;
+      void this.router.navigateByUrl( jobPath( linkedJob ), { replaceUrl: true } );
+      return;
     }
+    this.view = ( this.route.snapshot.data['view'] as WorkView ) || 'ask';
+    this.paramSubscription = this.route.paramMap.subscribe( ( params ) => {
+      this.jobId = params.get( 'id' ) || '';
+      this.jobMissing = false;
+      this.openedJob = null;
+      this.sendPanel = null;
+      if ( this.jobId && this.loaded ) void this.loadOpenedJob();
+    } );
     this.authSubscription = this.authService.isLoggedIn().subscribe( ( signedIn ) => {
       const wasSignedIn = this.isSignedIn;
       this.isSignedIn = signedIn;
@@ -144,6 +159,7 @@ export class WorkComponent implements OnInit, OnDestroy {
   ngOnDestroy (): void {
     this.destroyed = true;
     this.authSubscription?.unsubscribe();
+    this.paramSubscription?.unsubscribe();
     if ( this.pollTimer ) clearTimeout( this.pollTimer );
   }
 
@@ -152,10 +168,32 @@ export class WorkComponent implements OnInit, OnDestroy {
     void this.router.navigate( ['/get-started'], { queryParams: { returnUrl: '/work' } } );
   }
 
+  /** The job this page shows, kept fresh by the list's polling. */
+  get job (): MayaJob | null {
+    if ( !this.jobId ) return null;
+    return this.jobs.find( ( job ) => job.id === this.jobId ) || this.openedJob;
+  }
+
+  /** Jobs waiting on the person: a concern, a question, drafts to approve, or a stop. */
+  get needsYouJobs (): MayaJob[] {
+    const waiting = new Set( this.approvals.map( ( item ) => item.job.id ) );
+    return this.jobs.filter( ( job ) => NEEDS_YOU_STATUSES.has( job.status ) || waiting.has( job.id ) );
+  }
+
+  get jobApprovals (): ApprovalItem[] {
+    return this.approvals.filter( ( entry ) => entry.job.id === this.jobId );
+  }
+
+  get jobEmails (): EmailResult[] {
+    const job = this.job;
+    return job ? this.emails( job ) : [];
+  }
+
   /** Everything waiting for a yes or no, oldest job first. */
   get approvals (): ApprovalItem[] {
     const items: ApprovalItem[] = [];
-    for ( const job of [...this.jobs].reverse() ) {
+    const jobs = this.openedJob && !this.jobs.some( ( job ) => job.id === this.openedJob!.id ) ? [...this.jobs, this.openedJob] : this.jobs;
+    for ( const job of [...jobs].reverse() ) {
       if ( job.status === 'cancelled' || job.status === 'failed' ) continue;
       const byId = new Map( job.steps.map( ( step ) => [step.id, step] ) );
       for ( const step of job.steps ) {
@@ -169,18 +207,12 @@ export class WorkComponent implements OnInit, OnDestroy {
     return items;
   }
 
-  /** Jobs Maya stopped because they work against the marketing plan. */
-  get decisionJobs (): MayaJob[] {
-    return this.jobs.filter( ( job ) => job.status === 'awaiting_decision' );
-  }
-
   async decidePlan ( job: MayaJob, choice: 'recommended' | 'as_asked' | 'cancel' ): Promise<void> {
     if ( this.busy[job.id] ) return;
     this.busy[job.id] = true;
     this.errorMessage = '';
     try {
       this.replace( await this.api.decidePlan( job.id, choice ) );
-      this.expanded[job.id] = true;
       this.schedulePoll( FAST_POLL_MS );
     } catch ( error: any ) {
       this.errorMessage = error?.error?.message || error?.message || 'That didn’t go through. Please try again.';
@@ -211,14 +243,9 @@ export class WorkComponent implements OnInit, OnDestroy {
     }
   }
 
-  get questionJobs (): MayaJob[] {
-    return this.jobs.filter( ( job ) => job.status === 'awaiting_user' );
-  }
-
   /** An idea fills the box to edit or send, so one click doesn't start a job. */
   useIdea ( idea: string, input: HTMLTextAreaElement ): void {
     this.request = idea;
-    this.startedJobId = '';
     input.focus();
   }
 
@@ -259,10 +286,9 @@ export class WorkComponent implements OnInit, OnDestroy {
     try {
       const job = await this.api.start( request );
       this.jobs = [job, ...this.jobs];
-      this.expanded[job.id] = true;
       this.request = '';
-      this.tab = 'now';
-      this.startedJobId = job.id;
+      // The job's own page shows it planning, and any question or concern it has.
+      void this.router.navigateByUrl( jobPath( job.id ) );
       this.schedulePoll( FAST_POLL_MS );
     } catch ( error: any ) {
       this.needsPurchase = error?.error?.error === 'APP_PURCHASE_REQUIRED';
@@ -378,10 +404,6 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   closeSend (): void {
     this.sendPanel = null;
-  }
-
-  approvalCount ( job: MayaJob ): number {
-    return this.approvals.filter( ( entry ) => entry.job.id === job.id ).length;
   }
 
   async sendAnswer ( job: MayaJob ): Promise<void> {
@@ -528,25 +550,34 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   private replace ( job: MayaJob ): void {
     this.jobs = this.jobs.map( ( existing ) => existing.id === job.id ? job : existing );
+    if ( this.openedJob?.id === job.id ) this.openedJob = job;
+  }
+
+  /** A job the list doesn't include (older than it goes back), loaded on its own. */
+  private async loadOpenedJob (): Promise<void> {
+    const jobId = this.jobId;
+    if ( !jobId || this.jobs.some( ( job ) => job.id === jobId ) ) return;
+    try {
+      const job = await this.api.get( jobId );
+      if ( this.jobId === jobId ) this.openedJob = job;
+    } catch {
+      if ( this.jobId === jobId ) this.jobMissing = true;
+    }
   }
 
   private async refresh (): Promise<void> {
     try {
       this.jobs = await this.api.list();
-      if ( !this.loaded ) {
-        const linked = this.jobs.find( ( job ) => job.id === this.linkedJobId );
-        if ( linked && !this.isCurrent( linked ) ) this.tab = 'past';
-        setTimeout( () => this.scrollToLinkedJob() );
+      if ( this.jobId && !this.jobs.some( ( job ) => job.id === this.jobId ) ) {
+        // Refetched each pass so a job opened by id stays current too.
+        await this.loadOpenedJob();
       }
       this.loaded = true;
     } catch ( error: any ) {
       this.errorMessage = error?.error?.message || error?.message || 'We couldn’t load the Marketing Assistant’s work.';
     }
-    this.schedulePoll( this.jobs.some( ( job ) => this.isActive( job ) ) ? FAST_POLL_MS : SLOW_POLL_MS );
-  }
-
-  scrollToJob ( jobId: string ): void {
-    document.getElementById( `wk-job-${jobId}` )?.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+    const active = this.jobs.some( ( job ) => this.isActive( job ) ) || ( !!this.openedJob && this.isActive( this.openedJob ) );
+    this.schedulePoll( active ? FAST_POLL_MS : SLOW_POLL_MS );
   }
 
   /**
@@ -555,13 +586,6 @@ export class WorkComponent implements OnInit, OnDestroy {
    */
   trackEmail ( _index: number, email: EmailResult ): string {
     return email.documentId;
-  }
-
-  /** Brings the job from the chat into view: its "your call" or question card if it has one, else its row. */
-  private scrollToLinkedJob (): void {
-    if ( !this.linkedJobId || typeof document === 'undefined' ) return;
-    const target = document.getElementById( `wk-attn-${this.linkedJobId}` ) || document.getElementById( `wk-job-${this.linkedJobId}` );
-    target?.scrollIntoView( { behavior: 'smooth', block: 'start' } );
   }
 
   /** Polls quickly while Maya is working, slowly otherwise, and not while the tab is hidden. */

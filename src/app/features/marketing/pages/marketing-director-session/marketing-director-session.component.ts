@@ -40,7 +40,7 @@ import { MayaDeckPreviewComponent } from '../../components/maya-deck-preview/may
 import { DemoVideoComponent } from '../../components/demo-video/demo-video.component';
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
-import { MayaJob, MayaJobsService } from '../../../../services/maya-jobs.service';
+import { CHAT_BRIEF_MARKER, MayaJob, MayaJobsService, jobPath } from '../../../../services/maya-jobs.service';
 import { AlsoFromUsComponent } from '../../../../shared/also-from-us/also-from-us.component';
 
 interface ReportOperationalData {
@@ -52,6 +52,8 @@ interface ReportOperationalData {
 }
 
 const MAYA_SITE_URL = 'https://marketing.16ahead.com';
+/** A job link in a chat message: its own page, or the old /work?job= form. */
+const JOB_LINK = /\/work(?:\/jobs\/|\?job=)([A-Za-z0-9_-]+)/;
 
 /**
  * What happened to a chat request: a new job, an answer to an open one, one
@@ -1424,6 +1426,9 @@ Pick one and I will keep moving:
 
     const job = await this.startOrContinueJob( request, userRequest, subject ? `the email "${subject}"` : 'the email' );
     if ( !job ) return false;
+    // A reply can carry more than one email action; once this message has
+    // linked the job, saying "still planning" again only repeats it.
+    if ( job.outcome === 'planning' && this.linkedSinceLastUserMessage( job.route ) ) return true;
     await this.appendArtifactReceiptMessage(
       job.outcome === 'started' ?
         'The Marketing Assistant is planning the email now - I\'ll tell you here when it needs you. Nothing is sent until you choose how' :
@@ -1454,13 +1459,13 @@ Pick one and I will keep moving:
       if ( openJob?.status === 'awaiting_user' ) {
         await this.mayaJobs.answer( openJob.id, ( userRequest.trim() || request ).slice( 0, 4000 ) );
         this.followJob( openJob.id );
-        return { outcome: 'answered', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+        return { outcome: 'answered', route: this.jobRoute( openJob.id ), title: this.jobTitle( openJob ) };
       }
       if ( openJob?.status === 'awaiting_decision' ) {
-        return { outcome: 'deciding', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+        return { outcome: 'deciding', route: this.jobRoute( openJob.id ), title: this.jobTitle( openJob ) };
       }
       if ( openJob ) {
-        return { outcome: 'planning', route: this.jobRoute( openJob.id ), title: openJob.request.slice( 0, 120 ) };
+        return { outcome: 'planning', route: this.jobRoute( openJob.id ), title: this.jobTitle( openJob ) };
       }
       const started = await this.mayaJobs.start( request );
       this.followJob( started.id );
@@ -1476,7 +1481,7 @@ Pick one and I will keep moving:
   private async findOpenChatJob (): Promise<MayaJob | null> {
     const jobIds = this.messages
       .filter( message => message.role === 'director' )
-      .map( message => /\/work\?job=([A-Za-z0-9_-]+)/.exec( message.content )?.[1] )
+      .map( message => JOB_LINK.exec( message.content )?.[1] )
       .filter( ( id ): id is string => !!id );
     const latest = jobIds[jobIds.length - 1];
     if ( !latest ) return null;
@@ -1547,7 +1552,22 @@ Pick one and I will keep moving:
   }
 
   private jobRoute ( jobId: string ): string {
-    return `/work?job=${encodeURIComponent( jobId )}`;
+    return jobPath( jobId );
+  }
+
+  /** What the person asked, without the brief the chat appended. */
+  private jobTitle ( job: MayaJob ): string {
+    return ( job.request.replace( CHAT_BRIEF_MARKER, '' ).trim() || job.request ).slice( 0, 120 );
+  }
+
+  /** Whether a message since the person's last one already links to this job. */
+  private linkedSinceLastUserMessage ( route: string ): boolean {
+    for ( let index = this.messages.length - 1; index >= 0; index-- ) {
+      const message = this.messages[index];
+      if ( message.role === 'user' ) return false;
+      if ( message.content.includes( route ) ) return true;
+    }
+    return false;
   }
 
   /**
