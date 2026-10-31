@@ -5,6 +5,14 @@ import { environment } from '../../../../environments/environment';
 import { MayaStatusReport } from '../models/maya-status-report.models';
 import { MayaContentSufficiency, MayaDeck, MayaDeckCritique, MayaEnrichedArgument, MayaKnownFacts, MayaPresentationStrategy } from '../models/maya-deck.models';
 
+/** A question with a few likely answers, shown as option pills under the reply. */
+export interface DirectorChoice {
+  question: string;
+  options: string[];
+  /** The answer tapped, once there is one. */
+  picked?: string;
+}
+
 export interface PublicMarketingDirectorMessage {
   id: string;
   role: 'user' | 'director';
@@ -13,6 +21,11 @@ export interface PublicMarketingDirectorMessage {
   /** Concise rationale for Maya's recommendation, separate from the answer. */
   why?: string;
   whyExpanded?: boolean;
+  choices?: DirectorChoice[];
+  /** The pills can still be tapped: the latest reply, until it's answered. */
+  choicesOpen?: boolean;
+  /** The user's reply made by tapping pills; the pills already show it, so it has no bubble. */
+  fromChoices?: boolean;
 }
 
 export interface MayaPresentationRequirements {
@@ -86,6 +99,7 @@ interface PublicMarketingDirectorResponse {
   reply: string;
   why?: string;
   executionIntent: boolean;
+  choices?: { question: string; options: string[]; }[];
   systemActions?: PublicMarketingDirectorSystemAction[];
 }
 

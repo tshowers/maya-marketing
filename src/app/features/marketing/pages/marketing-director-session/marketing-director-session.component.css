@@ -196,6 +196,19 @@
 :host ::ng-deep .maya-message-content a { color: var(--blue-ink); }
 :host ::ng-deep .maya-message-content img { display: block !important; width: auto !important; max-width: 100% !important; height: auto !important; max-height: min(70vh, 560px) !important; object-fit: contain !important; }
 
+/* Option pills: a question with a few likely answers (design: overnight videos, "What price range?"). */
+.maya-message[hidden] { display: none; }
+.chat-choice { margin-top: 14px; }
+.chat-choice__question { margin: 0 0 8px; color: var(--text); font: 700 16px/1.35 var(--font); }
+.chat-choice__options { display: flex; flex-wrap: wrap; gap: 8px; }
+.chat-choice__pill { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 15px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text); font: 600 14px var(--font); cursor: pointer; }
+.chat-choice__pill:hover:not(:disabled) { background: var(--surface2); }
+.chat-choice__pill:focus-visible { outline: 2px solid var(--t-green-fg); outline-offset: 2px; }
+.chat-choice__pill.is-picked { background: var(--text); color: var(--bg); }
+.chat-choice__pill:disabled:not(.is-picked) { color: var(--muted); cursor: default; }
+.chat-choice__pill:disabled.is-picked { cursor: default; }
+.chat-choice__pill svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
 .maya-why-callout { margin-top: 14px; overflow: hidden; border-radius: 18px; background: var(--surface); }
 .maya-why-toggle { display: flex; align-items: center; gap: 9px; width: 100%; padding: 11px 14px; border: 0; background: transparent; color: var(--text); font: 700 14px var(--font); text-align: left; cursor: pointer; }
 .maya-why-icon { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--t-green); color: var(--t-green-fg); font-size: 12px; }
@@ -257,6 +270,7 @@
   transform: translateX(-50%);
   box-shadow: 0 0 0 6px var(--bg);
 }
+.maya-composer--docked textarea { max-height: 40vh; overflow-y: auto; }
 
 .maya-status { position: fixed; left: 50%; bottom: 160px; z-index: 6; transform: translateX(-50%); color: var(--muted); font-size: 13px; }
 

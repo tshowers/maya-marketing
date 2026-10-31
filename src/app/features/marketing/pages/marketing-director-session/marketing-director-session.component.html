@@ -31,10 +31,16 @@
       </div>
 
       <div #directorMessagesContainer class="maya-messages" *ngIf="hasUserMessages">
-        <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'">
+        <article #messageItem class="maya-message" *ngFor="let message of messages; trackBy: trackById" [attr.data-role]="message.role" [class.maya-message--user]="message.role === 'user'" [hidden]="message.fromChoices">
           <ng-container *ngIf="message.role !== 'user'"><img class="maya-message__avatar brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="Marketing Assistant" /><img class="maya-message__avatar brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="Marketing Assistant" /></ng-container>
           <div class="maya-message__body">
             <div class="maya-message-content" [innerHTML]="message.renderedContent || ''"></div>
+            <div class="chat-choice" *ngFor="let choice of message.choices">
+              <p class="chat-choice__question">{{ choice.question }}</p>
+              <div class="chat-choice__options" role="group" [attr.aria-label]="choice.question">
+                <button type="button" class="chat-choice__pill" *ngFor="let option of choice.options" [class.is-picked]="choice.picked === option" [attr.aria-pressed]="choice.picked === option" [disabled]="!message.choicesOpen || sending" (click)="pickChoice(message, choice, option)"><svg *ngIf="choice.picked === option" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>{{ option }}</button>
+              </div>
+            </div>
             <div class="maya-why-callout" *ngIf="message.role === 'director' && message.why">
               <button type="button" class="maya-why-toggle" (click)="toggleWhy(message)" [attr.aria-expanded]="message.whyExpanded" [attr.aria-controls]="'why-' + message.id">
                 <span class="maya-why-icon" aria-hidden="true">✦</span>
@@ -73,7 +79,7 @@
       </aside>
 
       <div class="maya-composer maya-composer--docked" *ngIf="hasUserMessages">
-        <textarea rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event)" (keydown)="handlePromptKeydown($event)" placeholder="Ask the Marketing Assistant…" aria-label="Ask the Marketing Assistant"></textarea>
+        <textarea #dockedPrompt rows="1" [(ngModel)]="prompt" (ngModelChange)="handlePromptChange($event); fitDockedPrompt()" (keydown)="handlePromptKeydown($event)" placeholder="Ask the Marketing Assistant…" aria-label="Ask the Marketing Assistant"></textarea>
         <div class="maya-composer__row">
           <button type="button" class="maya-attach" *ngIf="hasPaidWorkspaceAccess" (click)="generateStatusReport()" [disabled]="statusReportGenerating" [attr.aria-busy]="statusReportGenerating">
             <span *ngIf="statusReportGenerating" class="maya-button-spinner" aria-hidden="true"></span>

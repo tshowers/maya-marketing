@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
 import { MayaChatStateService } from '../../../../services/maya-chat-state.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -11,6 +11,7 @@ import { DEFAULT_MARKETING_EMPLOYEE_ID } from '../../models/marketing-employee.m
 import { MarketingEmployeeService } from '../../services/marketing-employee.service';
 import {
   MarketingDirectorMoveContextItem,
+  DirectorChoice,
   PublicMarketingDirectorAccessMode,
   PublicMarketingDirectorEmailContext,
   PublicMarketingDirectorMessage,
@@ -97,6 +98,7 @@ const LEGACY_RECEIPT_ROUTES: Array<[RegExp, ( id: string ) => string]> = [
 } )
 export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   @ViewChildren( 'messageItem' ) private messageItems?: QueryList<ElementRef<HTMLElement>>;
+  @ViewChild( 'dockedPrompt' ) private dockedPrompt?: ElementRef<HTMLTextAreaElement>;
 
   readonly avatarUrl = 'assets/marketing/marketing-director-avatar.png';
   readonly suiteImageUrl = 'assets/suite/todd-suite2.png';
@@ -338,9 +340,12 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     return `${greeting}I'm the Marketing Assistant - I sent you an email${subjectPhrase} a little while ago. What's on your mind?`;
   }
 
-  async sendMessage ( presetPrompt?: string ): Promise<void> {
+  async sendMessage ( presetPrompt?: string, { fromChoices = false }: { fromChoices?: boolean; } = {} ): Promise<void> {
     const normalizedPrompt = String( presetPrompt || this.prompt || '' ).trim();
     if ( !normalizedPrompt || this.sending ) return;
+
+    // Any new message, typed or tapped, closes the pills above it.
+    this.messages.forEach( message => message.choicesOpen = false );
 
     if ( this.presentationMode || this.isPresentationRequest( normalizedPrompt ) ) {
       await this.sendPresentationMessage( normalizedPrompt );
@@ -353,11 +358,13 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     this.sending = true;
 
     const userMessage: PublicMarketingDirectorMessage = {
-      ...this.buildMessage( 'user', normalizedPrompt )
+      ...this.buildMessage( 'user', normalizedPrompt ),
+      fromChoices
     };
 
     this.messages = [...this.messages, userMessage];
     this.prompt = '';
+    this.fitDockedPrompt();
     this.hasUserMessages = true;
     this.showSuggestionTray = false;
     this.persistSessionMemory();
@@ -390,12 +397,17 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       );
       const normalizedDirectorReply = this.normalizeDirectorReply( response.reply );
       this.showUpgradePanel = response.executionIntent && !this.hasPaidWorkspaceAccess;
+      const choices: DirectorChoice[] = ( response.choices || [] ).map( choice => ( { question: choice.question, options: [...choice.options] } ) );
       this.messages = [
         ...this.messages,
-        this.buildMessage( 'director', normalizedDirectorReply, this.buildMessageId( 'director' ), response.why )
+        {
+          ...this.buildMessage( 'director', normalizedDirectorReply, this.buildMessageId( 'director' ), response.why ),
+          choices,
+          choicesOpen: choices.length > 0
+        }
       ];
       this.persistSessionMemory();
-      await this.appendWorkspaceMessage( 'employee', normalizedDirectorReply );
+      await this.appendWorkspaceMessage( 'employee', [normalizedDirectorReply, ...choices.map( choice => `${ choice.question } (${ choice.options.join( ' / ' ) })` )].join( '\n' ) );
       const createdReceipt = await this.maybePersistMasterPlan( normalizedPrompt, response.reply );
       const executedReceipt = await this.executeDirectorSystemActions( response.systemActions || [], normalizedPrompt );
       this.appendExecutionReceiptNotice( normalizedDirectorReply, createdReceipt || executedReceipt );
@@ -735,9 +747,29 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     message.whyExpanded = !message.whyExpanded;
   }
 
+  /** A tapped pill. Once every question has an answer, the answers go as the reply. */
+  pickChoice ( message: PublicMarketingDirectorMessage, choice: DirectorChoice, option: string ): void {
+    if ( !message.choicesOpen || this.sending ) return;
+    choice.picked = option;
+    const choices = message.choices || [];
+    if ( choices.some( item => !item.picked ) ) return;
+    void this.sendMessage( choices.map( item => `${ item.question } ${ item.picked }` ).join( '\n' ), { fromChoices: true } );
+  }
+
   handlePromptChange ( value: string ): void {
     this.prompt = value;
     this.showSuggestionTray = !String( value || '' ).trim();
+  }
+
+  /** The docked composer grows with what's typed, up to its CSS max-height, then scrolls. */
+  fitDockedPrompt (): void {
+    const box = this.dockedPrompt?.nativeElement;
+    if ( !box ) return;
+    // After Angular writes a cleared prompt back to the box.
+    setTimeout( () => {
+      box.style.height = 'auto';
+      box.style.height = `${ box.scrollHeight }px`;
+    } );
   }
 
   handlePromptKeydown ( event: KeyboardEvent ): void {
