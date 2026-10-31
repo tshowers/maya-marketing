@@ -20,7 +20,7 @@ import {
   MayaPresentationRequirements,
   PublicMarketingDirectorService
 } from '../../services/public-marketing-director.service';
-import { MarketingEmployeeActionRecord, MarketingEmployeeOutcomeRecord, MarketingPlanRecord } from '../../models/marketing-employee.models';
+import { MarketingEmployeeActionRecord, MarketingEmployeeConversationRecord, MarketingEmployeeOutcomeRecord, MarketingPlanRecord } from '../../models/marketing-employee.models';
 import { AuthService } from '../../../../services/auth.service';
 import { WriteAccessService } from '../../../../services/write-access.service';
 import { NotificationService } from '../../../../services/notification.service';
@@ -117,6 +117,10 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   private readonly mayaJobs = inject( MayaJobsService );
   sending = false;
   errorMessage = '';
+  /** Past conversations (the header's History button). */
+  historyOpen = false;
+  historyLoading = false;
+  historyItems: Array<{ id: string; updatedAt: string; preview: string; isCurrent: boolean }> = [];
   showUpgradePanel = false;
   hasUserMessages = false;
   showSuggestionTray = true;
@@ -189,7 +193,12 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit (): Promise<void> {
-    this.chatState.register( { hasConversation: () => this.hasUserMessages, newChat: () => void this.resetSession() } );
+    this.chatState.register( {
+      hasConversation: () => this.hasUserMessages,
+      newChat: () => void this.resetSession(),
+      hasHistory: () => this.isLoggedInWorkspaceUser && !!this.tenantId,
+      openHistory: () => void this.openHistory()
+    } );
     await this.loadEmailContextFromQueryParams();
     this.authContextSubscription = this.authService.getUser().pipe(
       switchMap( user => {
@@ -1835,55 +1844,124 @@ Pick one and I will keep moving:
     }
 
     try {
-      if ( forceNewConversation ) {
-        this.workspaceConversationId = await this.marketingEmployeeService.createConversation( this.tenantId, {
+      let conversationId = '';
+      if ( !forceNewConversation ) {
+        // The one this browser had open, else the newest session.
+        const sessions = await this.listSessionConversations();
+        const rememberedId = this.readRememberedConversationId();
+        conversationId = sessions.find( conversation => conversation.id === rememberedId )?.id
+          || String( sessions[0]?.id || '' ).trim();
+      }
+      if ( !conversationId ) {
+        conversationId = await this.marketingEmployeeService.createConversation( this.tenantId, {
           employeeId: this.employeeId,
           employeeType: 'marketing',
           title: 'The Marketing Assistant master marketing plan session'
         } );
-      } else {
-        const conversations = await firstValueFrom(
-          this.marketingEmployeeService.watchConversations( this.tenantId, this.employeeId, { limit: 20 } ).pipe(
-            take( 1 ),
-            catchError( () => of( [] ) )
-          )
-        );
-        // Newest first; sessions started before the 16Ahead rename keep the old Maya title.
-        const sessionTitles = ['the marketing assistant master marketing plan session', 'maya master marketing plan session'];
-        const existingConversation = ( conversations || [] ).find( conversation => sessionTitles.includes( String( conversation.title || '' ).trim().toLowerCase() ) );
-        this.workspaceConversationId = existingConversation?.id
-          ? String( existingConversation.id ).trim()
-          : await this.marketingEmployeeService.createConversation( this.tenantId, {
-            employeeId: this.employeeId,
-            employeeType: 'marketing',
-            title: 'The Marketing Assistant master marketing plan session'
-          } );
       }
       this.workspaceConversationContextKey = contextKey;
-
-      this.workspaceConversationMessagesSubscription?.unsubscribe();
-      this.workspaceConversationMessagesSubscription = this.marketingEmployeeService.watchConversationMessages(
-        this.tenantId,
-        this.workspaceConversationId,
-        { limit: 200 }
-      ).pipe(
-        catchError( () => of( [] ) )
-      ).subscribe( messages => {
-        const restoredMessages = ( messages || [] ).map( message => this.buildMessage(
-          message.role === 'user' ? 'user' : 'director',
-          String( message.content || '' ).trim(),
-          String( message.id || this.buildMessageId( 'director' ) )
-        ) ).filter( message => !!message.content );
-
-        if ( restoredMessages.length > 0 ) {
-          this.messages = restoredMessages;
-          this.hasUserMessages = restoredMessages.some( message => message.role === 'user' );
-          this.showSuggestionTray = !this.hasUserMessages && !String( this.prompt || '' ).trim();
-          this.persistSessionMemory();
-        }
-      } );
+      this.watchWorkspaceConversation( conversationId );
     } catch {
       // Keep local memory fallback if workspace conversation setup fails.
+    }
+  }
+
+  /** Marketing plan sessions, newest first; ones started before the 16Ahead rename keep the old Maya title. */
+  private async listSessionConversations (): Promise<MarketingEmployeeConversationRecord[]> {
+    const sessionTitles = ['the marketing assistant master marketing plan session', 'maya master marketing plan session'];
+    const conversations = await firstValueFrom(
+      this.marketingEmployeeService.watchConversations( this.tenantId, this.employeeId, { limit: 30 } ).pipe(
+        take( 1 ),
+        catchError( () => of( [] ) )
+      )
+    );
+    return ( conversations || [] ).filter( conversation =>
+      !!conversation.id && sessionTitles.includes( String( conversation.title || '' ).trim().toLowerCase() ) );
+  }
+
+  /** Shows a conversation's messages here, and remembers it so a reload comes back to it. */
+  private watchWorkspaceConversation ( conversationId: string ): void {
+    this.workspaceConversationId = String( conversationId || '' ).trim();
+    this.rememberConversationId( this.workspaceConversationId );
+
+    this.workspaceConversationMessagesSubscription?.unsubscribe();
+    this.workspaceConversationMessagesSubscription = this.marketingEmployeeService.watchConversationMessages(
+      this.tenantId,
+      this.workspaceConversationId,
+      { limit: 200 }
+    ).pipe(
+      catchError( () => of( [] ) )
+    ).subscribe( messages => {
+      const restoredMessages = ( messages || [] ).map( message => this.buildMessage(
+        message.role === 'user' ? 'user' : 'director',
+        String( message.content || '' ).trim(),
+        String( message.id || this.buildMessageId( 'director' ) )
+      ) ).filter( message => !!message.content );
+
+      if ( restoredMessages.length > 0 ) {
+        this.messages = restoredMessages;
+        this.hasUserMessages = restoredMessages.some( message => message.role === 'user' );
+        this.showSuggestionTray = !this.hasUserMessages && !String( this.prompt || '' ).trim();
+        this.persistSessionMemory();
+      }
+    } );
+  }
+
+  async openHistory (): Promise<void> {
+    if ( !this.tenantId ) return;
+    this.historyOpen = true;
+    this.historyLoading = true;
+    try {
+      const sessions = await this.listSessionConversations();
+      const items = await Promise.all( sessions.map( async conversation => ( {
+        id: String( conversation.id ),
+        updatedAt: String( conversation.updatedAt || conversation.createdAt || '' ),
+        preview: await this.marketingEmployeeService.getLatestUserMessage( this.tenantId, String( conversation.id ) ).catch( () => '' ),
+        isCurrent: conversation.id === this.workspaceConversationId
+      } ) ) );
+      // A conversation where nothing was asked is just a greeting; leave it out.
+      this.historyItems = items.filter( item => item.preview || item.isCurrent );
+    } catch {
+      this.historyItems = [];
+    } finally {
+      this.historyLoading = false;
+    }
+  }
+
+  closeHistory (): void {
+    this.historyOpen = false;
+  }
+
+  openPastConversation ( conversationId: string ): void {
+    this.historyOpen = false;
+    if ( !conversationId || conversationId === this.workspaceConversationId ) return;
+    this.messages = [];
+    this.prompt = '';
+    this.errorMessage = '';
+    this.watchWorkspaceConversation( conversationId );
+  }
+
+  private buildConversationStorageKey (): string {
+    return this.tenantId && this.userId ? `maya-open-conversation:${this.tenantId}:${this.userId}` : '';
+  }
+
+  private readRememberedConversationId (): string {
+    const storageKey = this.buildConversationStorageKey();
+    if ( !storageKey || typeof window === 'undefined' ) return '';
+    try {
+      return String( window.localStorage.getItem( storageKey ) || '' ).trim();
+    } catch {
+      return '';
+    }
+  }
+
+  private rememberConversationId ( conversationId: string ): void {
+    const storageKey = this.buildConversationStorageKey();
+    if ( !storageKey || !conversationId || typeof window === 'undefined' ) return;
+    try {
+      window.localStorage.setItem( storageKey, conversationId );
+    } catch {
+      // Storage blocked; a reload opens the newest conversation instead.
     }
   }
 

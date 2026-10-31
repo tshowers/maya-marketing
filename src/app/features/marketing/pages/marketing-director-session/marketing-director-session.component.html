@@ -96,6 +96,20 @@
           </button>
         </div>
       </div>
+      <div class="maya-history" *ngIf="historyOpen" (click)="closeHistory()" data-cy="maya-history">
+        <aside class="maya-history__panel" role="dialog" aria-label="Past conversations" (click)="$event.stopPropagation()">
+          <div class="maya-history__head">
+            <h2>Past conversations</h2>
+            <button type="button" class="maya-history__close" (click)="closeHistory()" aria-label="Close">×</button>
+          </div>
+          <p class="maya-history__note" *ngIf="historyLoading">Loading…</p>
+          <p class="maya-history__note" *ngIf="!historyLoading && !historyItems.length">No past conversations yet.</p>
+          <button type="button" class="maya-history__item" *ngFor="let item of historyItems" [class.is-current]="item.isCurrent" (click)="openPastConversation(item.id)">
+            <span class="maya-history__date">{{ item.updatedAt ? (item.updatedAt | date:'MMM d, h:mm a') : '' }}{{ item.isCurrent ? ' · Open now' : '' }}</span>
+            <span class="maya-history__preview">{{ item.preview || 'Just started' }}</span>
+          </button>
+        </aside>
+      </div>
       <div class="maya-status" *ngIf="sending || statusReportGenerating || errorMessage">{{ sending ? 'The Marketing Assistant is working on your answer…' : statusReportGenerating ? 'The Marketing Assistant is creating your status report…' : errorMessage }}</div>
     </section>
   </main>

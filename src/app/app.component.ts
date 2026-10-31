@@ -25,6 +25,9 @@ import { AppUpdateService } from './services/app-update.service';
         <button type="button" class="maya-pill" *ngIf="isChatHome && chat.hasConversation" (click)="chat.newChat()" title="New chat">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span>New chat</span>
         </button>
+        <button type="button" class="maya-pill" *ngIf="isChatHome && chat.hasHistory" (click)="chat.openHistory()" title="Past conversations">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span>History</span>
+        </button>
         <a class="maya-pill" routerLink="/marketing-employee" routerLinkActive="is-on" [routerLinkActiveOptions]="{ exact: true }" title="Status">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg><span>Status</span>
         </a>

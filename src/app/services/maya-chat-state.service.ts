@@ -1,14 +1,22 @@
 import { Injectable } from '@angular/core';
 
+interface MayaChat {
+  hasConversation: () => boolean;
+  newChat: () => void;
+  /** Signed in, so past conversations are saved and can be listed. */
+  hasHistory: () => boolean;
+  openHistory: () => void;
+}
+
 /**
- * Lets the header (in the app shell) offer "New chat" while a conversation
- * is open on the home page. The chat registers itself while it is on screen.
+ * Lets the header (in the app shell) offer "New chat" and "History" while
+ * the chat is on the home page. The chat registers itself while it is on screen.
  */
 @Injectable( { providedIn: 'root' } )
 export class MayaChatStateService {
-  private chat: { hasConversation: () => boolean; newChat: () => void } | null = null;
+  private chat: MayaChat | null = null;
 
-  register ( chat: { hasConversation: () => boolean; newChat: () => void } ): void {
+  register ( chat: MayaChat ): void {
     this.chat = chat;
   }
 
@@ -20,7 +28,15 @@ export class MayaChatStateService {
     return !!this.chat?.hasConversation();
   }
 
+  get hasHistory (): boolean {
+    return !!this.chat?.hasHistory();
+  }
+
   newChat (): void {
     this.chat?.newChat();
+  }
+
+  openHistory (): void {
+    this.chat?.openHistory();
   }
 }

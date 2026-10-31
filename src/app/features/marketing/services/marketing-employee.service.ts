@@ -9,6 +9,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  limitToLast,
   orderBy,
   query,
   serverTimestamp,
@@ -510,13 +511,27 @@ export class MarketingEmployeeService {
       orderBy( 'createdAt', 'asc' )
     ];
 
+    // The newest messages, still oldest first - a long thread must not stop at its first 200.
     if ( typeof options?.limit === 'number' && Number.isFinite( options.limit ) ) {
-      constraints.push( limit( Math.max( 1, Math.min( options.limit, 200 ) ) ) );
+      constraints.push( limitToLast( Math.max( 1, Math.min( options.limit, 200 ) ) ) );
     }
 
     return collectionData( query( messagesRef, ...constraints ), { idField: 'id' } ).pipe(
       map( records => records.map( record => this.toMarketingEmployeeConversationMessageRecord( normalizedConversationId, record ) ) )
     );
+  }
+
+  /** The latest thing the person asked in a conversation, for the chat history list. */
+  async getLatestUserMessage ( tenantId: string, conversationId: string ): Promise<string> {
+    const normalizedTenantId = this.normalizeRequiredValue( tenantId, 'tenantId' );
+    const normalizedConversationId = this.normalizeRequiredValue( conversationId, 'conversationId' );
+    const messagesRef = collection(
+      this.firestore,
+      `tenants/${normalizedTenantId}/employee-conversations/${normalizedConversationId}/messages`
+    );
+    const snapshot = await getDocs( query( messagesRef, orderBy( 'createdAt', 'desc' ), limit( 8 ) ) );
+    const latest = snapshot.docs.map( item => item.data() ).find( data => String( data?.['role'] || '' ).trim().toLowerCase() === 'user' );
+    return String( latest?.['content'] || '' ).trim();
   }
 
   async appendConversationMessage (
@@ -1824,7 +1839,7 @@ export class MarketingEmployeeService {
     }
 
     return {
-      owner: owner || 'TODD',
+      owner: owner || '16Ahead',
       summary,
       nextActions,
       routes: routes.length ? routes : undefined
