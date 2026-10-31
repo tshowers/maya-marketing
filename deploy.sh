@@ -35,3 +35,13 @@ echo "Deploying Maya to Firebase Hosting site maya-marketing..."
 firebase deploy --project taliferrotech --only hosting:maya-marketing
 
 echo "Maya hosting deploy complete."
+
+trap - ERR
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+echo "Pushing ${BRANCH} to GitHub..."
+if git push origin "${BRANCH}"; then
+  echo "GitHub push complete."
+else
+  echo "WARNING: deploy succeeded but the GitHub push failed - run 'git push origin ${BRANCH}' manually." >&2
+  exit 1
+fi

@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
@@ -42,6 +42,11 @@ export class AppUpdateService {
     this.router.events.pipe( filter( ( event ) => event instanceof NavigationEnd ) ).subscribe( () => {
       if ( this.reloadPending ) this.reload( this.reloadKey );
     } );
+    // A lazy route's chunk failing goes to the router, not to window error events.
+    this.router.events.pipe( filter( ( event ) => event instanceof NavigationError ) ).subscribe( ( event ) => {
+      const error = ( event as NavigationError ).error as { message?: string } | string | undefined;
+      this.onError( typeof error === 'string' ? error : String( error?.message || error || '' ) );
+    } );
 
     document.addEventListener( 'visibilitychange', () => {
       if ( document.visibilityState === 'visible' ) void this.checkDeployedVersion();
@@ -79,7 +84,9 @@ export class AppUpdateService {
     const chunkFailed = text.includes( 'failed to fetch dynamically imported module' ) ||
       text.includes( 'loading chunk' ) ||
       text.includes( 'expected a javascript module script' ) ||
-      text.includes( 'mime type of "text/html"' );
+      text.includes( 'mime type of "text/html"' ) ||
+      text.includes( "'text/html' is not a valid javascript mime type" ) ||
+      text.includes( 'importing a module script failed' );
     if ( chunkFailed ) this.reload( this.chunkReloadKey );
   }
 
