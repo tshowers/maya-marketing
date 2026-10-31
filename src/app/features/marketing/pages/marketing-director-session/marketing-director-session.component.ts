@@ -1848,7 +1848,9 @@ Pick one and I will keep moving:
             catchError( () => of( [] ) )
           )
         );
-        const existingConversation = ( conversations || [] ).find( conversation => String( conversation.title || '' ).trim().toLowerCase() === 'maya master marketing plan session' );
+        // Newest first; sessions started before the 16Ahead rename keep the old Maya title.
+        const sessionTitles = ['the marketing assistant master marketing plan session', 'maya master marketing plan session'];
+        const existingConversation = ( conversations || [] ).find( conversation => sessionTitles.includes( String( conversation.title || '' ).trim().toLowerCase() ) );
         this.workspaceConversationId = existingConversation?.id
           ? String( existingConversation.id ).trim()
           : await this.marketingEmployeeService.createConversation( this.tenantId, {
