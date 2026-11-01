@@ -36,6 +36,7 @@ import {
 } from '../models/marketing-employee.models';
 import { TaskService } from '../../../services/task.service';
 import { Task } from '../../../shared/data/interfaces/task.model';
+import { cleanTitle } from '../models/maya-progress';
 import { environment } from '../../../../environments/environment';
 
 export interface MayaRunStepStatus { key: string; label: string; status: string; detail?: string; metadata?: Record<string, unknown>; startedAt?: string; completedAt?: string; }
@@ -974,9 +975,9 @@ export class MarketingEmployeeService {
       strategyId: template.strategyId || null,
       segmentId: template.segmentId || null,
       angleId: template.angleId || null,
-      title: lane === 'outbox'
+      title: cleanTitle( lane === 'outbox'
         ? `16Ahead execute ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`
-        : `16Ahead schedule ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}`,
+        : `16Ahead schedule ${String( template.title || '' ).replace( /^(draft|prepare)\s+/i, '' ).trim()}` ),
       description: lane === 'outbox'
         ? '16Ahead owns the live email lane once the Marketing Assistant has the draft batch ready.'
         : '16Ahead owns the publish and queue lane once the Marketing Assistant has the social draft ready.',

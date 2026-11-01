@@ -12,7 +12,7 @@
 </ng-template>
 
 <ng-template #needIcon let-need>
-  <ng-container *ngTemplateOutlet="icon; context: { $implicit: need.id === 'contacts' ? 'user' : need.id === 'review' ? 'inbox' : 'calendar' }"></ng-container>
+  <ng-container *ngTemplateOutlet="icon; context: { $implicit: need.id === 'contacts' ? 'user' : need.id === 'dates' ? 'calendar' : 'inbox' }"></ng-container>
 </ng-template>
 
 <ng-template #actionRows let-rows>

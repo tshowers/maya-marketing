@@ -10,6 +10,7 @@ import { MarketingEmployeeActionRecord, MarketingPlanRecord, MarketingPlanStep }
 /** Other TODD apps the pages send people to. */
 export const MOVES_URL = 'https://moves.16ahead.com';
 export const OUTREACH_URL = 'https://outreach.16ahead.com';
+export const SOCIAL_TODAY_URL = 'https://social.16ahead.com/today';
 /** Maya's review tasks in Moves; from=maya sends a signed-out visitor to sign in instead of the sample team. */
 export const MAYA_TASKS_URL = `${MOVES_URL}/app/maya?from=maya`;
 
@@ -35,7 +36,7 @@ export interface ActionRow {
 }
 
 export interface MayaNeed {
-  id: 'contacts' | 'review' | 'dates';
+  id: 'contacts' | 'review' | 'review-drafts' | 'review-social' | 'dates';
   title: string;
   detail: string;
   primaryLabel: string;
@@ -80,8 +81,20 @@ export function latestMayaNote ( action: MarketingEmployeeActionRecord ): string
   return String( mine?.text || '' ).trim();
 }
 
-function cleanTitle ( title: string ): string {
-  return String( title || '' ).replace( /^Marketing Plan:\s*/i, '' ).trim() || 'Untitled work';
+/**
+ * Plain titles for the execution tasks (Ty, 2026-10-31): tasks saved before
+ * the rename read "TODD execute email batch for …", later ones
+ * "16Ahead execute …". Both read as "Send the approved emails to …".
+ */
+export function cleanTitle ( title: string ): string {
+  const text = String( title || '' ).replace( /^Marketing Plan:\s*/i, '' ).trim();
+  const plain = text
+    .replace( /^(?:TODD|16Ahead) execute email batch (?:for|to) /i, 'Send the approved emails to ' )
+    .replace( /^(?:TODD|16Ahead) schedule social queue for /i, 'Schedule the approved social posts for ' )
+    .replace( /^(?:TODD|16Ahead) execute /i, 'Send ' )
+    .replace( /^(?:TODD|16Ahead) schedule /i, 'Schedule ' )
+    .replace( /\bTODD\b/g, '16Ahead' );
+  return plain || 'Untitled work';
 }
 
 function moveHref ( action: MarketingEmployeeActionRecord ): string | null {
@@ -111,7 +124,7 @@ export function stepActionRows ( actions: MarketingEmployeeActionRecord[] ): Act
       return {
         id: String( action.id || action.title ),
         title: cleanTitle( action.title ),
-        detail: state === 'stuck' && note ? note : String( note || action.description || '' ).replace( /\s+/g, ' ' ).trim(),
+        detail: ( state === 'stuck' && note ? note : String( note || action.description || '' ).replace( /\s+/g, ' ' ).trim() ).replace( /\bTODD\b/g, '16Ahead' ),
         state,
         href: state === 'stuck' ? moveHref( action ) : null,
         needsContact: state === 'stuck' && mentionsContact( note ),
@@ -218,21 +231,22 @@ export function buildNeeds ( input: {
     } );
   }
 
+  // One card per limit that is actually hit, each pointing at its own fix
+  // (Ty, 2026-10-31): it said "Review 74 drafts" when the social posts were
+  // what was full, and sent you to an old Outreach page. Each limit now
+  // holds back only its own kind of work (mayaCreationGuard.service.js).
   const health = input.queueHealth;
-  if ( health?.blocked ) {
-    const tasks = health.counts?.openTaskCount || 0;
-    const drafts = health.counts?.openDraftCount || 0;
-    const posts = health.counts?.openSocialPostCount || 0;
-    const what = tasks ? `${tasks} waiting task${tasks === 1 ? '' : 's'}` : drafts ? `${drafts} draft${drafts === 1 ? '' : 's'}` : `${posts} social post${posts === 1 ? '' : 's'}`;
-    needs.push( {
-      id: 'review',
-      title: `Review ${what}`,
-      detail: `I’ve stopped writing new drafts until the review queue clears. Anything unreviewed for ${health.expiryDays || 14} days expires.`,
-      primaryLabel: 'Start review',
-      primaryHref: tasks ? MAYA_TASKS_URL : `${OUTREACH_URL}/signal-engine?tab=drafts`,
-      secondaryLabel: tasks && drafts ? 'Open drafts' : undefined,
-      secondaryHref: tasks && drafts ? `${OUTREACH_URL}/signal-engine?tab=drafts` : null,
-    } );
+  const counts = health?.counts;
+  const expiry = `Anything unreviewed for ${health?.expiryDays || 14} days expires.`;
+  const plural = ( count: number, one: string ) => `${count} ${one}${count === 1 ? '' : 's'}`;
+  if ( health?.taskBlocked ) {
+    needs.push( { id: 'review', title: `Review ${plural( counts?.openTaskCount || 0, 'waiting task' )}`, detail: `I’ve stopped making new tasks until some are closed. ${expiry}`, primaryLabel: 'Start review', primaryHref: MAYA_TASKS_URL } );
+  }
+  if ( health?.draftBlocked ) {
+    needs.push( { id: 'review-drafts', title: `Review ${plural( counts?.openDraftCount || 0, 'email draft' )}`, detail: `I’ve stopped writing new emails until you approve or dismiss some. ${expiry}`, primaryLabel: 'Open Drafts', primaryHref: `${OUTREACH_URL}/drafts` } );
+  }
+  if ( health?.socialPostBlocked ) {
+    needs.push( { id: 'review-social', title: `Review ${plural( counts?.openSocialPostCount || 0, 'social post' )}`, detail: `I’ve stopped writing new social posts until you approve or clear some. ${expiry}`, primaryLabel: 'Review posts', primaryHref: SOCIAL_TODAY_URL } );
   }
 
   const plan = input.plan;

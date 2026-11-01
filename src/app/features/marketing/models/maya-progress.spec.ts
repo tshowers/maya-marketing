@@ -2,6 +2,7 @@ import { MarketingEmployeeActionRecord, MarketingPlanRecord } from './marketing-
 import {
   againstPlanLabel,
   buildNeeds,
+  cleanTitle,
   currentStepView,
   forecastEnd,
   planHealth,
@@ -75,8 +76,43 @@ describe( 'maya progress', () => {
 
     expect( needs.map( need => need.id ) ).toEqual( ['contacts', 'review', 'dates'] );
     expect( needs[1].title ).toBe( 'Review 56 waiting tasks' );
-    expect( needs[1].secondaryLabel ).toBe( 'Open drafts' );
+    expect( needs[1].primaryHref ).toContain( 'moves' );
     expect( planHealth( stepViews( plan, rows ), needs, null ) ).toBe( 'stuck' );
     expect( buildNeeds( { blockedRows: [], queueHealth: null, plan: { ...plan, datesConfirmed: true } } ) ).toEqual( [] );
+  } );
+} );
+
+describe( 'review cards name the limit that is hit (Ty, 2026-10-31)', () => {
+  it( 'full social posts read as social posts, with a link to Social, not "Review N drafts"', () => {
+    const needs = buildNeeds( {
+      blockedRows: [],
+      queueHealth: {
+        blocked: true, taskBlocked: false, draftBlocked: false, socialPostBlocked: true, detail: '', expiryDays: 14,
+        counts: { openTaskCount: 0, openDraftCount: 74, openSocialPostCount: 106, taskLimit: 10, draftLimit: 100, socialPostLimit: 100 },
+      },
+      plan: null as unknown as MarketingPlanRecord,
+    } );
+    expect( needs.map( need => [need.title, need.primaryHref] ) ).toEqual( [['Review 106 social posts', 'https://social.16ahead.com/today']] );
+  } );
+
+  it( 'a full Drafts opens Drafts', () => {
+    const needs = buildNeeds( {
+      blockedRows: [],
+      queueHealth: {
+        blocked: true, taskBlocked: false, draftBlocked: true, socialPostBlocked: false, detail: '', expiryDays: 14,
+        counts: { openTaskCount: 0, openDraftCount: 100, openSocialPostCount: 0, taskLimit: 10, draftLimit: 100, socialPostLimit: 100 },
+      },
+      plan: null as unknown as MarketingPlanRecord,
+    } );
+    expect( needs.map( need => [need.title, need.primaryHref] ) ).toEqual( [['Review 100 email drafts', 'https://outreach.16ahead.com/drafts']] );
+  } );
+} );
+
+describe( 'cleanTitle: execution tasks saved before the rename (Ty, 2026-10-31)', () => {
+  it( 'reads TODD and 16Ahead execution tasks as plain steps', () => {
+    expect( cleanTitle( 'TODD execute email batch for Small business owners evaluating AI automation' ) ).toBe( 'Send the approved emails to Small business owners evaluating AI automation' );
+    expect( cleanTitle( '16Ahead schedule social queue for practical workflow proof' ) ).toBe( 'Schedule the approved social posts for practical workflow proof' );
+    expect( cleanTitle( 'TODD execute outbound email batch' ) ).toBe( 'Send outbound email batch' );
+    expect( cleanTitle( 'Marketing Plan: Review today\'s progress' ) ).toBe( 'Review today\'s progress' );
   } );
 } );
