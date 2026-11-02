@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
+import { Component, ElementRef, Injector, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, afterNextRender, inject } from '@angular/core';
 import { MayaChatStateService } from '../../../../services/maya-chat-state.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -118,6 +118,7 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   /** The header's New chat button resets this conversation. */
   private readonly chatState = inject( MayaChatStateService );
   private readonly mayaJobs = inject( MayaJobsService );
+  private readonly injector = inject( Injector );
   sending = false;
   /** Fetching the email a "Talk to me about this email" link opened. */
   openingEmail = false;
@@ -357,11 +358,20 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     // The lookup takes a few seconds; show the conversation with the
     // Marketing Assistant already working instead of a blank page (Ty,
     // 2026-11-01). If the email isn't found, the landing page comes back.
-    this.openingEmail = true;
-    this.hasUserMessages = true;
-    this.showSuggestionTray = false;
+    // The switch waits for the first render: this page is prerendered, and
+    // changing it during hydration left the landing page on screen with the
+    // conversation under it (2026-11-01).
+    const lookup = this.publicMarketingDirectorService.fetchEmailContext( emailId, tenantId );
+    let found = false;
+    void lookup.then( () => { found = true; } );
+    await new Promise<void>( resolve => afterNextRender( () => resolve(), { injector: this.injector } ) );
+    if ( !found ) {
+      this.openingEmail = true;
+      this.hasUserMessages = true;
+      this.showSuggestionTray = false;
+    }
     try {
-      this.emailContext = await this.publicMarketingDirectorService.fetchEmailContext( emailId, tenantId );
+      this.emailContext = await lookup;
     } finally {
       // Hand the page back as it was: applySessionContext skips the greeting
       // when hasUserMessages is already set (that left a blank conversation,
