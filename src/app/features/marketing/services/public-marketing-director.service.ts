@@ -270,7 +270,9 @@ export class PublicMarketingDirectorService {
         .set( 'x-tenant-id', safeTenantId );
       const response = await this.http.get<{ success: boolean; data?: any; }>(
         `${environment.backendURL}/outreach/emails/${encodeURIComponent( safeEmailId )}`,
-        { headers }
+        // In the query too: the backend drops an unsigned X-Tenant-Id, and
+        // the email's recipient is signed out (2026-11-01).
+        { headers, params: { tenantId: safeTenantId } }
       ).toPromise();
 
       const record = response?.data;
