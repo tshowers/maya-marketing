@@ -205,6 +205,14 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
       openHistory: () => void this.openHistory()
     } );
     await this.loadEmailContextFromQueryParams();
+    // Opened from "Talk to me about this email": the page is that email's
+    // conversation, already started, the same for the recipient and for a
+    // signed-in user testing it - no workspace history or plan. It showed
+    // the landing page instead, with the greeting hidden (Ty, 2026-11-01).
+    if ( this.emailContext ) {
+      this.applySessionContext( null, false, false, [], [], [], null, '', '' );
+      return;
+    }
     this.authContextSubscription = this.authService.getUser().pipe(
       switchMap( user => {
         const userId = String( user?.uid || '' ).trim();
@@ -987,7 +995,7 @@ Pick one and I will keep moving:
     void this.ensureWorkspaceSessionConnection();
     void this.hydrateMasterPlanSnapshot();
 
-    if ( !this.sessionMemoryHydrated ) {
+    if ( !this.sessionMemoryHydrated && !this.emailContext ) {
       this.sessionMemoryHydrated = true;
       const restoredMessages = this.hydrateSessionMemory();
       if ( restoredMessages.length > 0 ) {
@@ -1027,6 +1035,10 @@ Pick one and I will keep moving:
       : this.buildInitialDirectorMessage();
 
     this.messages = [introMessage];
+    if ( this.emailContext ) {
+      this.hasUserMessages = true;
+      this.showSuggestionTray = false;
+    }
     this.persistSessionMemory();
   }
 
