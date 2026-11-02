@@ -10,6 +10,7 @@ import {
   MAYA_TASKS_URL,
   MayaNeed,
   OUTREACH_URL,
+  SOCIAL_TODAY_URL,
   StepView,
   againstPlanLabel,
   buildNeeds,
@@ -85,6 +86,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
   readonly dateLabel = longDate().toUpperCase();
   readonly movesUrl = MAYA_TASKS_URL;
   readonly draftsUrl = `${OUTREACH_URL}/signal-engine?tab=drafts`;
+  readonly socialUrl = SOCIAL_TODAY_URL;
 
   view: StatusView = 'cols';
   loading = true;
@@ -103,6 +105,9 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
 
   headline = '';
   sentence = '';
+  /** The hold banner: empty when no review limit is hit. */
+  holdTitle = '';
+  holdDetail = '';
   planFooter = '';
   planSentence = '';
   tomorrow = '';
@@ -160,17 +165,23 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
   }
 
   get stopped (): boolean {
-    return !!this.queueHealth?.blocked || this.runSteps.some( step => step.state === 'stopped' );
+    return !!this.queueHealth?.taskBlocked || this.runSteps.some( step => step.state === 'stopped' );
   }
 
+  /** Points at the limit that's actually full: it said "Review 3 tasks" when Drafts was (Ty, 2026-11-01). */
   get reviewLabel (): string {
-    const counts = this.queueHealth?.counts;
-    const tasks = counts?.openTaskCount || 0;
-    return tasks ? `Review ${tasks} task${tasks === 1 ? '' : 's'}` : 'Review drafts';
+    const health = this.queueHealth;
+    const tasks = health?.counts?.openTaskCount || 0;
+    if ( health?.taskBlocked ) return `Review ${tasks} task${tasks === 1 ? '' : 's'}`;
+    if ( !health?.draftBlocked && health?.socialPostBlocked ) return 'Review posts';
+    return 'Review drafts';
   }
 
   get reviewHref (): string {
-    return this.queueHealth?.counts?.openTaskCount ? this.movesUrl : this.draftsUrl;
+    const health = this.queueHealth;
+    if ( health?.taskBlocked ) return this.movesUrl;
+    if ( !health?.draftBlocked && health?.socialPostBlocked ) return this.socialUrl;
+    return this.draftsUrl;
   }
 
   get doneSteps (): RunStep[] {
@@ -217,7 +228,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
   get limitExplanation (): string {
     const counts = this.queueHealth?.counts;
     if ( !counts ) return '';
-    return `I stop creating new work when too much is waiting for you, so nothing piles up unread: ${counts.taskLimit} tasks, ${counts.draftLimit} email drafts or ${counts.socialPostLimit} social posts. Right now there are ${counts.openTaskCount} tasks, ${counts.openDraftCount} drafts and ${counts.openSocialPostCount} posts. Anything unreviewed for ${this.queueHealth?.expiryDays || 14} days expires.`;
+    return `Each kind of work stops on its own when too much of it is waiting for you, so nothing piles up unread: ${counts.taskLimit} tasks, ${counts.draftLimit} email drafts or ${counts.socialPostLimit} social posts. Only the task limit pauses the rest of my day. Right now there are ${counts.openTaskCount} tasks, ${counts.openDraftCount} drafts and ${counts.openSocialPostCount} posts. Anything unreviewed for ${this.queueHealth?.expiryDays || 14} days expires.`;
   }
 
   private withStepActions ( tenantId: string, plan: MarketingPlanRecord | null ): Observable<{ plan: MarketingPlanRecord | null; actions: MarketingEmployeeActionRecord[]; }> {
@@ -274,9 +285,10 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
       };
     } );
 
-    // The review limit stops Maya before she writes; if the run didn't
-    // record which step, it's the first of her own steps still open.
-    if ( this.queueHealth?.blocked && !steps.some( step => step.state === 'stopped' ) ) {
+    // The task limit stops Maya before she writes; if the run didn't
+    // record which step, it's the first of her own steps still open. The
+    // draft and social limits hold back only their own work.
+    if ( this.queueHealth?.taskBlocked && !steps.some( step => step.state === 'stopped' ) ) {
       const first = steps.find( step => step.owner === 'Marketing Assistant' && step.state !== 'done' );
       if ( first ) {
         first.state = 'stopped';
@@ -313,11 +325,21 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
     const done = this.doneSteps;
     const forecast = forecastEnd( plan, this.rows, this.today );
     const behind = againstPlanLabel( plan, forecast );
+    // Only the task limit pauses her day; a full Drafts or Social holds back
+    // just new emails or posts (mayaCreationGuard.service.js, 2026-10-31).
+    const health = this.queueHealth;
+    const paused = !!health?.taskBlocked;
+    const held = [health?.draftBlocked ? 'email drafts' : '', health?.socialPostBlocked ? 'social posts' : ''].filter( Boolean ).join( ' and ' );
+    const expiry = `Anything left unreviewed for ${health?.expiryDays || 14} days expires.`;
+    this.holdTitle = paused ? 'New work is on hold' : held ? `New ${held} are on hold` : '';
+    this.holdDetail = paused ? expiry : held ? `Everything else keeps running. ${expiry}` : '';
 
     if ( !this.hasRun ) {
       this.headline = 'I haven’t started today yet.';
-    } else if ( this.queueHealth?.blocked ) {
+    } else if ( paused ) {
       this.headline = 'I’m paused until you review.';
+    } else if ( held ) {
+      this.headline = `New ${held} are waiting on your review.`;
     } else if ( this.runSteps.some( step => step.state === 'stopped' ) ) {
       this.headline = 'Today’s run hit a problem.';
     } else if ( plan ) {
@@ -331,7 +353,8 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
     else if ( done.length ) parts.push( `I’ve done ${done.length} of today’s ${this.runSteps.length} steps.` );
     const stoppedStep = this.runSteps.find( step => step.state === 'stopped' );
     if ( stoppedStep ) parts.push( `I stopped at “${stoppedStep.title.toLowerCase()}”.` );
-    if ( this.queueHealth?.blocked ) parts.push( `${this.waitingDetail()} Once the queue is clear I’ll pick up the rest.` );
+    if ( paused ) parts.push( `${this.waitingDetail()} Once the queue is clear I’ll pick up the rest.` );
+    else if ( held ) parts.push( `${this.waitingDetail()} I’ll write new ${held} once you’ve reviewed some; everything else keeps going.` );
     this.sentence = parts.join( ' ' );
 
     const behindText = behind === 'On time' ? 'on time' : `${behind.replace( '+', '' )} behind`;
@@ -342,7 +365,7 @@ export class MarketingEmployeeHomeComponent implements OnInit, OnDestroy {
       : '';
     const remaining = this.rows.filter( row => row.state !== 'done' ).length;
     this.tomorrow = plan
-      ? `Keep going on ${plan.title.toLowerCase()}${remaining ? `: ${remaining} item${remaining === 1 ? '' : 's'} left` : ''}.${this.queueHealth?.blocked ? ' New drafts wait until the review queue clears.' : ''}`
+      ? `Keep going on ${plan.title.toLowerCase()}${remaining ? `: ${remaining} item${remaining === 1 ? '' : 's'} left` : ''}.${paused ? ' New work waits until the review queue clears.' : held ? ` New ${held} wait until you’ve reviewed some.` : ''}`
       : '';
   }
 

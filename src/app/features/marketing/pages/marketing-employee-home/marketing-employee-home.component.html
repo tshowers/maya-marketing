@@ -45,14 +45,14 @@
       <p *ngIf="sentence" class="ms-maya"><img class="brand-mark--light" [src]="avatarUrl" alt="" /><img class="brand-mark--dark" [src]="avatarDarkUrl" alt="" />{{ sentence }}</p>
     </header>
 
-    <section *ngIf="queueHealth?.blocked" class="ms-blocker" data-cy="status-blocker">
+    <section *ngIf="holdTitle" class="ms-blocker" data-cy="status-blocker">
       <ng-container *ngTemplateOutlet="icon; context: { $implicit: 'pause' }"></ng-container>
       <div class="ms-blocker__body">
-        <strong>New work is on hold</strong>
-        <p>Anything left unreviewed for {{ queueHealth?.expiryDays || 14 }} days expires.</p>
+        <strong>{{ holdTitle }}</strong>
+        <p>{{ holdDetail }}</p>
       </div>
       <a class="ms-btn" [href]="reviewHref" target="_blank" rel="noopener">{{ reviewLabel }}</a>
-      <a *ngIf="queueHealth?.counts?.openDraftCount" class="ms-btn ms-btn--ghost" [href]="draftsUrl" target="_blank" rel="noopener">Open drafts</a>
+      <a *ngIf="queueHealth?.counts?.openDraftCount && reviewHref !== draftsUrl" class="ms-btn ms-btn--ghost" [href]="draftsUrl" target="_blank" rel="noopener">Open drafts</a>
     </section>
 
     <div class="ms-columns">
