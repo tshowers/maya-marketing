@@ -119,6 +119,8 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
   private readonly chatState = inject( MayaChatStateService );
   private readonly mayaJobs = inject( MayaJobsService );
   sending = false;
+  /** Fetching the email a "Talk to me about this email" link opened. */
+  openingEmail = false;
   errorMessage = '';
   /** Past conversations (the header's History button). */
   historyOpen = false;
@@ -352,7 +354,21 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     const tenantId = String( this.route.snapshot.queryParamMap.get( 'tenantId' ) || '' ).trim();
     if ( !emailId || !tenantId ) return;
 
-    this.emailContext = await this.publicMarketingDirectorService.fetchEmailContext( emailId, tenantId );
+    // The lookup takes a few seconds; show the conversation with the
+    // Marketing Assistant already working instead of a blank page (Ty,
+    // 2026-11-01). If the email isn't found, the landing page comes back.
+    this.openingEmail = true;
+    this.hasUserMessages = true;
+    this.showSuggestionTray = false;
+    try {
+      this.emailContext = await this.publicMarketingDirectorService.fetchEmailContext( emailId, tenantId );
+    } finally {
+      this.openingEmail = false;
+      if ( !this.emailContext ) {
+        this.hasUserMessages = false;
+        this.showSuggestionTray = true;
+      }
+    }
   }
 
   private buildEmailContextGreeting ( emailContext: PublicMarketingDirectorEmailContext ): string {

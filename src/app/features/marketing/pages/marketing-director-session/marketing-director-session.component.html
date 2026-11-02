@@ -51,9 +51,9 @@
             </div>
           </div>
         </article>
-        <article class="maya-message maya-message--thinking" *ngIf="sending" aria-live="polite" aria-label="The Marketing Assistant is thinking">
+        <article class="maya-message maya-message--thinking" *ngIf="sending || openingEmail" aria-live="polite" [attr.aria-label]="openingEmail ? 'The Marketing Assistant is opening your email' : 'The Marketing Assistant is thinking'">
           <img class="maya-message__avatar brand-mark--light" src="assets/brand/products/svg/light/03-marketing-assistant.svg" alt="" /><img class="maya-message__avatar brand-mark--dark" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" alt="" />
-          <div class="maya-thinking"><span class="maya-thinking__label">The Marketing Assistant is thinking</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
+          <div class="maya-thinking"><span class="maya-thinking__label">{{ openingEmail ? 'The Marketing Assistant is opening your email' : 'The Marketing Assistant is thinking' }}</span><span class="maya-thinking__dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
         </article>
         <aside class="maya-presentation-ready" *ngIf="presentationMode && presentationState === 'READY_TO_GENERATE'">
           <div class="maya-eyebrow">Presentation plan ready</div>

@@ -178,6 +178,10 @@ export interface PublicMarketingDirectorEmailContext {
   bodyText: string;
   recipientName?: string;
   recipientCompany?: string;
+  /** Which email and whose workspace, so the sender can read this
+   *  conversation in Outreach > Conversations (2026-11-01). */
+  emailId?: string;
+  tenantId?: string;
 }
 
 export type PublicMarketingDirectorAccessMode =
@@ -286,7 +290,9 @@ export class PublicMarketingDirectorService {
         subject,
         bodyText,
         recipientName: String( record.contactName || '' ).trim() || undefined,
-        recipientCompany: String( record.companyName || '' ).trim() || undefined
+        recipientCompany: String( record.companyName || '' ).trim() || undefined,
+        emailId: safeEmailId,
+        tenantId: safeTenantId
       };
     } catch {
       return null;
