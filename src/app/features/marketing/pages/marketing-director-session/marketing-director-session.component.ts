@@ -363,11 +363,12 @@ export class MarketingDirectorSessionComponent implements OnInit, OnDestroy {
     try {
       this.emailContext = await this.publicMarketingDirectorService.fetchEmailContext( emailId, tenantId );
     } finally {
+      // Hand the page back as it was: applySessionContext skips the greeting
+      // when hasUserMessages is already set (that left a blank conversation,
+      // 2026-11-01), and it switches to the conversation itself for the email.
       this.openingEmail = false;
-      if ( !this.emailContext ) {
-        this.hasUserMessages = false;
-        this.showSuggestionTray = true;
-      }
+      this.hasUserMessages = false;
+      this.showSuggestionTray = true;
     }
   }
 
