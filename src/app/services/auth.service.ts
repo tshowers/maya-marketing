@@ -903,7 +903,8 @@ export class AuthService implements OnDestroy {
 
               const tenantRef = doc( this.firestore, `tenants/${tenantId}` );
 
-              await setDoc( tenantRef, claims );
+              // Merge: replacing the record wiped its purchases and affiliate referral (2026-11-04).
+              await setDoc( tenantRef, claims, { merge: true } );
 
               let referralCode = localStorage.getItem( 'referralCode' );
               referralCode = referralCode ? referralCode : '';
@@ -1002,7 +1003,8 @@ export class AuthService implements OnDestroy {
 
               const tenantRef = doc( this.firestore, `tenants/${tenantId}` );
 
-              await setDoc( tenantRef, claims );
+              // Merge: replacing the record wiped its purchases and affiliate referral (2026-11-04).
+              await setDoc( tenantRef, claims, { merge: true } );
 
               let referralCode = localStorage.getItem( 'referralCode' );
               referralCode = referralCode ? referralCode : '';
@@ -1066,7 +1068,8 @@ export class AuthService implements OnDestroy {
 
               const tenantRef = doc( this.firestore, `tenants/${tenantId}` );
 
-              await setDoc( tenantRef, claims );
+              // Merge: replacing the record wiped its purchases and affiliate referral (2026-11-04).
+              await setDoc( tenantRef, claims, { merge: true } );
 
               let referralCode = localStorage.getItem( 'referralCode' );
               referralCode = referralCode ? referralCode : '';
@@ -1125,7 +1128,8 @@ export class AuthService implements OnDestroy {
 
               const tenantRef = doc( this.firestore, `tenants/${tenantId}` );
 
-              await setDoc( tenantRef, claims );
+              // Merge: replacing the record wiped its purchases and affiliate referral (2026-11-04).
+              await setDoc( tenantRef, claims, { merge: true } );
 
               let referralCode = localStorage.getItem( 'referralCode' );
               referralCode = referralCode ? referralCode : '';
@@ -1439,7 +1443,8 @@ export class AuthService implements OnDestroy {
 
               const tenantRef = doc( this.firestore, `tenants/${tenantId}` );
 
-              await setDoc( tenantRef, claims );
+              // Merge: replacing the record wiped its purchases and affiliate referral (2026-11-04).
+              await setDoc( tenantRef, claims, { merge: true } );
 
               const contactRef = doc(
                 this.firestore,
