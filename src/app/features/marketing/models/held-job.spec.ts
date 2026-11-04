@@ -1,5 +1,5 @@
 import { PublicMarketingDirectorSystemAction } from '../services/public-marketing-director.service';
-import { HeldJob, asksQuestion, heldJobNotice, planDirectorActions, startsJob, withAnswers } from './held-job';
+import { HeldJob, asksQuestion, chatExcerpt, heldJobNotice, planDirectorActions, startsJob, withAnswers } from './held-job';
 
 const email: PublicMarketingDirectorSystemAction = { type: 'send_email', subject: 'Meet Outreach', to: 'all contacts', text: 'Brief' };
 const mayaMove: PublicMarketingDirectorSystemAction = { type: 'create_move', title: 'Draft posts', ownerLabel: 'Maya' };
@@ -71,5 +71,16 @@ describe( 'held job', () => {
   it( 'says what it is waiting on', () => {
     expect( heldJobNotice( { request: 'r', answers: [], actions: [email, mayaMove] } ) )
       .toBe( 'Execution receipt: nothing has started yet. I\'ll start the email "Meet Outreach" and "Draft posts" as soon as you answer the question above, with your answer in the brief.' );
+  } );
+
+  it( 'carries the chat into the brief, newest turns first to stay', () => {
+    const chat = [
+      { role: 'user', content: 'A drip about the 16Ahead Store for retail owners' },
+      { role: 'director', content: 'Five emails, warm and cold lanes.' },
+      { role: 'user', content: 'yes draft now, and split test both' },
+    ];
+    expect( chatExcerpt( chat ) ).toBe( 'Our conversation before this:\nMe: A drip about the 16Ahead Store for retail owners\nMarketing Assistant: Five emails, warm and cold lanes.\nMe: yes draft now, and split test both' );
+    expect( chatExcerpt( chat, 80 ) ).toBe( 'Our conversation before this:\nMe: yes draft now, and split test both' );
+    expect( chatExcerpt( [] ) ).toBe( '' );
   } );
 } );

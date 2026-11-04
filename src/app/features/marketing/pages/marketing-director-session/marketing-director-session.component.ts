@@ -41,7 +41,7 @@ import { DemoVideoComponent } from '../../components/demo-video/demo-video.compo
 import { MayaDeck, MayaDeckTheme } from '../../models/maya-deck.models';
 import { OutreachApiService, SocialPost } from '../../../../services/outreach-api.service';
 import { CHAT_BRIEF_MARKER, MayaJob, MayaJobsService, jobPath } from '../../../../services/maya-jobs.service';
-import { HeldJob, asksQuestion, heldJobNotice, planDirectorActions, withAnswers } from '../../models/held-job';
+import { HeldJob, asksQuestion, chatExcerpt, heldJobNotice, planDirectorActions, withAnswers } from '../../models/held-job';
 import { AlsoFromUsComponent } from '../../../../shared/also-from-us/also-from-us.component';
 
 interface ReportOperationalData {
@@ -1361,6 +1361,7 @@ Pick one and I will keep moving:
         userRequest.trim(),
         `From my chat with the Marketing Assistant: ${title}`,
         String( action.description || action.summary || '' ).trim(),
+        chatExcerpt( this.messages ),
       ].filter( Boolean ).join( '\n' ), answers );
       const job = await this.startOrContinueJob( request, answers[answers.length - 1] || userRequest, `"${title}"` );
       if ( job && job.outcome !== 'started' ) {
@@ -1479,6 +1480,7 @@ Pick one and I will keep moving:
       subject ? `Subject idea: ${subject}` : '',
       audience ? `Audience: ${audience}` : '',
       text,
+      chatExcerpt( this.messages ),
     ].filter( Boolean ).join( '\n' ), answers );
 
     const job = await this.startOrContinueJob( request, answers[answers.length - 1] || userRequest, subject ? `the email "${subject}"` : 'the email' );

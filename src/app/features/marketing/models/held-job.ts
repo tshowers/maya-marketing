@@ -83,6 +83,25 @@ export function withAnswers ( brief: string, answers: string[], limit: number = 
   return [brief.slice( 0, room ).trim(), answerLines].filter( Boolean ).join( '\n' );
 }
 
+/**
+ * The chat that led to a job, newest turns kept, so "yes draft now" reaches
+ * the planner with what it's agreeing to: the product, the goal, the lanes.
+ * Without it a Store drip became an outreach-automation email (2026-11-04).
+ */
+export function chatExcerpt ( messages: ReadonlyArray<{ role: string; content?: string }>, limit: number = 2200 ): string {
+  const lines: string[] = [];
+  let used = 0;
+  for ( const message of [...messages].reverse().slice( 0, 8 ) ) {
+    const content = String( message.content || '' ).trim().replace( /\s+/g, ' ' ).slice( 0, 700 );
+    if ( !content ) continue;
+    const line = `${message.role === 'user' ? 'Me' : 'Marketing Assistant'}: ${content}`;
+    if ( used + line.length + 1 > limit ) break;
+    lines.unshift( line );
+    used += line.length + 1;
+  }
+  return lines.length ? `Our conversation before this:\n${lines.join( '\n' )}` : '';
+}
+
 /** What the chat says when it holds a job back. */
 export function heldJobNotice ( held: HeldJob ): string {
   const names = held.actions.map( action => {
