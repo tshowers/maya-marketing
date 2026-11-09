@@ -58,8 +58,8 @@ export interface MayaJob {
   updatedAt: string;
 }
 
-/** Where a finished email goes: Catalyst (many contacts) or the Email Composer (one). */
-export type EmailSendTarget = 'catalyst' | 'composer';
+/** Where a finished email goes: Catalyst (many contacts), the Email Composer (one) or Drips (a ready drip, sent over time). */
+export type EmailSendTarget = 'catalyst' | 'composer' | 'drips';
 
 /** The page for one job. Maya's chat, Today and the jobs list all link here. */
 export function jobPath ( jobId: string ): string {
@@ -131,7 +131,8 @@ export class MayaJobsService {
   }
 
   /**
-   * Hands a finished email to Catalyst or the Email Composer, the same way Email Creator does. Returns the page to open.
+   * Hands a finished email to Catalyst, the Email Composer or Drips, the same way Email Creator does. Returns the page to open.
+   * Drips makes a real Ready drip straight away (not a draft); it sends nothing until it's turned on.
    * `audience` (who it was written for) lets Catalyst preselect the matching contacts.
    */
   async handOffEmail ( request: { target: EmailSendTarget; subject: string; preheader: string; html: string; fills: Record<string, string>; audience?: string; } ): Promise<string> {

@@ -204,6 +204,10 @@
                     <strong>Send to one - Email Composer</strong>
                     <span>One recipient, reviewed before it goes.</span>
                   </button>
+                  <button type="button" class="wk-send__choice" (click)="openSend( email, 'drips' )" [disabled]="sendPanel?.working" data-cy="work-email-drips">
+                    <strong>Send over time - Drips</strong>
+                    <span>Goes out on its own, one person at a time, for up to 30 days.</span>
+                  </button>
                 </div>
                 <div *ngIf="sendPanel?.documentId === email.documentId && sendPanel as panel" class="wk-send__panel" data-cy="work-send-panel">
                   <p *ngIf="panel.canSend === null && panel.working" class="wk-note">Checking…</p>
@@ -212,12 +216,12 @@
                     <a class="wk-button" routerLink="/pricing">See plans</a>
                   </ng-container>
                   <ng-container *ngIf="panel.canSend && panel.openUrl">
-                    <p>Ready. Your name, title, company and signature are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                    <p>{{ panel.target === 'drips' ? 'Ready in Drips. Pick who gets it and how fast, then turn it on' : 'Ready. Your name, title, company and signature are filled in' }}{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
                     <a class="wk-button" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()" data-cy="work-send-open">Open {{ targetNames[panel.target] }}</a>
                   </ng-container>
                   <ng-container *ngIf="panel.canSend && !panel.openUrl">
                     <ng-container *ngIf="panel.fillIns.length">
-                      <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
+                      <p>Fill these in first{{ panel.target !== 'composer' ? ' - they go to every recipient as written' : '' }}:</p>
                       <label *ngFor="let item of panel.fillIns" class="wk-send__fill">
                         <span>{{ item.label }}</span>
                         <input class="wk-input" type="text" [name]="'fill-' + item.token" [(ngModel)]="panel.values[item.token]" />

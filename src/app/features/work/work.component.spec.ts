@@ -1,5 +1,5 @@
 import { CHAT_BRIEF_MARKER, jobPath } from '../../services/maya-jobs.service';
-import { emailCreatorEditUrl, jobAudience } from './work.component';
+import { WorkComponent, emailCreatorEditUrl, jobAudience } from './work.component';
 
 describe( 'emailCreatorEditUrl', () => {
   it( 'opens the Docs email in Email Creator', () => {
@@ -37,5 +37,23 @@ describe( 'jobAudience', () => {
   it( 'is empty without a brief', () => {
     expect( jobAudience( { brief: null } ) ).toBe( '' );
     expect( jobAudience( null ) ).toBe( '' );
+  } );
+} );
+
+describe( 'Sending a job’s email to Drips', () => {
+  const email = { documentId: 'doc1', subject: 'Answer RFPs in hours', preheader: 'Preheader', fillIns: [], audience: 'Owners and consultants' };
+
+  it( 'hands it off as a drip, without the Catalyst-only audience, and offers the drip to open', async () => {
+    const handOffEmail = jasmine.createSpy( 'handOffEmail' ).and.resolveTo( 'https://outreach.16ahead.com/drips/d1' );
+    const page: any = {
+      sendPanel: { documentId: 'doc1', target: 'drips', canSend: true, fillIns: [], values: {}, working: false, error: '', openUrl: '' },
+      api: { handOffEmail },
+      loadHtml: async () => '<p>Hi</p>',
+      fillsComplete: WorkComponent.prototype.fillsComplete,
+    };
+    await WorkComponent.prototype.prepareSend.call( page, email );
+    expect( handOffEmail ).toHaveBeenCalledWith( { target: 'drips', subject: 'Answer RFPs in hours', preheader: 'Preheader', html: '<p>Hi</p>', fills: {} } );
+    expect( page.sendPanel.openUrl ).toBe( 'https://outreach.16ahead.com/drips/d1' );
+    expect( page.sendPanel.working ).toBeFalse();
   } );
 } );

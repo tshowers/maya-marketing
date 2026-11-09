@@ -43,7 +43,7 @@ interface EmailResult {
   audience: string;
 }
 
-/** Sending a finished email, the same two choices Email Creator offers. */
+/** Sending a finished email, the same three choices Email Creator offers. */
 interface SendPanel {
   documentId: string;
   target: EmailSendTarget;
@@ -123,7 +123,7 @@ export class WorkComponent implements OnInit, OnDestroy {
   requestOpen: Record<string, boolean> = {};
   /** Jobs list tab: what's going on now, or finished work. */
   tab: 'now' | 'past' = 'now';
-  readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
+  readonly targetNames: Record<EmailSendTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer', drips: 'Drips' };
   readonly editUrl = emailCreatorEditUrl;
   private emailHtml: Record<string, string> = {};
 
@@ -595,7 +595,7 @@ export class WorkComponent implements OnInit, OnDestroy {
 
   /**
    * emails() builds new objects on every pass; keyed by document, the email
-   * blocks (and their Catalyst / Composer buttons) aren't rebuilt mid-click.
+   * blocks (and their Catalyst / Composer / Drips buttons) aren't rebuilt mid-click.
    */
   trackEmail ( _index: number, email: EmailResult ): string {
     return email.documentId;
