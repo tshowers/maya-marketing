@@ -394,6 +394,24 @@ export class WorkComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Saves a contact list from the page, as Download HTML does for emails. */
+  async downloadCsv ( list: ContactListResult ): Promise<void> {
+    this.busy[list.documentId] = true;
+    try {
+      const loaded = await this.api.contactList( list.documentId );
+      const url = URL.createObjectURL( new Blob( [loaded.csv], { type: 'text/csv;charset=utf-8' } ) );
+      const link = document.createElement( 'a' );
+      link.href = url;
+      link.download = loaded.fileName || 'contact-list.csv';
+      link.click();
+      setTimeout( () => URL.revokeObjectURL( url ), 1000 );
+    } catch ( error: any ) {
+      this.errorMessage = error?.error?.message || error?.message || 'We couldn’t download that list.';
+    } finally {
+      this.busy[list.documentId] = false;
+    }
+  }
+
   async downloadHtml ( email: EmailResult ): Promise<void> {
     const html = await this.loadHtml( email );
     const url = URL.createObjectURL( new Blob( [html], { type: 'text/html' } ) );

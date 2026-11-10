@@ -191,7 +191,8 @@
                 <li *ngFor="let person of list.sample">{{ person }}</li>
               </ul>
               <div class="wk-actions">
-                <a *ngIf="list.url" class="wk-button wk-button--link" [href]="list.url" data-cy="work-contact-list-download">Download CSV</a>
+                <button type="button" class="wk-button" (click)="downloadCsv( list )" [disabled]="busy[list.documentId]" data-cy="work-contact-list-download">
+                  {{ busy[list.documentId] ? 'Preparing…' : 'Download CSV' }}</button>
               </div>
             </div>
 

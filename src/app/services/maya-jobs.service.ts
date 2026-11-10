@@ -121,6 +121,13 @@ export class MayaJobsService {
     return response.email;
   }
 
+  /** A contact list Maya built, as CSV text (todd-backend maya/jobs.routes.js). */
+  async contactList ( documentId: string ): Promise<{ id: string; title: string; fileName: string; csv: string; }> {
+    const response = await firstValueFrom( this.http.get<{ list: { id: string; title: string; fileName: string; csv: string; } }>(
+      `${environment.backendURL}/maya/contact-lists/${encodeURIComponent( documentId )}`, { headers: await this.headers() } ) );
+    return response.list;
+  }
+
   /**
    * Email Creator's send check (todd-backend/functions/emailCreatorRoutes.js):
    * whether the workspace can send with Outreach, and what's left to fill in per destination.
