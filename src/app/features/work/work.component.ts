@@ -646,6 +646,13 @@ export class WorkComponent implements OnInit, OnDestroy {
     return email.documentId;
   }
 
+  // Without this, every change detection rebuilds the card (the getter makes
+  // new objects), the button is replaced between mousedown and mouseup, and
+  // the click never fires.
+  trackList ( _index: number, list: ContactListResult ): string {
+    return list.documentId;
+  }
+
   /** Polls quickly while Maya is working, slowly otherwise, and not while the tab is hidden. */
   private schedulePoll ( delay: number ): void {
     if ( this.destroyed || !this.isSignedIn ) return;

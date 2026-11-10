@@ -182,7 +182,7 @@
               <button *ngIf="jobApprovals.length > 1" type="button" class="wk-button" (click)="approveAll( job )">Approve all {{ jobApprovals.length }}</button>
             </div>
 
-            <div *ngFor="let list of jobContactLists" class="wk-email" data-cy="work-contact-list">
+            <div *ngFor="let list of jobContactLists; trackBy: trackList" class="wk-email" data-cy="work-contact-list">
               <p class="wk-email__subject">{{ list.title }}</p>
               <p class="wk-meta">{{ list.count }} {{ list.count === 1 ? 'contact' : 'contacts' }} from Lead Vault, saved to Docs</p>
               <p *ngIf="list.who" class="wk-meta">Who: {{ list.who }}</p>
