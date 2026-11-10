@@ -185,11 +185,13 @@
             <div *ngFor="let list of jobContactLists" class="wk-email" data-cy="work-contact-list">
               <p class="wk-email__subject">{{ list.title }}</p>
               <p class="wk-meta">{{ list.count }} {{ list.count === 1 ? 'contact' : 'contacts' }} from Lead Vault, saved to Docs</p>
+              <p *ngIf="list.who" class="wk-meta">Who: {{ list.who }}</p>
+              <p *ngIf="list.requested > list.count" class="wk-meta">You asked for {{ list.requested }}. Lead Vault only has {{ list.count }} who fit, so the list stops there instead of adding people who don't.</p>
               <ul *ngIf="list.sample.length" class="wk-meta">
                 <li *ngFor="let person of list.sample">{{ person }}</li>
               </ul>
               <div class="wk-actions">
-                <a *ngIf="list.url" class="wk-button wk-button--link" [href]="list.url" target="_blank" rel="noopener" download data-cy="work-contact-list-download">Download CSV</a>
+                <a *ngIf="list.url" class="wk-button wk-button--link" [href]="list.url" data-cy="work-contact-list-download">Download CSV</a>
               </div>
             </div>
 

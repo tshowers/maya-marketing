@@ -38,6 +38,8 @@ interface ContactListResult {
   documentId: string;
   title: string;
   count: number;
+  requested: number;
+  who: string;
   url: string;
   sample: string[];
 }
@@ -216,6 +218,8 @@ export class WorkComponent implements OnInit, OnDestroy {
         documentId: String( step.output!['documentId'] ),
         title: String( step.output!['title'] || 'Contact list' ),
         count: Number( step.output!['count'] ) || 0,
+        requested: Number( step.output!['requested'] ) || 0,
+        who: String( step.output!['who'] || '' ),
         url: String( step.output!['src'] || '' ),
         sample: ( Array.isArray( step.output!['sample'] ) ? step.output!['sample'] : [] )
           .map( ( row: any ) => [row?.name, row?.title && row?.company ? `${row.title}, ${row.company}` : row?.company].filter( Boolean ).join( ' - ' ) ),
