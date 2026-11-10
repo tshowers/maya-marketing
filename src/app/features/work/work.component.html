@@ -182,6 +182,17 @@
               <button *ngIf="jobApprovals.length > 1" type="button" class="wk-button" (click)="approveAll( job )">Approve all {{ jobApprovals.length }}</button>
             </div>
 
+            <div *ngFor="let list of jobContactLists" class="wk-email" data-cy="work-contact-list">
+              <p class="wk-email__subject">{{ list.title }}</p>
+              <p class="wk-meta">{{ list.count }} {{ list.count === 1 ? 'contact' : 'contacts' }} from Lead Vault, saved to Docs</p>
+              <ul *ngIf="list.sample.length" class="wk-meta">
+                <li *ngFor="let person of list.sample">{{ person }}</li>
+              </ul>
+              <div class="wk-actions">
+                <a *ngIf="list.url" class="wk-button wk-button--link" [href]="list.url" target="_blank" rel="noopener" download data-cy="work-contact-list-download">Download CSV</a>
+              </div>
+            </div>
+
             <div *ngFor="let email of jobEmails; trackBy: trackEmail" class="wk-email" data-cy="work-email">
               <p class="wk-email__subject">{{ email.subject }}</p>
               <p *ngIf="email.preheader" class="wk-meta">{{ email.preheader }}</p>

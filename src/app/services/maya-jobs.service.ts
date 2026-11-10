@@ -52,7 +52,7 @@ export interface MayaJob {
   statusDetail: string;
   resumeAt: string | null;
   planner: { provider: string; model: string } | null;
-  artifacts: Array<{ kind: 'image' | 'social_post' | 'email'; id: string; url?: string | null; plannedForDate?: string | null; subject?: string | null }>;
+  artifacts: Array<{ kind: 'image' | 'social_post' | 'email' | 'contact_list'; id: string; url?: string | null; plannedForDate?: string | null; subject?: string | null }>;
   approvals?: Record<string, { decision: 'approved' | 'rejected'; by: string; at: string }>;
   createdAt: string;
   updatedAt: string;

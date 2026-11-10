@@ -34,6 +34,14 @@ interface ApprovalItem {
 }
 
 /** A finished email from a job, ready to open in Docs. */
+interface ContactListResult {
+  documentId: string;
+  title: string;
+  count: number;
+  url: string;
+  sample: string[];
+}
+
 interface EmailResult {
   documentId: string;
   subject: string;
@@ -198,6 +206,20 @@ export class WorkComponent implements OnInit, OnDestroy {
   get jobEmails (): EmailResult[] {
     const job = this.job;
     return job ? this.emails( job ) : [];
+  }
+
+  /** Contact lists Maya built from Lead Vault in this job. */
+  get jobContactLists (): ContactListResult[] {
+    return ( this.job?.steps || [] )
+      .filter( ( step ) => step.tool === 'leads.findList' && step.status === 'done' && step.output?.['documentId'] )
+      .map( ( step ) => ( {
+        documentId: String( step.output!['documentId'] ),
+        title: String( step.output!['title'] || 'Contact list' ),
+        count: Number( step.output!['count'] ) || 0,
+        url: String( step.output!['src'] || '' ),
+        sample: ( Array.isArray( step.output!['sample'] ) ? step.output!['sample'] : [] )
+          .map( ( row: any ) => [row?.name, row?.title && row?.company ? `${row.title}, ${row.company}` : row?.company].filter( Boolean ).join( ' - ' ) ),
+      } ) );
   }
 
   /** Everything waiting for a yes or no, oldest job first. */
@@ -506,6 +528,7 @@ export class WorkComponent implements OnInit, OnDestroy {
       }
       case 'social.approvePost': return step.approvedBy === 'autopilot' ? 'Approved by autopilot' : 'Your approval to post';
       case 'email.create': return `Email: ${String( step.output?.['subject'] || 'design' )}`;
+      case 'leads.findList': return step.output?.['count'] ? `Contact list: ${step.output['count']} people` : 'Contact list from Lead Vault';
       default: return step.tool;
     }
   }
