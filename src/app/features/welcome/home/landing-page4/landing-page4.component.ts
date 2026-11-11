@@ -554,7 +554,6 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
   currentVideoIndex = 0;
 
   showVideoSection: boolean = false;
-  productVideoSrc = 'https://www.youtube.com/embed/K5RBkEdfPFw?start=9&autoplay=1&mute=1&loop=1&controls=0&rel=0&modestbranding=1&playsinline=1';
 
   private analytics = inject( Analytics );
   private readonly injector = inject( Injector );
@@ -847,7 +846,6 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
       this.buildPainSection(),
       this.buildSolutionSection(),
       ...this.buildCoreProductSections(),
-      this.buildProofSection(),
       this.buildClosingSection()
     ];
 
@@ -995,23 +993,6 @@ export class LandingPage4Component implements OnInit, OnDestroy, AfterViewInit {
         { label: product.cta, route: product.route, variant: 'primary' }
       ]
     } ) );
-  }
-
-  private buildProofSection (): AppleTransitionSection {
-    const proofShortId = 'Ek7Te_jVKYk';
-
-    return {
-      id: 'todd-proof',
-      type: 'video',
-      eyebrow: 'Proof',
-      heading: 'Nothing falls through Not because you remembered Because the system carries it',
-      body: 'Eight modules. One loop. Every signal connected to an action, every action connected to an outcome.',
-      embedUrl: `https://www.youtube.com/embed/${proofShortId}?playsinline=1&rel=0&modestbranding=1`,
-      embedTitle: '16Ahead proof short',
-      mediaAspectRatio: '9 / 16',
-      mediaPosition: 'left',
-      panelClass: 'todd-landing-story-panel todd-landing-story-panel--credibility'
-    };
   }
 
   private buildClosingSection (): AppleTransitionSection {
