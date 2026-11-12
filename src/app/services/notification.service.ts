@@ -69,7 +69,7 @@ export class NotificationService {
     this.newMessageSubject.next( true );
 
     if ( this.notifier ) {
-      this.sound.playSound( 'notification' );
+      this.sound.playSound( type === 'error' ? 'error' : 'notification' );
       this.notifier.display( header, description, type );
       return;
     }
